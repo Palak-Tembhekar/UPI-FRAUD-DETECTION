@@ -1,0 +1,33 @@
+import streamlit as st
+import joblib
+import numpy as np
+st.set_page_config(page_title="UPI FRAUD DETECTOR",page_icon="🛡️",layout="centered")
+@st.cache_resource
+def load_model():
+  return joblib.load('upi_fraud_model.pkl')
+model=load_model()
+st.title("🛡️ Real_time UPI FRAUD DETECTION SYSTEM")
+st.write("ente transaction details below to evaluate potential fraud risk using machine learning.")
+st.markdown("---")
+col1,col2=st.columns(2)
+with col1:
+  amount=st.number_input("Transaction Amount (₹)",min_value=1.0,value=2500.0,step=100.0)
+  hour=st.slider("Hours of Transaction (0=Midnight,23=11 PM)",0,23,14)
+with col2:
+  balance_before=st.number-input("current account balance (₹)",min_value=1.0,value=10000.0,step=500.0)
+  speed_kmh=st.number_input("calculated speed from last location (km/h)",min_value=0.0,value=25.0,step=5.0)
+drain_ratio=amount/balance_before if balance_before > 0 else 1.0
+st.markdown("---")
+if st.button("🔍 analyze risk level",use_container_width=True):
+    features = np.array([[amount,hour,drain_ratio,speed_kmh]])
+    prediction=model.predict(features)[0]
+    probabiities=model.predict_proba(features)[0]
+    fraud_probability=probablities[1]*100
+    if prediction==1:
+       st.error(f"🚨**HIGH TRANSACTION DETECTED!**")
+       st.warning(f"confidence level: **{fraud_probablity:.1f}% risk factor**)
+       st.info("💡**reason flagged:** suspicious combination of high transfer amount,speed anomaly,or off_hour balance draning.")
+    else:
+        st.success(f"✅**TRANSACTION SAFE**")
+        st.info(f"Risk Evaluation:**{fraud_probability:.1f}% risk (normal activity)**")
+                  
