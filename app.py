@@ -18,7 +18,7 @@ st.markdown("""
     </style>
 """,unsafe_allow_html=True)
 with st.sidebar:
-     st.header("System Status")
+     st.header("⚙️System Status")
      st.success("Model:XGBoost Classifier Loaded")
      st.info("System Engine:active")
      st.markdown("---")
