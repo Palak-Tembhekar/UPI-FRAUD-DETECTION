@@ -7,7 +7,7 @@ def load_model():
   return joblib.load('upi_fraud_model.pkl')
 model=load_model()
 st.title("🛡️ Real_time UPI FRAUD DETECTION SYSTEM")
-st.write("enter transaction details below to evaluate potential fraud risk using machine learning.")
+st.write("Enter transaction details below to evaluate potential fraud risk using machine learning.")
 st.markdown("---")
 col1,col2=st.columns(2)
 with col1:
