@@ -47,7 +47,7 @@ if st.button("🔍 analyze risk level",use_container_width=True):
     fraud_probability=probabilities[1]*100
     if prediction==1:
        st.error(f"🚨**HIGH TRANSACTION DETECTED!**")
-       st.warning(f"confidence level: **{fraud_probablity:.1f}% risk factor**")
+       st.warning(f"confidence level: **{fraud_probability:.1f}% risk factor**")
        st.info("💡**reason flagged:** suspicious combination of high transfer amount,speed anomaly,or off-hour balance draning.")
     else:
         st.success(f"✅**TRANSACTION SAFE**")
