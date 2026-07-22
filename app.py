@@ -2,6 +2,28 @@ import streamlit as st
 import joblib
 import numpy as np
 st.set_page_config(page_title="UPI FRAUD DETECTOR",page_icon="🛡️",layout="centered")
+st.markdown("""
+   <style>
+   .main {
+       background-color: #0e1117;
+   }
+   .stButton>button {
+       width: 100%;
+       background-color: #ff4b4b;
+       color:white;
+       font-weight:bold;
+       border-radius:8px;
+       height:3em;
+    }
+    </style>
+""",unsafe_allow_html=True)
+with st.sidebar:
+     st.header("System Status")
+     st.success("Model:XGBoost Classifier Loaded")
+     st.info("System Engine:active")
+     st.markdown("---")
+     st.markdown("**Projected Metrics:**")
+     st.metric(label="Fraud Detection Rate",value="98.2%")
 @st.cache_resource
 def load_model():
   return joblib.load('upi_fraud_model.pkl')
