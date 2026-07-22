@@ -21,8 +21,8 @@ st.markdown("---")
 if st.button("🔍 analyze risk level",use_container_width=True):
     features = np.array([[amount,hour,drain_ratio,speed_kmh]])
     prediction=model.predict(features)[0]
-    probabiities=model.predict_proba(features)[0]
-    fraud_probability=probablities[1]*100
+    probabilities=model.predict_proba(features)[0]
+    fraud_probability=probabilities[1]*100
     if prediction==1:
        st.error(f"🚨**HIGH TRANSACTION DETECTED!**")
        st.warning(f"confidence level: **{fraud_probablity:.1f}% risk factor**")
