@@ -40,6 +40,7 @@ with col2:
   distance_km=st.number_input("Distance from last transaction location (km)",min_value=0.0,value=10.0,step=5.0)
   time_gap=st.number_input("Time since last transaction (hours)",min_value=0.1,value=1.0,step=0.5)
 drain_ratio=amount/balance_before if balance_before > 0 else 1.0
+speed_kmh=distance_km/time_gap if time_gap > 0 else 0.0
 st.markdown("---")
 if st.button("🔍 analyze risk level",use_container_width=True):
     features = np.array([[amount,hour,drain_ratio,speed_kmh]])
