@@ -69,16 +69,16 @@ if st.button("🔍 analyze risk level",use_container_width=True):
        st.subheader("🎯 Risk Assessment Result")
        st.write(f"**Fraud Risk Score:** '{prob_fraud *100:.1f}%'")
        st.progress(float(prob_fraud))
-        if prob_fraud >= 0.75:
-            st.error(f"🚨**HIGH TRANSACTION DETECTED - TRANSACTION BLOCKED**")
-            st.warning("Action Taken: Payment haltered. High probability of fraudulent activity.")
-            st.warning(f"confidence level: **{fraud_pct:.1f}% risk factor**")
-        elif prob_fraud >= 0.40:
-            st.warning("⚠️ **SUSPICIOUS TRANSACTION - SECONDARY VERIFICATION REQUIRED**")
-            st.info("Action Taken: sent 2FA OTP to registered mobile number for step-up authentication.")
-            st.info("💡**reason flagged:** suspicious combination of high transfer amount,speed anomaly,or off-hour balance draning.")
-        else:
-            st.success(f"✅**TRANSACTION APPROVED - SAFE**")
-            st.info(f"Risk Evaluation:**{fraud_pct:.1f}% risk (normal activity)**")
-            st.write("Action Taken: Instant approval. Normal behavioural pattern.")
+       if prob_fraud >= 0.75:
+           st.error(f"🚨**HIGH TRANSACTION DETECTED - TRANSACTION BLOCKED**")
+           st.warning("Action Taken: Payment haltered. High probability of fraudulent activity.")
+           st.warning(f"confidence level: **{fraud_pct:.1f}% risk factor**")
+       elif prob_fraud >= 0.40:
+           st.warning("⚠️ **SUSPICIOUS TRANSACTION - SECONDARY VERIFICATION REQUIRED**")
+           st.info("Action Taken: sent 2FA OTP to registered mobile number for step-up authentication.")
+           st.info("💡**reason flagged:** suspicious combination of high transfer amount,speed anomaly,or off-hour balance draning.")
+       else:
+           st.success(f"✅**TRANSACTION APPROVED - SAFE**")
+           st.info(f"Risk Evaluation:**{fraud_pct:.1f}% risk (normal activity)**")
+           st.write("Action Taken: Instant approval. Normal behavioural pattern.")
                   
