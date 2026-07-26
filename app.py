@@ -62,7 +62,7 @@ if st.button("🔍 analyze risk level",use_container_width=True):
        st.write(f"**Reason:** {rule_reason}")
        st.progress(1.0)
     else:
-       input_data = pd.Dataframe([[amount,hour,drain_ratio,speed_kmh]],
+       input_data = pd.DataFrame([[amount,hour,drain_ratio,speed_kmh]],
                                  columns=['amount','hour','drain_ratio','speed_kmh'])
        prob_fraud = model.predict_proba(input_data)[0][1]
        fraud_pct = prob_fraud * 100
