@@ -59,7 +59,7 @@ if st.button("🔍 analyze risk level",use_container_width=True):
        rule_reason = "Critical Account Drain: Attempting to clear 100% of account balance on a large amount."
     if rule_triggered:
        st.error(f"🚨 **HIGH RISK - TRANSACTION BLOCKED (Rule Override)**")
-       st.write9f"**Reaon:** {rule_reason}")
+       st.write(f"**Reason:** {rule_reason}")
        st.progress(1.0)
     else:
        input_data = pd.Dataframe([[amount,hour,drain_ratio,speed_kmh]],
