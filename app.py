@@ -51,7 +51,7 @@ st.markdown("---")
 if st.button("🔍 analyze risk level",use_container_width=True):
     rule_triggered = False
     rule_reason = ""
-    if speed_kmh > 500
+    if speed_kmh > 500:
        rule_triggered = True
        rule_reason = f"Impossible location jump detected! Calculated travel speed is {speed_kmh:.0f} km/h."
     elif drain_ratio == 1.0 and amount >= 10000:
