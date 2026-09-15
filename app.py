@@ -44,17 +44,18 @@ def evaluate_transaction_backend(amount, balance, avg_spend, hour_24, tx_count_1
     hours_elapsed = max(float(time_gap_sec) / 3600.0, 0.0001)
     speed_kmh = float(distance_km) / hours_elapsed
 
-    # LAYER 1: PRE-ML FIREWALL
+    # LAYER 1: DETERMINISTIC PRE-ML FIREWALL
     if amount <= 0:
         return {"tier": "REJECTED", "status": "INVALID_AMOUNT", "score": 1.0, "reason": "Amount must be strictly positive.", "drain_ratio": 0, "amount_to_avg": 0, "speed_kmh": 0}
 
     if amount > balance:
-        return {"tier": "REJECTED", "status": "INSUFFICIENT_FUNDS", "score": 1.0, "reason": f"Amount (₹{amount:,.2f}) exceeds current balance (₹{balance:,.2f}).", "drain_ratio": drain_ratio, "amount_to_avg": amount_to_avg, "speed_kmh": speed_kmh}
+        return {"tier": "REJECTED", "status": "INSUFFICIENT_FUNDS", "score": 1.0, "reason": f"Declined: Requested amount (₹{amount:,.2f}) exceeds current available balance (₹{balance:,.2f}).", "drain_ratio": drain_ratio, "amount_to_avg": amount_to_avg, "speed_kmh": speed_kmh}
 
     if time_gap_sec < 1.0 and tx_count_10m <= 1:
-        return {"tier": "TIER_1_PASS", "status": "DEDUPLICATED", "score": 0.03, "reason": "Duplicate multi-click filtered (Hardware lag). Single charge permitted.", "drain_ratio": drain_ratio, "amount_to_avg": amount_to_avg, "speed_kmh": speed_kmh}
+        return {"tier": "TIER_1_PASS", "status": "DEDUPLICATED", "score": 0.03, "reason": "Deduplication: Rapid double-tap filtered (Hardware/network lag). Single charge permitted.", "drain_ratio": drain_ratio, "amount_to_avg": amount_to_avg, "speed_kmh": speed_kmh}
 
-    if speed_kmh > 200.0 and distance_km > 15.0:
+    # Strict impossible travel speed (>300 km/h)
+    if speed_kmh > 300.0 and distance_km > 20.0:
         return {
             "tier": "TIER_3_COOLING",
             "status": "IMPOSSIBLE_GEO_VELOCITY",
@@ -62,21 +63,22 @@ def evaluate_transaction_backend(amount, balance, avg_spend, hour_24, tx_count_1
             "drain_ratio": drain_ratio,
             "amount_to_avg": amount_to_avg,
             "speed_kmh": speed_kmh,
-            "reason": f"CRITICAL: Impossible transit speed ({speed_kmh:,.0f} km/h). Location hopping detected."
+            "reason": f"CRITICAL: Physically impossible travel speed ({speed_kmh:,.0f} km/h). Moving {distance_km:.0f} km in {hours_elapsed*60:.0f} minutes indicates location spoofing or stolen account access."
         }
 
-    if is_new_device and drain_ratio > 0.65:
+    # Severe Account Drain on Unrecognized Device
+    if is_new_device and drain_ratio > 0.75:
         return {
             "tier": "TIER_3_COOLING",
             "status": "CRITICAL_ACCOUNT_DRAIN",
-            "score": 0.98,
+            "score": 0.96,
             "drain_ratio": drain_ratio,
             "amount_to_avg": amount_to_avg,
             "speed_kmh": speed_kmh,
-            "reason": f"CRITICAL: Unrecognized device attempting to drain {drain_ratio*100:.1f}% of account balance."
+            "reason": f"CRITICAL: Unrecognized new device attempting to wipe out {drain_ratio*100:.1f}% of total account balance."
         }
 
-    # LAYER 2: RANDOM FOREST INFERENCE
+    # LAYER 2: RANDOM FOREST ML INFERENCE
     n_expected = getattr(scaler, "n_features_in_", 8)
     if n_expected == 8:
         features = np.array([[
@@ -105,30 +107,30 @@ def evaluate_transaction_backend(amount, balance, avg_spend, hour_24, tx_count_1
     scaled_feats = scaler.transform(features)
     risk_score = float(model.predict_proba(scaled_feats)[0][1])
 
+    # Dynamic Weight Calibration
     if is_new_device:
-        risk_score += 0.25
-    if hour_24 in [0, 1, 2, 3, 4, 23]:
-        risk_score += 0.20
-    if tx_count_10m >= 3:
-        risk_score += 0.25
-    if drain_ratio > 0.60:
+        risk_score += 0.30
+    else:
+        risk_score = max(0.04, risk_score - 0.10)
+
+    if drain_ratio > 0.70 and is_new_device:
         risk_score += 0.25
 
     risk_score = min(risk_score, 0.99)
 
-    # LAYER 3: ADAPTIVE MITIGATION (FREEZE & OTP ON DOUBT)
-    if risk_score >= 0.60:
+    # LAYER 3: ADAPTIVE MITIGATION POLICY (BLOCK ONLY AT >= 0.90)
+    if risk_score >= 0.90:
         tier = "TIER_3_COOLING"
         status = "CRITICAL_RISK_BLOCK"
-        reason = f"High fraud risk ({risk_score*100:.1f}%). Unauthorized drain attempt blocked."
-    elif risk_score >= 0.25:
+        reason = f"CRITICAL FRAUD LOCK ({risk_score*100:.1f}%): High risk telemetry detected. Transaction blocked to prevent total balance loss."
+    elif risk_score >= 0.35 or drain_ratio > 0.65 or amount_to_avg > 3.5:
         tier = "TIER_2_CHALLENGE"
         status = "SUSPICIOUS_PAYMENT_FROZEN"
-        reason = f"Suspicious behavior detected ({risk_score*100:.1f}%). Funds temporarily frozen pending 2FA OTP verification."
+        reason = f"SUSPICIOUS ACTIVITY: Spending surge ({amount_to_avg:.1f}x baseline) with {drain_ratio*100:.1f}% drain ratio. Funds frozen on hold pending 2FA OTP verification."
     else:
         tier = "TIER_1_PASS"
         status = "INSTANT_APPROVAL"
-        reason = "Normal behavioral telemetry. Transaction cleared."
+        reason = "Normal behavioral telemetry verified on trusted device. Transaction approved."
 
     return {
         "tier": tier,
@@ -167,11 +169,11 @@ with tab_viva:
         st.markdown("**Time of Transaction (12-Hour Format)**")
         t_col1, t_col2, t_col3 = st.columns([1.2, 1.2, 1.2])
         with t_col1:
-            hour_12 = st.selectbox("Hour", list(range(1, 13)), index=11)
+            hour_12 = st.selectbox("Hour", list(range(1, 13)), index=11, key="v_h")
         with t_col2:
-            minute_val = st.selectbox("Minute", ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"], index=6)
+            minute_val = st.selectbox("Minute", ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"], index=6, key="v_m")
         with t_col3:
-            meridiem = st.radio("AM / PM", ["AM", "PM"], horizontal=True, index=0)
+            meridiem = st.radio("AM / PM", ["AM", "PM"], horizontal=True, index=0, key="v_ap")
 
         if meridiem == "AM":
             v_hour = 0 if hour_12 == 12 else hour_12
@@ -182,14 +184,14 @@ with tab_viva:
 
     with c2:
         st.markdown("**Behavioral & Hardware Telemetry**")
-        v_dist = st.number_input("Distance from Last Transaction Location (km)", min_value=0.0, value=500.0, step=10.0)
+        v_dist = st.number_input("Distance from Last Transaction Location (km)", min_value=0.0, value=50.0, step=5.0)
         
         st.markdown("**Inter-Arrival Time Gap**")
         g1, g2 = st.columns([1, 1])
         with g1:
-            g_val = st.number_input("Time Gap Value", min_value=0.1, value=30.0, step=1.0)
+            g_val = st.number_input("Time Gap Value", min_value=0.1, value=30.0, step=1.0, key="v_gv")
         with g2:
-            g_unit = st.selectbox("Unit", ["Minutes", "Seconds", "Hours"], index=0)
+            g_unit = st.selectbox("Unit", ["Minutes", "Seconds", "Hours"], index=0, key="v_gu")
         
         if g_unit == "Minutes":
             v_gap = g_val * 60.0
@@ -198,8 +200,8 @@ with tab_viva:
         else:
             v_gap = g_val
 
-        v_tx_count = st.number_input("Transaction Count in Last 10 Minutes", min_value=0, max_value=10, value=3)
-        v_device = st.selectbox("Device Token State", ["Unrecognized / New Device", "Trusted Device (Known)"], index=0) == "Unrecognized / New Device"
+        v_tx_count = st.number_input("Transaction Count in Last 10 Minutes", min_value=0, max_value=10, value=1)
+        v_device = st.selectbox("Device Token State", ["Trusted Device (Known)", "Unrecognized / New Device"], index=0) == "Unrecognized / New Device"
 
     if st.button("Run Verification Pipeline", type="primary"):
         st.session_state['viva_res'] = evaluate_transaction_backend(
@@ -226,14 +228,13 @@ with tab_viva:
             st.warning(f"**STATUS: {res['status']}** | Risk Score: **{score*100:.2f}%**")
             st.info("⏸️ **Payment Frozen on Hold:** This transaction is not declined. An SMS OTP challenge is required to release the funds.")
             
-            # Interactive OTP Field
             otp_col1, otp_col2 = st.columns([1, 2])
             with otp_col1:
-                entered_otp = st.text_input("Enter 4-digit Security OTP (Mock: 4921):", max_chars=4)
+                entered_otp = st.text_input("Enter 4-digit Security OTP (Mock: 4921):", max_chars=4, key="v_otp")
             with otp_col2:
                 st.write("")
                 st.write("")
-                if st.button("Submit OTP & Release Funds"):
+                if st.button("Submit OTP & Release Funds", key="v_sub_otp"):
                     if entered_otp == "4921":
                         st.success("✅ OTP Verified! Hold released. Payment processed successfully.")
                     else:
@@ -241,7 +242,7 @@ with tab_viva:
         else:
             st.error(f"**STATUS: {res['status']}** | Risk Score: **{score*100:.2f}%**")
 
-        st.info(f"**Engine Rationale:** {res['reason']}")
+        st.info(f"**Reason for Decision:** {res['reason']}")
 
         m1, m2, m3, m4 = st.columns(4)
         m1.metric("Drain Ratio", f"{res.get('drain_ratio', 0)*100:.1f}%")
@@ -249,15 +250,14 @@ with tab_viva:
         m3.metric("Calculated Speed", f"{res.get('speed_kmh', 0):,.1f} km/h")
         m4.metric("Model Probability", f"{score*100:.1f}%")
 
-        # POST-INCIDENT RESPONSE SUITE IN VIVA MANUAL MODE
         if tier in ["TIER_2_CHALLENGE", "TIER_3_COOLING", "REJECTED"]:
             st.markdown("---")
-            st.markdown("### 🚨 Emergency Incident Response Suite (Viva Action Panel)")
+            st.markdown("### 🚨 Emergency Incident Response Suite")
             
             e1, e2, e3 = st.columns(3)
             with e1:
                 st.markdown("**1. Cyber Crime Helpline**")
-                st.markdown("Immediate escalation: Dial **1930**.")
+                st.markdown("Dial **1930** immediately.")
                 st.link_button("National Cyber Crime Portal", "https://cybercrime.gov.in")
 
             with e2:
@@ -274,7 +274,7 @@ UTR Reference: 429184{int(time.time())%1000000:06d}
 Evaluated Amount: INR {v_in['amount']:,.2f}
 Account Profile: {v_in['prof']}
 Risk Evaluation: {res['status']} (Risk Probability: {score*100:.2f}%)
-Telemetry Indicators: Surge: {res.get('amount_to_avg', 0):.1f}x, Drain: {res.get('drain_ratio', 0)*100:.1f}%, Speed: {res.get('speed_kmh', 0):,.1f} km/h
+Telemetry Reason: {res['reason']}
 Statutory Basis: Filed under RBI Circular on Customer Protection - Limiting Liability in Unauthorized Electronic Transactions."""
                 
                 st.download_button(
@@ -351,6 +351,9 @@ with tab_sim:
                 time_gap_sec=gap_val
             )
 
+            st.session_state['sim_res'] = b_res
+            st.session_state['sim_tx_details'] = {"amount": pay_amount, "payee": payee, "prof": s_prof_name}
+
             st.write(f"3. Decision Engine Tier: **{b_res['tier']}** | Risk Score: **{b_res.get('score', 0)*100:.2f}%**")
             st.json({
                 "Firewall Rationale": b_res['reason'],
@@ -358,14 +361,32 @@ with tab_sim:
                 "Speed": f"{b_res.get('speed_kmh', 0):,.1f} km/h"
             })
 
+    if 'sim_res' in st.session_state:
+        b_res = st.session_state['sim_res']
+        sim_dt = st.session_state['sim_tx_details']
+        
         st.markdown("---")
         if b_res['tier'] == "TIER_1_PASS":
-            st.success(f"✅ **Payment Successful!** ₹{pay_amount:,.2f} transferred to `{payee}`.")
+            st.success(f"✅ **Payment Successful!** ₹{sim_dt['amount']:,.2f} transferred to `{sim_dt['payee']}`.")
         elif b_res['tier'] == "TIER_2_CHALLENGE":
             st.warning(f"⚠️ **Payment Frozen on Hold:** Unusual spending activity detected. An OTP challenge has been dispatched to your mobile device to verify authorization.")
+            st.info(f"**Reason:** {b_res['reason']}")
+            
+            # OTP verification challenge inside simulator
+            s_otp_col1, s_otp_col2 = st.columns([1, 2])
+            with s_otp_col1:
+                s_entered_otp = st.text_input("Enter 4-digit Security OTP (Mock: 4921):", max_chars=4, key="sim_otp")
+            with s_otp_col2:
+                st.write("")
+                st.write("")
+                if st.button("Submit OTP & Complete Payment", key="sim_sub_otp"):
+                    if s_entered_otp == "4921":
+                        st.success(f"✅ OTP Verified! Hold released. ₹{sim_dt['amount']:,.2f} sent to {sim_dt['payee']}.")
+                    else:
+                        st.error("❌ Invalid OTP. Payment remains frozen.")
         else:
-            st.error(f"🚫 **Transaction Declined for Security:** High risk detected. To protect your funds, ₹{pay_amount:,.2f} was not debited.")
-            st.info(f"🔔 **Security Notification Dispatched:** 'Attempted debit of ₹{pay_amount:,.2f} to {payee} was intercepted by bank security.'")
+            st.error(f"🚫 **Transaction Blocked by Bank Security:** {b_res['reason']}")
+            st.info(f"🔔 **Security Alert Dispatched:** 'Attempted debit of ₹{sim_dt['amount']:,.2f} to {sim_dt['payee']} was blocked to protect your account.'")
 
             st.markdown("---")
             st.markdown("### 🚨 Immediate Incident Response Protocol")
@@ -386,11 +407,11 @@ with tab_sim:
                 report_text = f"""OFFICIAL FRAUD DISPUTE NOTICE - ELECTRONIC BANKING
 Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 UTR Number: 429184{int(time.time())%1000000:06d}
-Beneficiary VPA: {payee}
-Attempted Amount: INR {pay_amount:,.2f}
-Originating Profile: {s_prof_name}
+Beneficiary VPA: {sim_dt['payee']}
+Attempted Amount: INR {sim_dt['amount']:,.2f}
+Originating Profile: {sim_dt['prof']}
 Decision Flag: {b_res['status']}
-Telemetry Vectors: Spend Surge {b_res.get('amount_to_avg', 0):.1f}x, Drain Ratio {b_res.get('drain_ratio', 0)*100:.1f}%
+Reason: {b_res['reason']}
 Statutory Basis: Filed under RBI Circular on Limiting Customer Liability in Unauthorized Electronic Banking Transactions (Zero-Liability Framework)."""
                 
                 st.download_button(
