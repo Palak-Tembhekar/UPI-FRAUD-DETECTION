@@ -22,18 +22,11 @@ st.markdown("""
     
     html, body, [class*="css"] {
         font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 19px !important;
-        color: #000000 !important;
+        font-size: 19px;
     }
     
     .stApp {
         background-color: #F8FAFC;
-    }
-    
-    p, span, label, .stMarkdown {
-        font-size: 1.15rem !important;
-        font-weight: 700 !important;
-        color: #000000 !important;
     }
 
     /* Target Inputs & Dropdowns: Natural Weight, Not Overly Bold, Clearly Visible */
@@ -54,34 +47,34 @@ st.markdown("""
         color: #0F172A !important;
     }
 
-    /* Command-Attention Giant Headline (BIGGEST IN MODEL) */
+    /* LARGEST COMMANDING HEADLINE ACROSS THE ENTIRE UI */
     .top-header-container {
         background: #FFFFFF;
-        padding: 32px 40px;
-        border-radius: 22px;
+        padding: 36px 44px;
+        border-radius: 24px;
         border: 2px solid #CBD5E1;
-        margin-bottom: 28px;
+        margin-bottom: 30px;
         box-shadow: 0 8px 24px rgba(0,0,0,0.06);
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
     .hero-title-giant {
-        font-size: 3.4rem !important;
+        font-size: 3.8rem !important;
         font-weight: 900 !important;
         color: #0F172A !important;
-        letter-spacing: -1.2px;
+        letter-spacing: -1.5px;
         display: flex;
         align-items: center;
-        gap: 18px;
+        gap: 20px;
         margin: 0;
-        line-height: 1.1;
+        line-height: 1.08;
     }
     .hero-badge-v2 {
-        font-size: 1.25rem !important;
+        font-size: 1.35rem !important;
         background: #2563EB;
         color: #FFFFFF !important;
-        padding: 6px 18px;
+        padding: 6px 20px;
         border-radius: 14px;
         font-weight: 900;
         vertical-align: middle;
@@ -95,7 +88,7 @@ st.markdown("""
         padding: 12px 24px;
         border-radius: 28px;
         font-weight: 900;
-        font-size: 1.3rem !important;
+        font-size: 1.35rem !important;
         color: #0F172A;
     }
     
@@ -208,23 +201,6 @@ st.markdown("""
         padding: 22px;
         margin-top: 14px;
     }
-
-    /* Force Bank Switch Server Header text to Pure White */
-    .bank-switch-title-white {
-        color: #FFFFFF !important;
-        font-size: 1.45rem !important;
-        font-weight: 900 !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 12px !important;
-        margin-bottom: 8px !important;
-    }
-    .bank-switch-sub-white {
-        color: #E2E8F0 !important;
-        font-size: 1.0rem !important;
-        font-weight: 600 !important;
-        margin-bottom: 16px !important;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -238,12 +214,12 @@ st.markdown("""
             <span>🛡️ UPI Shield — Intelligent Fraud Mitigation Gateway</span>
             <span class="hero-badge-v2">v2.0</span>
         </div>
-        <div style="font-size:1.25rem; font-weight:700; color:#475569; margin-top:10px;">
+        <div style="font-size:1.35rem; font-weight:700; color:#475569; margin-top:12px;">
             ⚡ Deterministic Firewall + Behavioral Random Forest + Adaptive Mitigation
         </div>
     </div>
     <div style="display:flex; align-items:center; gap:26px;">
-        <div style="font-size:1.15rem; font-weight:900; color:#16A34A; display:flex; align-items:center; gap:8px;">
+        <div style="font-size:1.2rem; font-weight:900; color:#16A34A; display:flex; align-items:center; gap:8px;">
             <span style="width:14px; height:14px; background:#16A34A; border-radius:50%; display:inline-block;"></span>
             Bank Switch Online 🟢
         </div>
@@ -720,18 +696,19 @@ with tab_prod:
         st.markdown("</div>", unsafe_allow_html=True)
 
     with backend_col:
+        # PURE INLINE FORCED WHITE STYLING TO PREVENT ANY BLACK TEXT OVERRIDE
         st.markdown("""
-        <div class="custom-card" style="border: 2px solid #334155; background:#0F172A; color:#FFFFFF;">
-            <div class="bank-switch-title-white">
-                <span>⚙️ Bank Switch Server (Backend Telemetry)</span>
+        <div style="border: 2px solid #334155; background-color: #0F172A !important; padding: 24px; border-radius: 20px; margin-bottom: 24px;">
+            <div style="color: #FFFFFF !important; font-size: 1.45rem !important; font-weight: 900 !important; margin-bottom: 8px !important; display: flex; align-items: center; gap: 10px;">
+                <span style="color: #FFFFFF !important;">⚙️ Bank Switch Server (Backend Telemetry)</span>
             </div>
-            <div class="bank-switch-sub-white">
+            <div style="color: #E2E8F0 !important; font-size: 0.95rem !important; font-weight: 600 !important; margin-bottom: 16px !important;">
                 Live packet inspection log executed on the switch level (invisible to consumer).
             </div>
         """, unsafe_allow_html=True)
         
         backend_status_box = st.empty()
-        backend_status_box.markdown('<div style="color:#38BDF8; font-weight:700; font-size:1rem; padding:10px; background:#1E293B; border-radius:10px; border:1px solid #334155;">⏳ Awaiting payment initiation payload from mobile client...</div>', unsafe_allow_html=True)
+        backend_status_box.markdown('<div style="color:#38BDF8 !important; font-weight:700; font-size:1rem; padding:12px; background:#1E293B; border-radius:10px; border:1px solid #334155;">⏳ Awaiting payment initiation payload from mobile client...</div>', unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     if pay_clicked:
