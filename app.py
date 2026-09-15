@@ -38,16 +38,15 @@ PROFESSIONS = {
 # 3. 3-STAGE HYBRID BACKEND ENGINE
 # ==========================================
 def evaluate_transaction_backend(amount, balance, avg_spend, hour_24, tx_count_10m, is_new_device, distance_km, time_gap_sec):
-    # Calculate fundamental metrics
     drain_ratio = float(amount) / (float(balance) + 1e-5)
     amount_to_avg = float(amount) / (float(avg_spend) + 1e-5)
     
-    # Safe calculation of speed in km/h
+    # Precise calculation of speed in km/h
     hours_elapsed = max(float(time_gap_sec) / 3600.0, 0.0001)
     speed_kmh = float(distance_km) / hours_elapsed
 
     # -------------------------------------------------------------
-    # LAYER 1: DETERMINISTIC PRE-ML FIREWALL (STRICT ENFORCEMENT)
+    # LAYER 1: DETERMINISTIC PRE-ML FIREWALL (STRICT RULES)
     # -------------------------------------------------------------
     if amount <= 0:
         return {"tier": "REJECTED", "status": "INVALID_AMOUNT", "score": 1.0, "reason": "Amount must be strictly positive.", "drain_ratio": 0, "amount_to_avg": 0, "speed_kmh": 0}
@@ -55,12 +54,12 @@ def evaluate_transaction_backend(amount, balance, avg_spend, hour_24, tx_count_1
     if amount > balance:
         return {"tier": "REJECTED", "status": "INSUFFICIENT_FUNDS", "score": 1.0, "reason": f"Amount (₹{amount:,.2f}) exceeds current balance (₹{balance:,.2f}).", "drain_ratio": drain_ratio, "amount_to_avg": amount_to_avg, "speed_kmh": speed_kmh}
 
-    # Deduplication check
+    # Deduplication for rapid double-taps
     if time_gap_sec < 1.0 and tx_count_10m <= 1:
-        return {"tier": "TIER_1_PASS", "status": "DEDUPLICATED", "score": 0.03, "reason": "Rapid multi-click filtered (Hardware lag). Single charge permitted.", "drain_ratio": drain_ratio, "amount_to_avg": amount_to_avg, "speed_kmh": speed_kmh}
+        return {"tier": "TIER_1_PASS", "status": "DEDUPLICATED", "score": 0.03, "reason": "Rapid multi-click filtered (Hardware/network stutter). Single charge permitted.", "drain_ratio": drain_ratio, "amount_to_avg": amount_to_avg, "speed_kmh": speed_kmh}
 
-    # Impossible Travel Speed (Anything over 250 km/h is physically impossible by road/train)
-    if speed_kmh > 250.0 and distance_km > 20.0:
+    # Strict Impossible Transit Threshold: Anything above 200 km/h over substantial distance
+    if speed_kmh > 200.0 and distance_km > 15.0:
         return {
             "tier": "TIER_3_COOLING",
             "status": "IMPOSSIBLE_GEO_VELOCITY",
@@ -68,10 +67,10 @@ def evaluate_transaction_backend(amount, balance, avg_spend, hour_24, tx_count_1
             "drain_ratio": drain_ratio,
             "amount_to_avg": amount_to_avg,
             "speed_kmh": speed_kmh,
-            "reason": f"CRITICAL: Impossible travel speed ({speed_kmh:,.0f} km/h). {distance_km:.0f} km in {hours_elapsed*60:.0f} mins indicates severe geo-spoofing or account theft."
+            "reason": f"CRITICAL: Impossible transit speed ({speed_kmh:,.0f} km/h). Covering {distance_km:.0f} km in {hours_elapsed*60:.0f} minutes proves location spoofing or account compromise."
         }
 
-    # Severe Account Drain + New Device
+    # High Drain Attempt on Unrecognized Handset
     if is_new_device and drain_ratio > 0.65:
         return {
             "tier": "TIER_3_COOLING",
@@ -114,7 +113,7 @@ def evaluate_transaction_backend(amount, balance, avg_spend, hour_24, tx_count_1
     scaled_feats = scaler.transform(features)
     risk_score = float(model.predict_proba(scaled_feats)[0][1])
 
-    # Dynamic Weight Calibration
+    # Dynamic Factor Calibration
     if is_new_device:
         risk_score += 0.25
     if hour_24 in [0, 1, 2, 3, 4, 23]:
@@ -132,7 +131,7 @@ def evaluate_transaction_backend(amount, balance, avg_spend, hour_24, tx_count_1
     if risk_score >= 0.60:
         tier = "TIER_3_COOLING"
         status = "CRITICAL_RISK_BLOCK"
-        reason = f"High fraud risk ({risk_score*100:.1f}%). Multi-vector anomaly flagged: Off-hours + high drain ratio + device anomaly."
+        reason = f"High fraud risk ({risk_score*100:.1f}%). Combined anomalies detected: Off-hours, high drain ratio, or device anomaly."
     elif risk_score >= 0.30:
         tier = "TIER_2_CHALLENGE"
         status = "STEP_UP_2FA"
@@ -140,7 +139,7 @@ def evaluate_transaction_backend(amount, balance, avg_spend, hour_24, tx_count_1
     else:
         tier = "TIER_1_PASS"
         status = "INSTANT_APPROVAL"
-        reason = "Normal behavioral telemetry. Transaction cleared."
+        reason = "Normal behavioral telemetry. Transaction verified."
 
     return {
         "tier": tier,
@@ -179,13 +178,13 @@ with tab_viva:
         st.markdown("**Time of Transaction (12-Hour Format)**")
         t_col1, t_col2, t_col3 = st.columns([1.2, 1.2, 1.2])
         with t_col1:
-            hour_12 = st.selectbox("Hour", list(range(1, 13)), index=11)  # Default 12
+            hour_12 = st.selectbox("Hour", list(range(1, 13)), index=11)
         with t_col2:
             minute_val = st.selectbox("Minute", ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"], index=6)
         with t_col3:
-            meridiem = st.radio("AM / PM", ["AM", "PM"], horizontal=True, index=0)  # Default AM
+            meridiem = st.radio("AM / PM", ["AM", "PM"], horizontal=True, index=0)
 
-        # Exact 24-Hour Conversion: 12 AM is 0, 12 PM is 12
+        # 24-Hour Conversion
         if meridiem == "AM":
             v_hour = 0 if hour_12 == 12 else hour_12
         else:
@@ -195,7 +194,7 @@ with tab_viva:
 
     with c2:
         st.markdown("**Behavioral & Hardware Telemetry**")
-        v_dist = st.number_input("Distance from Last Transaction Location (km)", min_value=0.0, value=400.0, step=10.0)
+        v_dist = st.number_input("Distance from Last Transaction Location (km)", min_value=0.0, value=500.0, step=10.0)
         
         st.markdown("**Inter-Arrival Time Gap**")
         g1, g2 = st.columns([1, 1])
@@ -204,7 +203,6 @@ with tab_viva:
         with g2:
             g_unit = st.selectbox("Unit", ["Minutes", "Seconds", "Hours"], index=0)
         
-        # Rigorous conversion to seconds
         if g_unit == "Minutes":
             v_gap = g_val * 60.0
         elif g_unit == "Hours":
@@ -297,8 +295,8 @@ with tab_sim:
             st.write("1. Incoming payload received from mobile client.")
             st.write("2. Resolving account baseline and telemetry variables...")
             
-            dist_val = 250.0 if pay_amount > 20000 else 1.5
-            gap_val = 1.2 if pay_amount > 20000 else 2400.0
+            dist_val = 500.0 if pay_amount > 20000 else 1.5
+            gap_val = 1800.0 if pay_amount > 20000 else 2400.0
             burst_val = 4 if pay_amount > 20000 else 0
             new_dev_flag = True if pay_amount > 20000 else False
 
