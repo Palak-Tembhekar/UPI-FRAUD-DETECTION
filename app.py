@@ -375,7 +375,7 @@ def run_investigation(amount, balance, avg_spend, hour_24, tx_count, is_new_devi
 # ==========================================
 # 5. STREAMLIT DUAL-TAB UI
 # ==========================================
-tab_manual, tab_prod = st.tabs(["📋 Viva Manual Evaluation", "📱 Production App Simulator"])
+tab_manual, tab_prod = st.tabs(["📋 Viva Manual Evaluation", "⚡ Automated Persona Simulator"])
 
 # -------------------------------------------------------------
 # TAB 1: VIVA MANUAL EVALUATION
@@ -501,7 +501,7 @@ with tab_manual:
         if tier == "TIER_1_PASS":
             st.markdown("""
             <div class="custom-card" style="border:2px solid #10B981; background:#F0FDF4;">
-                <div style="font-size:1.35rem; font-weight:900; color:#166534; display:flex; align-items:gap:10px;">
+                <div style="font-size:1.35rem; font-weight:900; color:#166534; display:flex; align-items:center; gap:10px;">
                     ✅ Transaction Cleared & Safe
                 </div>
                 <div style="font-size:1.1rem; font-weight:700; color:#15803D; margin-top:8px;">
@@ -647,13 +647,13 @@ Statutory Authority: Filed under RBI Circular on Limiting Customer Liability in 
     st.markdown("</div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# TAB 2: PRODUCTION APP SIMULATOR
+# TAB 2: AUTOMATED PERSONA SIMULATOR
 # -------------------------------------------------------------
 with tab_prod:
     st.markdown("""
     <div class="custom-card">
         <div class="card-header-bar">
-            <span>📱 Real-World Production Payment Simulation</span>
+            <span>⚡ Automated Persona Simulator</span>
         </div>
         <div style="font-size:1.05rem; font-weight:700; color:#64748B; margin-bottom:16px;">
             Dual view comparing customer-facing mobile payment interface against live backend forensic telemetry.
@@ -704,23 +704,23 @@ with tab_prod:
 
     with backend_col:
         st.markdown("""
-        <div class="custom-card" style="border: 2px solid #0F172A; background:#0F172A; color:#FFFFFF;">
-            <div class="card-header-bar" style="color:#60A5FA;">
+        <div class="custom-card" style="border: 2px solid #334155; background:#0F172A; color:#FFFFFF;">
+            <div style="font-weight: 900; font-size: 1.35rem; color: #FFFFFF !important; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
                 <span>⚙️ Bank Switch Server (Backend Telemetry)</span>
             </div>
-            <div style="font-size:0.95rem; color:#94A3B8; margin-bottom:12px;">
+            <div style="font-size:0.95rem; font-weight: 600; color:#94A3B8 !important; margin-bottom:14px;">
                 Live packet inspection log executed on the switch level (invisible to consumer).
             </div>
         """, unsafe_allow_html=True)
         
         backend_status_box = st.empty()
-        backend_status_box.info("Awaiting payment initiation payload from mobile client...")
+        backend_status_box.markdown('<div style="color:#38BDF8; font-weight:700; font-size:1rem; padding:10px; background:#1E293B; border-radius:10px; border:1px solid #334155;">⏳ Awaiting payment initiation payload from mobile client...</div>', unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     if pay_clicked:
         with backend_status_box.container():
-            st.write("1. 📥 Incoming payment authorization payload received.")
-            st.write("2. 🔍 Resolving account baseline, payee history, and telemetry...")
+            st.markdown('<div style="color:#FFFFFF; font-weight:700; font-size:1rem; margin-bottom:6px;">1. 📥 Incoming payment authorization payload received.</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#FFFFFF; font-weight:700; font-size:1rem; margin-bottom:6px;">2. 🔍 Resolving account baseline, payee history, and telemetry...</div>', unsafe_allow_html=True)
             
             dist_val = 500.0 if pay_amount > 20000 else 1.5
             gap_val = 1800.0 if pay_amount > 20000 else 2400.0
@@ -742,10 +742,10 @@ with tab_prod:
             st.session_state['sim_res'] = b_res
             st.session_state['sim_tx_details'] = {"amount": pay_amount, "payee": payee, "prof": s_prof_name}
 
-            st.write(f"3. ⚡ Decision Tier: **{b_res['tier']}** | Risk Score: **{b_res['score']*100:.1f}%**")
+            st.markdown(f'<div style="color:#38BDF8; font-weight:900; font-size:1.15rem; margin:10px 0;">3. ⚡ Decision Tier: {b_res["tier"]} | Risk Score: {b_res["score"]*100:.1f}%</div>', unsafe_allow_html=True)
             with st.expander("Switch Forensic Trail", expanded=True):
                 for l_name, l_detail, l_st in b_res.get('log', []):
-                    st.write(f"- **{l_name}:** {l_detail} ({l_st})")
+                    st.markdown(f'<span style="color:#FFFFFF; font-weight:700;">- {l_name}:</span> <span style="color:#94A3B8;">{l_detail}</span> <strong style="color:#38BDF8;">({l_st})</strong>', unsafe_allow_html=True)
 
     if 'sim_res' in st.session_state:
         b_res = st.session_state['sim_res']
