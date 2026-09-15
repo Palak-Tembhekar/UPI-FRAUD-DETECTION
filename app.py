@@ -9,7 +9,7 @@ from datetime import datetime
 st.set_page_config(page_title="Intelligent UPI Fraud Mitigation Engine", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 1. LOAD MODEL & SCALER ARTIFACTS
+# 1. LOAD ARTIFACTS
 # ==========================================
 @st.cache_resource
 def load_artifacts():
@@ -24,7 +24,7 @@ def load_artifacts():
 model, scaler = load_artifacts()
 
 # ==========================================
-# 2. AUTO-CALIBRATING PROFESSIONS + "OTHER"
+# 2. AUTO-CALIBRATING PROFILES
 # ==========================================
 PROFESSIONS = {
     "College Student": {"balance": 3500.0, "avg_spend": 120.0},
@@ -38,43 +38,54 @@ PROFESSIONS = {
 # 3. 3-STAGE HYBRID BACKEND ENGINE
 # ==========================================
 def evaluate_transaction_backend(amount, balance, avg_spend, hour_24, tx_count_10m, is_new_device, distance_km, time_gap_sec):
-    # LAYER 1: DETERMINISTIC FIREWALL
+    # Calculate fundamental metrics
+    drain_ratio = float(amount) / (float(balance) + 1e-5)
+    amount_to_avg = float(amount) / (float(avg_spend) + 1e-5)
+    
+    # Safe calculation of speed in km/h
+    hours_elapsed = max(float(time_gap_sec) / 3600.0, 0.0001)
+    speed_kmh = float(distance_km) / hours_elapsed
+
+    # -------------------------------------------------------------
+    # LAYER 1: DETERMINISTIC PRE-ML FIREWALL (STRICT ENFORCEMENT)
+    # -------------------------------------------------------------
     if amount <= 0:
-        return {"tier": "REJECTED", "status": "INVALID_AMOUNT", "score": 1.0, "reason": "Amount must be strictly positive."}
-    
+        return {"tier": "REJECTED", "status": "INVALID_AMOUNT", "score": 1.0, "reason": "Amount must be strictly positive.", "drain_ratio": 0, "amount_to_avg": 0, "speed_kmh": 0}
+
     if amount > balance:
-        return {"tier": "REJECTED", "status": "INSUFFICIENT_FUNDS", "score": 1.0, "reason": f"Amount (₹{amount:,.2f}) exceeds available balance (₹{balance:,.2f})."}
-    
+        return {"tier": "REJECTED", "status": "INSUFFICIENT_FUNDS", "score": 1.0, "reason": f"Amount (₹{amount:,.2f}) exceeds current balance (₹{balance:,.2f}).", "drain_ratio": drain_ratio, "amount_to_avg": amount_to_avg, "speed_kmh": speed_kmh}
+
+    # Deduplication check
     if time_gap_sec < 1.0 and tx_count_10m <= 1:
-        return {"tier": "TIER_1_PASS", "status": "DEDUPLICATED", "score": 0.03, "reason": "Duplicate request filtered (Hardware/Network stutter). Single debit approved."}
+        return {"tier": "TIER_1_PASS", "status": "DEDUPLICATED", "score": 0.03, "reason": "Rapid multi-click filtered (Hardware lag). Single charge permitted.", "drain_ratio": drain_ratio, "amount_to_avg": amount_to_avg, "speed_kmh": speed_kmh}
 
-    drain_ratio = amount / (balance + 1e-5)
-    amount_to_avg = amount / (avg_spend + 1e-5)
-    speed_kmh = distance_km / ((time_gap_sec / 3600.0) + 1e-5)
-
-    if speed_kmh > 950.0:
+    # Impossible Travel Speed (Anything over 250 km/h is physically impossible by road/train)
+    if speed_kmh > 250.0 and distance_km > 20.0:
         return {
             "tier": "TIER_3_COOLING",
             "status": "IMPOSSIBLE_GEO_VELOCITY",
+            "score": 0.99,
+            "drain_ratio": drain_ratio,
+            "amount_to_avg": amount_to_avg,
+            "speed_kmh": speed_kmh,
+            "reason": f"CRITICAL: Impossible travel speed ({speed_kmh:,.0f} km/h). {distance_km:.0f} km in {hours_elapsed*60:.0f} mins indicates severe geo-spoofing or account theft."
+        }
+
+    # Severe Account Drain + New Device
+    if is_new_device and drain_ratio > 0.65:
+        return {
+            "tier": "TIER_3_COOLING",
+            "status": "CRITICAL_ACCOUNT_DRAIN",
             "score": 0.98,
             "drain_ratio": drain_ratio,
             "amount_to_avg": amount_to_avg,
             "speed_kmh": speed_kmh,
-            "reason": f"Impossible transit speed ({speed_kmh:,.0f} km/h) from last location."
+            "reason": f"CRITICAL: Unrecognized device attempting to drain {drain_ratio*100:.1f}% of total account balance."
         }
 
-    if is_new_device and drain_ratio > 0.70 and distance_km < 5.0:
-        return {
-            "tier": "TIER_3_COOLING",
-            "status": "PROXIMITY_DRAIN_ATTACK",
-            "score": 0.96,
-            "drain_ratio": drain_ratio,
-            "amount_to_avg": amount_to_avg,
-            "speed_kmh": speed_kmh,
-            "reason": "High account drain initiated from an unrecognized device token."
-        }
-
-    # LAYER 2: RANDOM FOREST INFERENCE (Matching Active Scaler)
+    # -------------------------------------------------------------
+    # LAYER 2: RANDOM FOREST ML INFERENCE
+    # -------------------------------------------------------------
     n_expected = getattr(scaler, "n_features_in_", 8)
     if n_expected == 8:
         features = np.array([[
@@ -99,23 +110,37 @@ def evaluate_transaction_backend(amount, balance, avg_spend, hour_24, tx_count_1
             speed_kmh,
             time_gap_sec
         ]])
-    
+
     scaled_feats = scaler.transform(features)
     risk_score = float(model.predict_proba(scaled_feats)[0][1])
 
+    # Dynamic Weight Calibration
+    if is_new_device:
+        risk_score += 0.25
+    if hour_24 in [0, 1, 2, 3, 4, 23]:
+        risk_score += 0.20
+    if tx_count_10m >= 3:
+        risk_score += 0.25
+    if drain_ratio > 0.60:
+        risk_score += 0.25
+
+    risk_score = min(risk_score, 0.99)
+
+    # -------------------------------------------------------------
     # LAYER 3: ADAPTIVE MITIGATION POLICY
-    if risk_score > 0.70:
+    # -------------------------------------------------------------
+    if risk_score >= 0.60:
         tier = "TIER_3_COOLING"
         status = "CRITICAL_RISK_BLOCK"
-        reason = f"High fraud risk ({risk_score*100:.1f}%). 24h cooling lock applied to safeguard balance."
-    elif risk_score > 0.35:
+        reason = f"High fraud risk ({risk_score*100:.1f}%). Multi-vector anomaly flagged: Off-hours + high drain ratio + device anomaly."
+    elif risk_score >= 0.30:
         tier = "TIER_2_CHALLENGE"
         status = "STEP_UP_2FA"
-        reason = f"Unusual spend surge ({amount_to_avg:.1f}x baseline). Biometric / OTP challenge required."
+        reason = f"Moderate suspicion ({risk_score*100:.1f}%). Spending surge ({amount_to_avg:.1f}x baseline) requires 2FA confirmation."
     else:
         tier = "TIER_1_PASS"
         status = "INSTANT_APPROVAL"
-        reason = "Normal behavioral telemetry. Transaction verified."
+        reason = "Normal behavioral telemetry. Transaction cleared."
 
     return {
         "tier": tier,
@@ -136,7 +161,7 @@ st.markdown("**Deterministic Firewall + Behavioral Random Forest + Adaptive Miti
 tab_viva, tab_sim = st.tabs(["Viva Manual Evaluation", "Production App Simulator"])
 
 # -------------------------------------------------------------
-# TAB 1: VIVA MANUAL EVALUATION (FIRST BY DEFAULT)
+# TAB 1: VIVA MANUAL EVALUATION
 # -------------------------------------------------------------
 with tab_viva:
     st.subheader("Manual Telemetry Verification")
@@ -154,31 +179,32 @@ with tab_viva:
         st.markdown("**Time of Transaction (12-Hour Format)**")
         t_col1, t_col2, t_col3 = st.columns([1.2, 1.2, 1.2])
         with t_col1:
-            hour_12 = st.selectbox("Hour", list(range(1, 13)), index=10)
+            hour_12 = st.selectbox("Hour", list(range(1, 13)), index=11)  # Default 12
         with t_col2:
             minute_val = st.selectbox("Minute", ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"], index=6)
         with t_col3:
-            meridiem = st.radio("AM / PM", ["AM", "PM"], horizontal=True, index=0)
+            meridiem = st.radio("AM / PM", ["AM", "PM"], horizontal=True, index=0)  # Default AM
 
-        # Convert 12-Hour AM/PM into 24-Hour Integer
+        # Exact 24-Hour Conversion: 12 AM is 0, 12 PM is 12
         if meridiem == "AM":
             v_hour = 0 if hour_12 == 12 else hour_12
         else:
             v_hour = 12 if hour_12 == 12 else hour_12 + 12
             
-        st.caption(f"Selected Time: **{hour_12}:{minute_val} {meridiem}** (24h Equivalent: {v_hour:02d}:{minute_val})")
+        st.caption(f"Selected: **{hour_12}:{minute_val} {meridiem}** (24h Equivalent: **{v_hour:02d}:{minute_val}**)")
 
     with c2:
         st.markdown("**Behavioral & Hardware Telemetry**")
-        v_dist = st.number_input("Distance from Last Transaction Location (km)", min_value=0.0, value=2.0, step=1.0)
+        v_dist = st.number_input("Distance from Last Transaction Location (km)", min_value=0.0, value=400.0, step=10.0)
         
         st.markdown("**Inter-Arrival Time Gap**")
         g1, g2 = st.columns([1, 1])
         with g1:
             g_val = st.number_input("Time Gap Value", min_value=0.1, value=30.0, step=1.0)
         with g2:
-            g_unit = st.selectbox("Unit", ["Seconds", "Minutes", "Hours"])
+            g_unit = st.selectbox("Unit", ["Minutes", "Seconds", "Hours"], index=0)
         
+        # Rigorous conversion to seconds
         if g_unit == "Minutes":
             v_gap = g_val * 60.0
         elif g_unit == "Hours":
@@ -186,8 +212,8 @@ with tab_viva:
         else:
             v_gap = g_val
 
-        v_tx_count = st.number_input("Transaction Count in Last 10 Minutes", min_value=0, max_value=10, value=1)
-        v_device = st.selectbox("Device Token State", ["Trusted Device (Known)", "Unrecognized / New Device"]) == "Unrecognized / New Device"
+        v_tx_count = st.number_input("Transaction Count in Last 10 Minutes", min_value=0, max_value=10, value=3)
+        v_device = st.selectbox("Device Token State", ["Unrecognized / New Device", "Trusted Device (Known)"], index=0) == "Unrecognized / New Device"
 
     if st.button("Run Verification Pipeline", type="primary"):
         res = evaluate_transaction_backend(
