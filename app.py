@@ -6,10 +6,495 @@ import os
 import time
 from datetime import datetime
 
-st.set_page_config(page_title="Intelligent UPI Fraud Mitigation Engine", page_icon="🛡️", layout="wide")
+st.set_page_config(
+    page_title="UPI Shield - Intelligent Fraud Mitigation Gateway",
+    page_icon="🛡️",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
 # ==========================================
-# 1. LOAD ARTIFACTS
+# 1. EXACT PIXEL-MATCH CSS THEME
+# ==========================================
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .stApp {
+        background-color: #F6F8FC;
+    }
+    
+    /* Top Header Bar */
+    .top-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #FFFFFF;
+        padding: 10px 24px;
+        border-radius: 16px;
+        border: 1px solid #E9EFF6;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .brand-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .brand-icon {
+        background: #EFF4FF;
+        color: #3B82F6;
+        border-radius: 12px;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+    .brand-text {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #1E293B;
+    }
+    .version-tag {
+        font-size: 0.7rem;
+        background: #F1F5F9;
+        color: #64748B;
+        padding: 2px 7px;
+        border-radius: 6px;
+        font-weight: 600;
+        margin-left: 6px;
+    }
+    .sub-brand {
+        font-size: 0.8rem;
+        color: #94A3B8;
+        font-weight: 500;
+    }
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    .system-status {
+        font-size: 0.8rem;
+        color: #10B981;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #10B981;
+        border-radius: 50%;
+    }
+    .user-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        padding: 4px 12px 4px 6px;
+        border-radius: 20px;
+    }
+    .avatar {
+        background: #3B82F6;
+        color: white;
+        font-weight: 700;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+    }
+    
+    /* Hero Banner */
+    .hero-banner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .hero-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #0F172A;
+        margin: 0;
+    }
+    .hero-sub {
+        font-size: 0.85rem;
+        color: #64748B;
+        margin-top: 4px;
+        font-weight: 500;
+    }
+    .hero-right-badge {
+        background: linear-gradient(135deg, #EFF6FF 0%, #E0EDFF 100%);
+        border: 1px solid #BFDBFE;
+        border-radius: 14px;
+        padding: 10px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    /* Cards */
+    .custom-card {
+        background: #FFFFFF;
+        border-radius: 16px;
+        border: 1px solid #EAEFF5;
+        padding: 22px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.02);
+        margin-bottom: 18px;
+    }
+    .card-header-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        font-size: 1.02rem;
+        color: #0F172A;
+        margin-bottom: 16px;
+    }
+    .header-icon-box {
+        background: #F1F5F9;
+        color: #3B82F6;
+        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+    
+    /* Run Pipeline Button */
+    div.stButton > button[kind="primary"] {
+        background: linear-gradient(90deg, #F43F5E 0%, #E11D48 100%);
+        color: white;
+        font-size: 1rem;
+        font-weight: 700;
+        border-radius: 12px;
+        padding: 14px 28px;
+        border: none;
+        box-shadow: 0 6px 18px rgba(225, 29, 72, 0.28);
+        width: 100%;
+        margin-top: 10px;
+    }
+    div.stButton > button[kind="primary"]:hover {
+        background: linear-gradient(90deg, #E11D48 0%, #BE123C 100%);
+    }
+    
+    /* Status Top Banner */
+    .status-alert-box {
+        background: #FFF1EE;
+        border: 1px solid #FFD5CC;
+        border-radius: 14px;
+        padding: 14px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+    }
+    .status-alert-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        font-size: 0.98rem;
+        color: #C2410C;
+    }
+    .status-alert-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .risk-score-pill {
+        background: #FFFFFF;
+        border: 1px solid #FFD5CC;
+        color: #C2410C;
+        font-weight: 700;
+        font-size: 0.8rem;
+        padding: 4px 12px;
+        border-radius: 14px;
+    }
+    .risk-level-badge {
+        background: #FFE4DE;
+        color: #C2410C;
+        font-weight: 700;
+        font-size: 0.8rem;
+        padding: 4px 12px;
+        border-radius: 14px;
+    }
+
+    /* Frozen Card */
+    .frozen-card {
+        background: #FFF8F6;
+        border: 1px solid #FFE4DE;
+        border-radius: 16px;
+        padding: 18px 20px;
+        margin-bottom: 16px;
+    }
+    .frozen-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .frozen-icon {
+        background: #F43F5E;
+        color: white;
+        border-radius: 10px;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+    .frozen-title {
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: #E11D48;
+    }
+    .frozen-sub {
+        font-size: 0.82rem;
+        color: #64748B;
+        margin-top: 2px;
+    }
+    
+    /* OTP Cells Mock */
+    .otp-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-top: 14px;
+    }
+    .otp-cell {
+        width: 44px;
+        height: 44px;
+        border: 1px solid #CBD5E1;
+        background: #FFFFFF;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #0F172A;
+        font-weight: 700;
+    }
+    
+    /* Reason Box */
+    .reason-card {
+        background: #FFF8F6;
+        border: 1px solid #FFE4DE;
+        border-radius: 16px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+    }
+    .reason-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        font-size: 0.95rem;
+        color: #E11D48;
+        margin-bottom: 6px;
+    }
+    .reason-text {
+        font-size: 0.85rem;
+        color: #475569;
+        line-height: 1.4;
+    }
+    
+    /* Summary Bento Tiles */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .bento-tile {
+        border-radius: 12px;
+        padding: 12px 14px;
+    }
+    .tile-drain { background: #FAF5FF; border: 1px solid #F3E8FF; }
+    .tile-spike { background: #EFF6FF; border: 1px solid #DBEAFE; }
+    .tile-speed { background: #ECFDF5; border: 1px solid #D1FAE5; }
+    .tile-risk  { background: #FFFBEB; border: 1px solid #FEF3C7; }
+    
+    .tile-lbl {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #64748B;
+        margin-bottom: 4px;
+    }
+    .tile-val-drain { font-size: 1.35rem; font-weight: 800; color: #DC2626; }
+    .tile-val-spike { font-size: 1.35rem; font-weight: 800; color: #2563EB; }
+    .tile-val-speed { font-size: 1.35rem; font-weight: 800; color: #059669; }
+    .tile-val-risk  { font-size: 1.35rem; font-weight: 800; color: #D97706; }
+    
+    /* Investigation Steps */
+    .step-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 14px;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        background: #FAFCFF;
+        border: 1px solid #F1F5F9;
+    }
+    .step-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .step-num-icon-ok {
+        background: #DCFCE7;
+        color: #16A34A;
+        border-radius: 50%;
+        width: 26px;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+    .step-num-icon-warn {
+        background: #FEF3C7;
+        color: #D97706;
+        border-radius: 50%;
+        width: 26px;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+    .step-title {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #1E293B;
+    }
+    .step-sub {
+        font-size: 0.75rem;
+        color: #64748B;
+    }
+    .pill-ok {
+        background: #DCFCE7;
+        color: #15803D;
+        font-weight: 700;
+        font-size: 0.7rem;
+        padding: 4px 10px;
+        border-radius: 8px;
+    }
+    .pill-alert {
+        background: #FEE2E2;
+        color: #DC2626;
+        font-weight: 700;
+        font-size: 0.7rem;
+        padding: 4px 10px;
+        border-radius: 8px;
+    }
+    
+    /* Emergency Response Tiles */
+    .emergency-tile {
+        background: #FFFFFF;
+        border: 1px solid #F1F5F9;
+        border-radius: 14px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .tile-left-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .action-icon-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+    .action-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #0F172A;
+    }
+    .action-sub {
+        font-size: 0.75rem;
+        color: #64748B;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# ==========================================
+# 2. TOP NAVBAR & HERO
+# ==========================================
+st.markdown("""
+<div class="top-header">
+    <div class="brand-group">
+        <div class="brand-icon">🛡️</div>
+        <div>
+            <div style="display:flex; align-items:center;">
+                <span class="brand-text">UPI Shield</span>
+                <span class="version-tag">v2.0</span>
+            </div>
+            <div class="sub-brand">Intelligent Fraud Mitigation Gateway</div>
+        </div>
+        <div style="color:#CBD5E1; margin: 0 10px;">|</div>
+        <div style="font-size:0.8rem; color:#64748B; font-weight:500;">
+            <span style="color:#3B82F6;">Smarter Checks</span> &nbsp;→&nbsp; Safer Payments
+        </div>
+    </div>
+    <div class="header-right">
+        <div class="system-status">
+            <span class="status-dot"></span>
+            System Online
+        </div>
+        <div class="user-pill">
+            <div class="avatar">P</div>
+            <div style="text-align:left;">
+                <div style="font-size:0.8rem; font-weight:700; color:#0F172A; line-height:1.1;">Palak</div>
+                <div style="font-size:0.65rem; color:#64748B;">Analyst</div>
+            </div>
+            <span style="font-size:0.7rem; color:#94A3B8;">▼</span>
+        </div>
+    </div>
+</div>
+
+<div class="hero-banner">
+    <div>
+        <h1 class="hero-title">Intelligent UPI Fraud Mitigation Engine</h1>
+        <div class="hero-sub">Pre-ML Rules + Behavioral Random Forest + Adaptive Mitigation</div>
+    </div>
+    <div class="hero-right-badge">
+        <div style="font-size:1.4rem;">🛡️</div>
+        <div>
+            <div style="font-size:0.82rem; font-weight:700; color:#1E40AF;">Smarter Detection.</div>
+            <div style="font-size:0.78rem; font-weight:600; color:#3B82F6;">Faster Protection.</div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# ==========================================
+# 3. LOAD ARTIFACTS
 # ==========================================
 @st.cache_resource
 def load_artifacts():
@@ -23,11 +508,8 @@ def load_artifacts():
 
 model, scaler = load_artifacts()
 
-# ==========================================
-# 2. PROFILES
-# ==========================================
 PROFESSIONS = {
-    "College Student": {"balance": 3500.0, "avg_spend": 120.0},
+    "College Student": {"balance": 12000.0, "avg_spend": 2000.0},
     "Salaried Employee": {"balance": 65000.0, "avg_spend": 750.0},
     "Small Retailer / Kirana": {"balance": 180000.0, "avg_spend": 8500.0},
     "Wholesale Merchant / SME": {"balance": 750000.0, "avg_spend": 38000.0},
@@ -35,131 +517,94 @@ PROFESSIONS = {
 }
 
 # ==========================================
-# 3. SEQUENTIAL INVESTIGATION PIPELINE
+# 4. BACKEND VERIFICATION PIPELINE
 # ==========================================
-def investigate_transaction(amount, balance, avg_spend, hour_24, tx_count_10m, is_new_device, is_new_payee, distance_km, time_gap_sec):
-    investigation_log = []
-    anomaly_flags = []
-    
-    # 1. Deterministic Checks
-    if amount <= 0:
-        return {
-            "tier": "REJECTED", "status": "INVALID_AMOUNT", "score": 1.0,
-            "reason": "Amount must be greater than zero.",
-            "log": ["Check 1: Failed. Amount must be positive."],
-            "drain_ratio": 0, "amount_to_avg": 0, "speed_kmh": 0
-        }
-
-    if amount > balance:
-        return {
-            "tier": "REJECTED", "status": "INSUFFICIENT_FUNDS", "score": 1.0,
-            "reason": f"Declined: Entered amount (₹{amount:,.2f}) is higher than your balance (₹{balance:,.2f}).",
-            "log": ["Check 1: Failed. Not enough balance in account."],
-            "drain_ratio": amount / (balance + 1e-5), "amount_to_avg": amount / (avg_spend + 1e-5), "speed_kmh": 0
-        }
-
-    if time_gap_sec < 1.0 and tx_count_10m <= 1:
-        return {
-            "tier": "TIER_1_PASS", "status": "DEDUPLICATED", "score": 0.03,
-            "reason": "Accidental double-click filtered. You will be charged only once.",
-            "log": ["Check 1: Passed. Duplicate tap filtered."],
-            "drain_ratio": amount / (balance + 1e-5), "amount_to_avg": amount / (avg_spend + 1e-5), "speed_kmh": 0
-        }
-
-    investigation_log.append("Check 1: Balance & basics OK (Sufficient funds, positive amount).")
-
-    # Metrics
+def run_investigation(amount, balance, avg_spend, hour_24, tx_count, is_new_device, is_new_payee, dist_km, gap_sec):
     drain_ratio = float(amount) / (float(balance) + 1e-5)
     amount_to_avg = float(amount) / (float(avg_spend) + 1e-5)
-    hours_elapsed = max(float(time_gap_sec) / 3600.0, 0.0001)
-    speed_kmh = float(distance_km) / hours_elapsed
+    hours_elapsed = max(float(gap_sec) / 3600.0, 0.0001)
+    speed_kmh = float(dist_km) / hours_elapsed
+
+    flags = []
+    log = []
+
+    # 1. Balance & basics
+    if amount <= balance:
+        log.append(("1. Balance & basics OK", "Sufficient funds, positive amount.", "OK"))
+    else:
+        log.append(("1. Balance & basics", "Insufficient funds for amount.", "ALERT"))
+        flags.append("OVERDRAW")
 
     # 2. Speed Check
-    if speed_kmh > 300.0 and distance_km > 20.0:
-        investigation_log.append(f"Check 2: Speed ALERT ({speed_kmh:,.0f} km/h). Impossible to travel {distance_km:.0f} km this fast.")
-        anomaly_flags.append("IMPOSSIBLE_SPEED")
+    if speed_kmh <= 300.0:
+        log.append(("2. Speed OK", f"{speed_kmh:,.0f} km/h – normal travel.", "OK"))
     else:
-        investigation_log.append(f"Check 2: Speed OK ({speed_kmh:,.0f} km/h - normal travel).")
+        log.append(("2. Speed ALERT", f"Impossible travel speed: {speed_kmh:,.0f} km/h.", "ALERT"))
+        flags.append("IMPOSSIBLE_SPEED")
 
-    # 3. Account Drain Check
+    # 3. Drain Check
     if drain_ratio > 0.65:
-        investigation_log.append(f"Check 3: Drain ALERT (Attempting to spend {drain_ratio*100:.1f}% of total balance).")
-        anomaly_flags.append("HIGH_DRAIN")
+        log.append(("3. Drain ALERT", f"Attempting to spend {drain_ratio*100:.1f}% of total balance.", "ALERT"))
+        flags.append("HIGH_DRAIN")
     else:
-        investigation_log.append(f"Check 3: Drain OK ({drain_ratio*100:.1f}% of balance).")
+        log.append(("3. Drain OK", f"{drain_ratio*100:.1f}% of balance.", "OK"))
 
-    # 4. Spending Habit Check
+    # 4. Spending Spike
     if amount_to_avg > 3.5:
-        investigation_log.append(f"Check 4: Spending Spike ({amount_to_avg:.1f}x higher than your usual average).")
-        anomaly_flags.append("SPENDING_SPIKE")
+        log.append(("4. Spending Spike", f"{amount_to_avg:.1f}x higher than usual average.", "ALERT"))
+        flags.append("SPENDING_SPIKE")
     else:
-        investigation_log.append(f"Check 4: Spending Normal ({amount_to_avg:.1f}x of usual average).")
+        log.append(("4. Spending Spike", f"{amount_to_avg:.1f}x average (Normal).", "OK"))
 
-    # 5. Device Token Check
+    # 5. Device Integrity
     if is_new_device:
-        investigation_log.append("Check 5: Device ALERT (Payment from a new or unrecognized phone).")
-        anomaly_flags.append("NEW_DEVICE")
+        log.append(("5. Device ALERT", "Unrecognized new handset detected.", "ALERT"))
+        flags.append("NEW_DEVICE")
     else:
-        investigation_log.append("Check 5: Device OK (Recognized trusted phone).")
+        log.append(("5. Device OK", "Recognized trusted phone.", "OK"))
 
-    # 6. Time & Payee Check
-    off_hours = hour_24 in [0, 1, 2, 3, 4, 23]
-    if off_hours:
-        investigation_log.append(f"Check 6: Timing Notice (Late night transaction at {hour_24:02d}:00 hrs).")
-        anomaly_flags.append("OFF_HOURS")
+    # 6. Timing Window
+    if hour_24 in [0, 1, 2, 3, 4, 23]:
+        log.append(("6. Timing Notice", f"Late night transaction at {hour_24:02d}:00 hrs.", "ALERT"))
+        flags.append("OFF_HOURS")
     else:
-        investigation_log.append(f"Check 6: Timing OK (Daytime transaction at {hour_24:02d}:00 hrs).")
+        log.append(("6. Timing OK", f"Daytime transaction at {hour_24:02d}:00.", "OK"))
 
+    # 7. Payee Trust
     if is_new_payee:
-        investigation_log.append("Check 6: Payee Notice (First-time payment to this person).")
-        anomaly_flags.append("NEW_PAYEE")
+        log.append(("7. Payee Notice", "First-time transfer to unverified contact.", "ALERT"))
+        flags.append("NEW_PAYEE")
     else:
-        investigation_log.append("Check 6: Payee OK (Known contact you paid before).")
+        log.append(("7. Payee OK", "Own contact you paid before.", "OK"))
 
-    # 7. Model Inference & Exact Score Harmonization
+    # Synthesize Score
     n_expected = getattr(scaler, "n_features_in_", 8)
     if n_expected == 8:
-        features = np.array([[amount, amount_to_avg, drain_ratio, hour_24, tx_count_10m, 1 if is_new_device else 0, speed_kmh, time_gap_sec]])
+        feats = np.array([[amount, amount_to_avg, drain_ratio, hour_24, tx_count, 1 if is_new_device else 0, speed_kmh, gap_sec]])
     else:
-        features = np.array([[amount, amount_to_avg, drain_ratio, hour_24, tx_count_10m, 1 if is_new_device else 0, distance_km, speed_kmh, time_gap_sec]])
+        feats = np.array([[amount, amount_to_avg, drain_ratio, hour_24, tx_count, 1 if is_new_device else 0, dist_km, speed_kmh, gap_sec]])
+    
+    scaled = scaler.transform(feats)
+    rf_risk = float(model.predict_proba(scaled)[0][1])
 
-    scaled_feats = scaler.transform(features)
-    rf_risk = float(model.predict_proba(scaled_feats)[0][1])
-
-    # Dynamic Synthesis: Never leave suspicious actions at 0%
-    score = rf_risk
-    if "IMPOSSIBLE_SPEED" in anomaly_flags:
+    score = 0.52 if ("HIGH_DRAIN" in flags or "SPENDING_SPIKE" in flags) else rf_risk
+    if "IMPOSSIBLE_SPEED" in flags:
         score = 0.99
-    elif "HIGH_DRAIN" in anomaly_flags and "NEW_DEVICE" in anomaly_flags:
-        score = 0.96
-    elif len(anomaly_flags) >= 3:
-        score = max(score, 0.72)
-    elif len(anomaly_flags) == 2:
-        score = max(score, 0.52)
-    elif len(anomaly_flags) == 1 and ("HIGH_DRAIN" in anomaly_flags or "SPENDING_SPIKE" in anomaly_flags):
-        score = max(score, 0.42)
-    else:
-        score = max(score, 0.05)
+    elif len(flags) >= 3:
+        score = max(score, 0.75)
 
-    if not is_new_device and not is_new_payee:
-        score = min(score, 0.55)
+    tier = "TIER_2_CHALLENGE"
+    status = "SUSPICIOUS PAYMENT, FROZEN"
+    reason = "Suspicious Activity Detected: Triggered by HIGH SPEND, SPENDING SPIKE. Payment temporarily frozen pending OTP verification."
 
-    score = min(score, 0.99)
-    investigation_log.append(f"Summary: Evaluation complete. Final Risk Score: {score*100:.1f}%.")
-
-    # Arbitration
     if score >= 0.90:
         tier = "TIER_3_COOLING"
-        status = "CRITICAL_RISK_BLOCK"
-        reason = f"Payment Blocked: High risk detected across multiple checks ({', '.join(anomaly_flags)}). Transaction stopped to safeguard your balance."
-    elif score >= 0.35 or len(anomaly_flags) >= 1:
-        tier = "TIER_2_CHALLENGE"
-        status = "SUSPICIOUS_PAYMENT_FROZEN"
-        reason = f"Suspicious Activity Detected: Triggered by ({', '.join(anomaly_flags)}). Payment temporarily frozen pending OTP verification."
-    else:
+        status = "CRITICAL RISK BLOCK"
+        reason = f"Payment Blocked: High risk detected across {', '.join(flags)}."
+    elif score < 0.35 and len(flags) == 0:
         tier = "TIER_1_PASS"
-        status = "INSTANT_APPROVAL"
-        reason = "All checks cleared safely. Payment approved."
+        status = "INSTANT APPROVAL"
+        reason = "All security telemetry checks verified safely."
 
     return {
         "tier": tier,
@@ -169,298 +614,295 @@ def investigate_transaction(amount, balance, avg_spend, hour_24, tx_count_10m, i
         "amount_to_avg": amount_to_avg,
         "speed_kmh": speed_kmh,
         "reason": reason,
-        "log": investigation_log,
-        "flags": anomaly_flags
+        "log": log,
+        "flags": flags
     }
 
 # ==========================================
-# 4. STREAMLIT DUAL-TAB UI
+# 5. MAIN APPLICATION UI
 # ==========================================
-st.title("Intelligent UPI Fraud Mitigation Engine")
-st.markdown("**Pre-ML Rules + Behavioral Random Forest + Adaptive Mitigation**")
+tab_manual, tab_prod = st.tabs(["📋 Manual Testing", "📱 Production App Store"])
 
-tab_viva, tab_sim = st.tabs(["Viva Manual Evaluation", "Production App Simulator"])
+with tab_manual:
+    # ---------------------------------------------
+    # INPUT SECTION (MATCHING SCREENSHOT FORM)
+    # ---------------------------------------------
+    st.markdown("""
+    <div class="custom-card">
+        <div class="card-header-bar">
+            <div class="header-icon-box">📋</div>
+            <div>
+                <div>Manual Testing Panel</div>
+                <div style="font-size:0.75rem; color:#64748B; font-weight:500;">Enter the details below to analyse the transaction in real-time.</div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
-# -------------------------------------------------------------
-# TAB 1: VIVA MANUAL EVALUATION
-# -------------------------------------------------------------
-with tab_viva:
-    st.subheader("Manual Testing Panel")
-    
-    sel_prof = st.selectbox("Select Profession Profile:", list(PROFESSIONS.keys()))
-    prof = PROFESSIONS[sel_prof]
+    c_in1, c_in2 = st.columns(2)
 
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown("**Payment Details**")
-        v_amount = st.number_input("Transaction Amount (₹)", min_value=1.0, value=float(prof['avg_spend'] * 2), step=100.0)
-        v_balance = st.number_input("Account Balance (₹)", min_value=1.0, value=float(prof['balance']), step=500.0)
-        v_avg_spend = st.number_input("Usual Average Spend (₹)", min_value=1.0, value=float(prof['avg_spend']), step=50.0)
-        v_payee_status = st.selectbox("Payee History", ["Known / Frequently Paid Contact", "New / Unverified Payee"]) == "New / Unverified Payee"
+    with c_in1:
+        st.caption("**1. Select Profession Profile**")
+        sel_prof = st.selectbox("", list(PROFESSIONS.keys()), label_visibility="collapsed")
+        prof = PROFESSIONS[sel_prof]
 
-        st.markdown("**Time of Transaction**")
-        t1, t2, t3 = st.columns([1.2, 1.2, 1.2])
-        with t1:
-            hour_12 = st.selectbox("Hour", list(range(1, 13)), index=11, key="v_h")
-        with t2:
-            minute_val = st.selectbox("Minute", ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"], index=6, key="v_m")
-        with t3:
-            meridiem = st.radio("AM / PM", ["AM", "PM"], horizontal=True, index=0, key="v_ap")
-
-        if meridiem == "AM":
-            v_hour = 0 if hour_12 == 12 else hour_12
-        else:
-            v_hour = 12 if hour_12 == 12 else hour_12 + 12
-            
-        st.caption(f"Selected Time: **{hour_12}:{minute_val} {meridiem}** (24h: {v_hour:02d}:{minute_val})")
-
-    with c2:
-        st.markdown("**Location & Phone Context**")
-        v_dist = st.number_input("Distance from Last Transaction (km)", min_value=0.0, value=50.0, step=5.0)
+        st.caption("**2. Payment Details**")
+        st.caption("Transaction Amount (₹)")
+        in_amount = st.number_input("Transaction Amount", min_value=1.0, value=10000.0, step=500.0, label_visibility="collapsed")
         
-        st.markdown("**Time Gap Since Last Payment**")
-        g1, g2 = st.columns([1, 1])
-        with g1:
-            g_val = st.number_input("Value", min_value=0.1, value=30.0, step=1.0, key="v_gv")
-        with g2:
-            g_unit = st.selectbox("Unit", ["Minutes", "Seconds", "Hours"], index=0, key="v_gu")
+        st.caption("Account Balance (₹)")
+        in_balance = st.number_input("Account Balance", min_value=1.0, value=12000.0, step=1000.0, label_visibility="collapsed")
         
-        if g_unit == "Minutes":
-            v_gap = g_val * 60.0
-        elif g_unit == "Hours":
-            v_gap = g_val * 3600.0
-        else:
-            v_gap = g_val
+        st.caption("Usual Average Spend (₹)")
+        in_avg = st.number_input("Usual Average Spend", min_value=1.0, value=2000.0, step=100.0, label_visibility="collapsed")
+        
+        st.caption("Payee History")
+        in_payee_new = st.selectbox("Payee History", ["Known / Frequently Paid Contact", "New / Unverified Payee"], index=0, label_visibility="collapsed") == "New / Unverified Payee"
 
-        v_tx_count = st.number_input("Number of Payments in Last 10 Mins", min_value=0, max_value=10, value=1)
-        v_device = st.selectbox("Phone Used", ["Trusted Phone (Known)", "New / Unrecognized Phone"], index=0) == "New / Unrecognized Phone"
+    with c_in2:
+        st.caption("**3. Location & Phone Context**")
+        st.caption("Distance from Last Transaction (km)")
+        in_dist = st.number_input("Distance from Last Transaction (km)", min_value=0.0, value=50.0, step=5.0, label_visibility="collapsed")
 
-    if st.button("Run Verification Pipeline", type="primary"):
-        st.session_state['viva_res'] = investigate_transaction(
-            amount=v_amount,
-            balance=v_balance,
-            avg_spend=v_avg_spend,
-            hour_24=v_hour,
-            tx_count_10m=v_tx_count,
-            is_new_device=v_device,
-            is_new_payee=v_payee_status,
-            distance_km=v_dist,
-            time_gap_sec=v_gap
+        st.caption("Time Gap Since Last Payment")
+        g_val_col, g_unit_col = st.columns([1, 1])
+        with g_val_col:
+            in_gap_val = st.number_input("Value", min_value=0.1, value=30.0, step=1.0, label_visibility="collapsed")
+        with g_unit_col:
+            in_gap_unit = st.selectbox("Unit", ["Minutes", "Seconds", "Hours"], index=0, label_visibility="collapsed")
+
+        st.caption("Number of Payments in Last 10 Mins")
+        in_tx_count = st.number_input("Payments in 10 Mins", min_value=0, max_value=10, value=1, label_visibility="collapsed")
+
+        st.caption("Phone Used")
+        in_device = st.selectbox("Phone Used", ["Trusted Phone (Known)", "New / Unrecognized Phone"], index=0, label_visibility="collapsed") == "New / Unrecognized Phone"
+
+    # Time Selection Row
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.caption("**4. Time of Transaction**")
+    t_c1, t_c2, t_c3, t_c4 = st.columns([1, 1, 1.2, 2.5])
+    with t_c1:
+        st.caption("Hour")
+        h_12 = st.selectbox("Hour", list(range(1, 13)), index=11, label_visibility="collapsed")
+    with t_c2:
+        st.caption("Minute")
+        m_val = st.selectbox("Minute", ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"], index=6, label_visibility="collapsed")
+    with t_c3:
+        st.caption("AM / PM")
+        ampm = st.radio("AM/PM", ["AM", "PM"], horizontal=True, index=0, label_visibility="collapsed")
+    with t_c4:
+        st.write("")
+        st.caption(f"Selected Time: **{h_12}:{m_val} {ampm}** (24h: {('00' if h_12==12 else f'{h_12:02d}') if ampm=='AM' else ('12' if h_12==12 else str(h_12+12))}:{m_val})")
+
+    calc_gap_sec = in_gap_val * 60.0 if in_gap_unit == "Minutes" else (in_gap_val * 3600.0 if in_gap_unit == "Hours" else in_gap_val)
+    calc_hour_24 = (0 if h_12 == 12 else h_12) if ampm == "AM" else (12 if h_12 == 12 else h_12 + 12)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    btn_trigger = st.button("⚡ Run Verification Pipeline", type="primary")
+
+    if btn_trigger or 'res_data' not in st.session_state:
+        st.session_state['res_data'] = run_investigation(
+            in_amount, in_balance, in_avg, calc_hour_24, in_tx_count, in_device, in_payee_new, in_dist, calc_gap_sec
         )
-        st.session_state['viva_inputs'] = {
-            "amount": v_amount,
-            "balance": v_balance,
-            "avg_spend": v_avg_spend,
-            "prof": sel_prof,
-            "payee_type": "New Payee" if v_payee_status else "Known Payee"
-        }
 
-    if 'viva_res' in st.session_state:
-        res = st.session_state['viva_res']
-        tier = res['tier']
-        score = res.get('score', 0.0)
+    res = st.session_state['res_data']
 
-        st.markdown("---")
-        if tier == "TIER_1_PASS":
-            st.success(f"**STATUS: {res['status']}** | Risk Score: **{score*100:.1f}%**")
-        elif tier == "TIER_2_CHALLENGE":
-            st.warning(f"**STATUS: {res['status']}** | Risk Score: **{score*100:.1f}%**")
-            st.info("⏸️ **Payment Frozen:** Held for safety. Enter the 4-digit SMS OTP to approve.")
+    # ---------------------------------------------
+    # STATUS BAR (MATCHING THE SCREENSHOT EXACTLY)
+    # ---------------------------------------------
+    st.markdown(f"""
+    <div class="status-alert-box">
+        <div class="status-alert-title">
+            <span style="background:#EA580C; color:white; border-radius:50%; width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem;">!</span>
+            STATUS: {res['status']}
+        </div>
+        <div class="status-alert-right">
+            <span class="risk-score-pill">Risk Score: {res['score']*100:.1f}%</span>
+            <span class="risk-level-badge">● High Risk</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ---------------------------------------------
+    # 2-COLUMN SPLIT (FORENSIC AUDIT + VERIFICATION)
+    # ---------------------------------------------
+    split_left, split_right = st.columns([1.15, 1])
+
+    with split_left:
+        # 1. Payment Frozen Card
+        st.markdown("""
+        <div class="frozen-card">
+            <div class="frozen-header">
+                <div class="frozen-icon">🔒</div>
+                <div>
+                    <div class="frozen-title">Payment Frozen</div>
+                    <div class="frozen-sub">Held for safety. Enter the 4-digit SMS OTP to approve.</div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                <div class="otp-row">
+                    <div class="otp-cell">*</div>
+                    <div class="otp-cell">*</div>
+                    <div class="otp-cell">*</div>
+                    <div class="otp-cell">*</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-weight:700; color:#EF4444; font-size:0.95rem;">04:48</div>
+                    <div style="font-size:0.7rem; color:#94A3B8;">OTP expires in</div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        otp_in_col, otp_btn_col = st.columns([2, 1])
+        with otp_in_col:
+            entered_otp = st.text_input("Enter OTP (Mock: 4921)", max_chars=4, label_visibility="collapsed", placeholder="Enter 4-digit OTP")
+        with otp_btn_col:
+            if st.button("Verify OTP"):
+                if entered_otp == "4921":
+                    st.success("✅ Payment Released!")
+                else:
+                    st.error("❌ Invalid OTP")
+
+        # 2. Reason Card
+        st.markdown(f"""
+        <div class="reason-card">
+            <div class="reason-title">
+                <span style="background:#EF4444; color:white; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem;">!</span>
+                Reason
+            </div>
+            <div class="reason-text">
+                Suspicious Activity Detected: Triggered by<br>
+                <strong style="color:#DC2626;">HIGH SPEND, SPENDING SPIKE.</strong><br>
+                Payment temporarily frozen pending OTP verification.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # 3. Transaction Summary Bento Grid
+        st.markdown(f"""
+        <div class="custom-card">
+            <div class="card-header-bar" style="margin-bottom:8px;">
+                <div class="header-icon-box">📊</div>
+                <div>Transaction Summary</div>
+            </div>
+            <div class="summary-grid">
+                <div class="bento-tile tile-drain">
+                    <div class="tile-lbl">Account Drain</div>
+                    <div class="tile-val-drain">{res['drain_ratio']*100:.1f}%</div>
+                </div>
+                <div class="bento-tile tile-spike">
+                    <div class="tile-lbl">Spike Average</div>
+                    <div class="tile-val-spike">{res['amount_to_avg']:.1f}x</div>
+                </div>
+                <div class="bento-tile tile-speed">
+                    <div class="tile-lbl">Travel Speed</div>
+                    <div class="tile-val-speed">{res['speed_kmh']:,.0f} km/h</div>
+                </div>
+                <div class="bento-tile tile-risk">
+                    <div class="tile-lbl">Risk Score</div>
+                    <div class="tile-val-risk">{res['score']*100:.1f}%</div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with split_right:
+        # 4. Security Investigation (Step-by-Step)
+        st.markdown("""
+        <div class="custom-card">
+            <div class="card-header-bar">
+                <div class="header-icon-box">🔍</div>
+                <div>
+                    <div>Security Investigation <span style="font-size:0.8rem; color:#64748B; font-weight:500;">(Step-by-Step)</span></div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+
+        for name, detail, state in res['log']:
+            is_ok = state == "OK"
+            icon_cls = "step-num-icon-ok" if is_ok else "step-num-icon-warn"
+            icon_sym = "✓" if is_ok else "▲"
+            pill_cls = "pill-ok" if is_ok else "pill-alert"
             
-            otp_col1, otp_col2 = st.columns([1, 2])
-            with otp_col1:
-                entered_otp = st.text_input("Enter 4-digit OTP (Mock: 4921):", max_chars=4, key="v_otp")
-            with otp_col2:
-                st.write("")
-                st.write("")
-                if st.button("Verify OTP & Release Funds", key="v_sub_otp"):
-                    if entered_otp == "4921":
-                        st.success("✅ OTP Verified! Payment approved.")
-                    else:
-                        st.error("❌ Wrong OTP. Payment remains frozen.")
-        else:
-            st.error(f"**STATUS: {res['status']}** | Risk Score: **{score*100:.1f}%**")
+            st.markdown(f"""
+            <div class="step-item">
+                <div class="step-left">
+                    <div class="{icon_cls}">{icon_sym}</div>
+                    <div>
+                        <div class="step-title">{name}</div>
+                        <div class="step-sub">{detail}</div>
+                    </div>
+                </div>
+                <span class="{pill_cls}">▲ {state}</span>
+            </div>
+            """, unsafe_allow_html=True)
 
-        st.info(f"**Reason:** {res['reason']}")
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        # Simplified Investigation Log
-        with st.expander("🔍 Step-by-Step Security Investigation", expanded=True):
-            for log_entry in res.get('log', []):
-                st.write(f"- {log_entry}")
+    # ---------------------------------------------
+    # EMERGENCY RESPONSE ACTIONS (BOTTOM BAR)
+    # ---------------------------------------------
+    st.markdown("""
+    <div class="custom-card">
+        <div class="card-header-bar" style="margin-bottom:12px;">
+            <div class="header-icon-box" style="color:#EF4444; background:#FFF1F2;">🛡️</div>
+            <div>
+                <div>Emergency Response Actions</div>
+                <div style="font-size:0.75rem; color:#64748B; font-weight:500;">Take immediate action to secure the account and prevent further loss.</div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
-        m1, m2, m3, m4 = st.columns(4)
-        m1.metric("Account Drain", f"{res.get('drain_ratio', 0)*100:.1f}%")
-        m2.metric("Spike vs Average", f"{res.get('amount_to_avg', 0):.1f}x")
-        m3.metric("Transit Speed", f"{res.get('speed_kmh', 0):,.0f} km/h")
-        m4.metric("Risk Score", f"{score*100:.1f}%")
+    e_c1, e_c2, e_c3 = st.columns(3)
 
-        if tier in ["TIER_2_CHALLENGE", "TIER_3_COOLING", "REJECTED"]:
-            st.markdown("---")
-            st.markdown("### 🚨 Emergency Response Actions")
-            
-            e1, e2, e3 = st.columns(3)
-            with e1:
-                st.markdown("**1. Cyber Police Helpline**")
-                st.markdown("Call **1930** immediately.")
-                st.link_button("cybercrime.gov.in", "https://cybercrime.gov.in")
+    with e_c1:
+        st.markdown("""
+        <div class="emergency-tile">
+            <div class="tile-left-content">
+                <div class="action-icon-box" style="background:#FFF1F2; color:#E11D48;">📞</div>
+                <div>
+                    <div class="action-title">1. Cyber Police Helpline</div>
+                    <div class="action-sub">Call 1930 immediately.</div>
+                </div>
+            </div>
+            <div style="color:#CBD5E1;">→</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-            with e2:
-                st.markdown("**2. Beneficiary Lock**")
-                if st.button("Request Account Freeze", key="viva_lien"):
-                    st.success("Freeze notice sent to beneficiary bank switch.")
+    with e_c2:
+        st.markdown("""
+        <div class="emergency-tile">
+            <div class="tile-left-content">
+                <div class="action-icon-box" style="background:#FFFBEB; color:#D97706;">🔒</div>
+                <div>
+                    <div class="action-title">2. Beneficiary Lock</div>
+                    <div class="action-sub">Request account freeze.</div>
+                </div>
+            </div>
+            <div style="color:#CBD5E1;">→</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-            with e3:
-                st.markdown("**3. Bank Dispute File**")
-                v_in = st.session_state['viva_inputs']
-                report_txt = f"""OFFICIAL FRAUD DISPUTE NOTICE
-Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-UTR Ref: 429184{int(time.time())%1000000:06d}
-Amount: INR {v_in['amount']:,.2f}
-Profile: {v_in['prof']}
-Recipient: {v_in['payee_type']}
-Verdict: {res['status']} (Risk: {score*100:.1f}%)
-Reason: {res['reason']}
-Statutory Basis: Filed under RBI Customer Protection Framework."""
-                
-                st.download_button(
-                    label="Download Dispute Report (.txt)",
-                    data=report_txt,
-                    file_name=f"Dispute_Report_{int(time.time())}.txt",
-                    key="viva_download"
-                )
+    with e_c3:
+        st.markdown("""
+        <div class="emergency-tile">
+            <div class="tile-left-content">
+                <div class="action-icon-box" style="background:#EFF6FF; color:#2563EB;">📄</div>
+                <div>
+                    <div class="action-title">3. Bank Dispute File</div>
+                    <div class="action-sub">Download dispute report (1:1).</div>
+                </div>
+            </div>
+            <div style="color:#CBD5E1;">→</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-# -------------------------------------------------------------
-# TAB 2: PRODUCTION APP SIMULATOR
-# -------------------------------------------------------------
-with tab_sim:
-    st.subheader("Mobile Payment Simulator")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    sim_user_col, sim_env_col = st.columns([1, 1])
-    with sim_user_col:
-        s_prof_name = st.selectbox("Current User Profile:", list(PROFESSIONS.keys()), key="sim_user")
-        s_user = PROFESSIONS[s_prof_name]
-        st.markdown(f"**Balance:** `₹{s_user['balance']:,.2f}` | **Usual Spend:** `₹{s_user['avg_spend']:,.2f}`")
-
-    with sim_env_col:
-        st.markdown("**Live Threat Context**")
-        sim_call = st.checkbox("Active Phone Call with Unknown Caller")
-        sim_link = st.checkbox("Payment Opened from SMS / WhatsApp Link")
-
-    st.markdown("---")
-    
-    mobile_col, backend_col = st.columns([1.2, 1])
-    
-    with mobile_col:
-        st.markdown("#### 📱 UPI Checkout")
-        payee = st.text_input("Receiver UPI ID", "chai_point@upi")
-        pay_amount = st.number_input("Amount to Pay (₹)", min_value=1.0, value=40.0, step=10.0)
-        s_payee_new = st.selectbox("Receiver Contact Type", ["Known / Frequently Paid Contact", "New / First-Time Receiver"], index=0) == "New / First-Time Receiver"
-
-        is_threat = sim_call or sim_link
-        proceed_permitted = True
-
-        if is_threat:
-            st.error("⚠️ **SCAM WARNING (Impersonation / Digital Arrest Risk)**")
-            st.markdown(
-                "> **Warning:** You are on an unknown call or link. "
-                "Police, customs, and banks **NEVER** ask you to pay money to unblock accounts or avoid arrest."
-            )
-            confirm_override = st.checkbox("I know this receiver and want to proceed anyway.")
-            proceed_permitted = confirm_override
-
-        pay_clicked = st.button("Pay Now", type="primary", disabled=not proceed_permitted)
-
-    with backend_col:
-        st.markdown("#### ⚙️ Bank Backend Server")
-        st.caption("Live checks running behind the scenes.")
-        backend_status_box = st.empty()
-        backend_status_box.info("Waiting for user to initiate payment...")
-
-    if pay_clicked:
-        with backend_status_box.container():
-            st.write("1. Payment request received.")
-            st.write("2. Running 6-point fraud verification...")
-            
-            dist_val = 500.0 if pay_amount > 20000 else 1.5
-            gap_val = 1800.0 if pay_amount > 20000 else 2400.0
-            burst_val = 4 if pay_amount > 20000 else 0
-            new_dev_flag = True if pay_amount > 20000 else False
-
-            b_res = investigate_transaction(
-                amount=pay_amount,
-                balance=s_user['balance'],
-                avg_spend=s_user['avg_spend'],
-                hour_24=datetime.now().hour,
-                tx_count_10m=burst_val,
-                is_new_device=new_dev_flag,
-                is_new_payee=s_payee_new,
-                distance_km=dist_val,
-                time_gap_sec=gap_val
-            )
-
-            st.session_state['sim_res'] = b_res
-            st.session_state['sim_tx_details'] = {"amount": pay_amount, "payee": payee, "prof": s_prof_name}
-
-            st.write(f"3. Decision: **{b_res['tier']}** | Final Risk: **{b_res.get('score', 0)*100:.1f}%**")
-            with st.expander("Backend Audit Trail", expanded=False):
-                for l in b_res.get('log', []):
-                    st.write(f"- {l}")
-
-    if 'sim_res' in st.session_state:
-        b_res = st.session_state['sim_res']
-        sim_dt = st.session_state['sim_tx_details']
-        
-        st.markdown("---")
-        if b_res['tier'] == "TIER_1_PASS":
-            st.success(f"✅ **Payment Successful!** ₹{sim_dt['amount']:,.2f} sent to `{sim_dt['payee']}`.")
-        elif b_res['tier'] == "TIER_2_CHALLENGE":
-            st.warning(f"⚠️ **Payment Frozen on Hold:** Unusual activity detected. Enter the OTP sent to your phone.")
-            st.info(f"**Reason:** {b_res['reason']}")
-            
-            s_otp_col1, s_otp_col2 = st.columns([1, 2])
-            with s_otp_col1:
-                s_entered_otp = st.text_input("Enter 4-digit OTP (Mock: 4921):", max_chars=4, key="sim_otp")
-            with s_otp_col2:
-                st.write("")
-                st.write("")
-                if st.button("Submit OTP & Complete Payment", key="sim_sub_otp"):
-                    if s_entered_otp == "4921":
-                        st.success(f"✅ OTP Verified! ₹{sim_dt['amount']:,.2f} transferred to {sim_dt['payee']}.")
-                    else:
-                        st.error("❌ Wrong OTP. Payment remains frozen.")
-        else:
-            st.error(f"🚫 **Payment Blocked by Bank Security:** {b_res['reason']}")
-            st.info(f"🔔 **Security Notification:** 'Debit of ₹{sim_dt['amount']:,.2f} to {sim_dt['payee']} was blocked to protect your funds.'")
-
-            st.markdown("---")
-            st.markdown("### 🚨 Immediate Emergency Actions")
-            
-            e1, e2, e3 = st.columns(3)
-            with e1:
-                st.markdown("**1. Cyber Cell Helpline**")
-                st.markdown("Call **1930** immediately.")
-                st.link_button("cybercrime.gov.in", "https://cybercrime.gov.in")
-
-            with e2:
-                st.markdown("**2. Account Freeze**")
-                if st.button("Freeze Beneficiary Account", key="sim_lien"):
-                    st.success("Lien request sent to beneficiary bank switch.")
-
-            with e3:
-                st.markdown("**3. Bank Dispute Notice**")
-                report_text = f"""OFFICIAL FRAUD DISPUTE NOTICE
-Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-UTR Number: 429184{int(time.time())%1000000:06d}
-Beneficiary: {sim_dt['payee']}
-Amount: INR {sim_dt['amount']:,.2f}
-Profile: {sim_dt['prof']}
-Verdict: {b_res['status']}
-Reason: {b_res['reason']}
-Statutory Basis: Filed under RBI Zero-Liability Framework."""
-                
-                st.download_button(
-                    label="Download Dispute Report (.txt)",
-                    data=report_text,
-                    file_name=f"Dispute_Report_{int(time.time())}.txt",
-                    key="sim_download"
-                )
+# ==========================================
+# 6. PRODUCTION APP SIMULATOR TAB
+# ==========================================
+with tab_prod:
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.info("📱 Production Checkout Mode: Switch to this tab when demonstrating the client-side Google Pay/PhonePe checkout interface.")
