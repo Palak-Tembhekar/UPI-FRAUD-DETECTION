@@ -54,36 +54,36 @@ st.markdown("""
         color: #0F172A !important;
     }
 
-    /* Command-Attention Giant Headline */
+    /* Command-Attention Giant Headline (BIGGEST IN MODEL) */
     .top-header-container {
         background: #FFFFFF;
-        padding: 28px 36px;
-        border-radius: 20px;
+        padding: 32px 40px;
+        border-radius: 22px;
         border: 2px solid #CBD5E1;
-        margin-bottom: 26px;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+        margin-bottom: 28px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
-    .hero-title-large {
-        font-size: 2.85rem !important;
+    .hero-title-giant {
+        font-size: 3.4rem !important;
         font-weight: 900 !important;
         color: #0F172A !important;
-        letter-spacing: -1px;
+        letter-spacing: -1.2px;
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 18px;
         margin: 0;
-        line-height: 1.15;
+        line-height: 1.1;
     }
     .hero-badge-v2 {
-        font-size: 1.05rem !important;
+        font-size: 1.25rem !important;
         background: #2563EB;
         color: #FFFFFF !important;
-        padding: 5px 16px;
-        border-radius: 12px;
-        font-weight: 800;
+        padding: 6px 18px;
+        border-radius: 14px;
+        font-weight: 900;
         vertical-align: middle;
     }
     .team-pill-box {
@@ -92,10 +92,10 @@ st.markdown("""
         gap: 12px;
         background: #F1F5F9;
         border: 2px solid #94A3B8;
-        padding: 10px 22px;
+        padding: 12px 24px;
         border-radius: 28px;
         font-weight: 900;
-        font-size: 1.25rem !important;
+        font-size: 1.3rem !important;
         color: #0F172A;
     }
     
@@ -208,26 +208,43 @@ st.markdown("""
         padding: 22px;
         margin-top: 14px;
     }
+
+    /* Force Bank Switch Server Header text to Pure White */
+    .bank-switch-title-white {
+        color: #FFFFFF !important;
+        font-size: 1.45rem !important;
+        font-weight: 900 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        margin-bottom: 8px !important;
+    }
+    .bank-switch-sub-white {
+        color: #E2E8F0 !important;
+        font-size: 1.0rem !important;
+        font-weight: 600 !important;
+        margin-bottom: 16px !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. BIG BOLD HERO HEADER
+# 2. BIGGEST BOLD HERO HEADER
 # ==========================================
 st.markdown("""
 <div class="top-header-container">
     <div>
-        <div class="hero-title-large">
+        <div class="hero-title-giant">
             <span>🛡️ UPI Shield — Intelligent Fraud Mitigation Gateway</span>
             <span class="hero-badge-v2">v2.0</span>
         </div>
-        <div style="font-size:1.15rem; font-weight:700; color:#475569; margin-top:8px;">
+        <div style="font-size:1.25rem; font-weight:700; color:#475569; margin-top:10px;">
             ⚡ Deterministic Firewall + Behavioral Random Forest + Adaptive Mitigation
         </div>
     </div>
     <div style="display:flex; align-items:center; gap:26px;">
-        <div style="font-size:1.05rem; font-weight:900; color:#16A34A; display:flex; align-items:center; gap:8px;">
-            <span style="width:12px; height:12px; background:#16A34A; border-radius:50%; display:inline-block;"></span>
+        <div style="font-size:1.15rem; font-weight:900; color:#16A34A; display:flex; align-items:center; gap:8px;">
+            <span style="width:14px; height:14px; background:#16A34A; border-radius:50%; display:inline-block;"></span>
             Bank Switch Online 🟢
         </div>
         <div class="team-pill-box">
@@ -705,10 +722,10 @@ with tab_prod:
     with backend_col:
         st.markdown("""
         <div class="custom-card" style="border: 2px solid #334155; background:#0F172A; color:#FFFFFF;">
-            <div style="font-weight: 900; font-size: 1.35rem; color: #FFFFFF !important; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
+            <div class="bank-switch-title-white">
                 <span>⚙️ Bank Switch Server (Backend Telemetry)</span>
             </div>
-            <div style="font-size:0.95rem; font-weight: 600; color:#94A3B8 !important; margin-bottom:14px;">
+            <div class="bank-switch-sub-white">
                 Live packet inspection log executed on the switch level (invisible to consumer).
             </div>
         """, unsafe_allow_html=True)
@@ -719,8 +736,8 @@ with tab_prod:
 
     if pay_clicked:
         with backend_status_box.container():
-            st.markdown('<div style="color:#FFFFFF; font-weight:700; font-size:1rem; margin-bottom:6px;">1. 📥 Incoming payment authorization payload received.</div>', unsafe_allow_html=True)
-            st.markdown('<div style="color:#FFFFFF; font-weight:700; font-size:1rem; margin-bottom:6px;">2. 🔍 Resolving account baseline, payee history, and telemetry...</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#FFFFFF !important; font-weight:700; font-size:1rem; margin-bottom:6px;">1. 📥 Incoming payment authorization payload received.</div>', unsafe_allow_html=True)
+            st.markdown('<div style="color:#FFFFFF !important; font-weight:700; font-size:1rem; margin-bottom:6px;">2. 🔍 Resolving account baseline, payee history, and telemetry...</div>', unsafe_allow_html=True)
             
             dist_val = 500.0 if pay_amount > 20000 else 1.5
             gap_val = 1800.0 if pay_amount > 20000 else 2400.0
@@ -742,10 +759,10 @@ with tab_prod:
             st.session_state['sim_res'] = b_res
             st.session_state['sim_tx_details'] = {"amount": pay_amount, "payee": payee, "prof": s_prof_name}
 
-            st.markdown(f'<div style="color:#38BDF8; font-weight:900; font-size:1.15rem; margin:10px 0;">3. ⚡ Decision Tier: {b_res["tier"]} | Risk Score: {b_res["score"]*100:.1f}%</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="color:#38BDF8 !important; font-weight:900; font-size:1.15rem; margin:10px 0;">3. ⚡ Decision Tier: {b_res["tier"]} | Risk Score: {b_res["score"]*100:.1f}%</div>', unsafe_allow_html=True)
             with st.expander("Switch Forensic Trail", expanded=True):
                 for l_name, l_detail, l_st in b_res.get('log', []):
-                    st.markdown(f'<span style="color:#FFFFFF; font-weight:700;">- {l_name}:</span> <span style="color:#94A3B8;">{l_detail}</span> <strong style="color:#38BDF8;">({l_st})</strong>', unsafe_allow_html=True)
+                    st.markdown(f'<span style="color:#FFFFFF !important; font-weight:700;">- {l_name}:</span> <span style="color:#CBD5E1 !important;">{l_detail}</span> <strong style="color:#38BDF8 !important;">({l_st})</strong>', unsafe_allow_html=True)
 
     if 'sim_res' in st.session_state:
         b_res = st.session_state['sim_res']
