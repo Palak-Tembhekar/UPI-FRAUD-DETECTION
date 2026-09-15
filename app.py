@@ -9,7 +9,7 @@ from datetime import datetime
 st.set_page_config(page_title="Intelligent UPI Fraud Mitigation Engine", page_icon="🛡️", layout="wide")
 
 # ==========================================
-# 1. LOAD MODEL & SCALER
+# 1. LOAD MODEL & SCALER ARTIFACTS
 # ==========================================
 @st.cache_resource
 def load_artifacts():
@@ -24,13 +24,14 @@ def load_artifacts():
 model, scaler = load_artifacts()
 
 # ==========================================
-# 2. AUTO-CALIBRATING PROFILES
+# 2. AUTO-CALIBRATING PROFESSIONS + "OTHER"
 # ==========================================
 PROFESSIONS = {
     "College Student": {"balance": 3500.0, "avg_spend": 120.0},
     "Salaried Employee": {"balance": 65000.0, "avg_spend": 750.0},
     "Small Retailer / Kirana": {"balance": 180000.0, "avg_spend": 8500.0},
-    "Wholesale Merchant / SME": {"balance": 750000.0, "avg_spend": 38000.0}
+    "Wholesale Merchant / SME": {"balance": 750000.0, "avg_spend": 38000.0},
+    "Other (Custom Profile)": {"balance": 25000.0, "avg_spend": 1500.0}
 }
 
 # ==========================================
@@ -39,13 +40,13 @@ PROFESSIONS = {
 def evaluate_transaction_backend(amount, balance, avg_spend, hour_24, tx_count_10m, is_new_device, distance_km, time_gap_sec):
     # LAYER 1: DETERMINISTIC FIREWALL
     if amount <= 0:
-        return {"tier": "REJECTED", "status": "INVALID_AMOUNT", "score": 1.0, "reason": "Amount must be greater than zero."}
+        return {"tier": "REJECTED", "status": "INVALID_AMOUNT", "score": 1.0, "reason": "Amount must be strictly positive."}
     
     if amount > balance:
         return {"tier": "REJECTED", "status": "INSUFFICIENT_FUNDS", "score": 1.0, "reason": f"Amount (₹{amount:,.2f}) exceeds available balance (₹{balance:,.2f})."}
     
     if time_gap_sec < 1.0 and tx_count_10m <= 1:
-        return {"tier": "TIER_1_PASS", "status": "DEDUPLICATED", "score": 0.03, "reason": "Duplicate click filtered (Hardware/Network lag). Single debit authorized."}
+        return {"tier": "TIER_1_PASS", "status": "DEDUPLICATED", "score": 0.03, "reason": "Duplicate request filtered (Hardware/Network stutter). Single debit approved."}
 
     drain_ratio = amount / (balance + 1e-5)
     amount_to_avg = amount / (avg_spend + 1e-5)
@@ -59,7 +60,7 @@ def evaluate_transaction_backend(amount, balance, avg_spend, hour_24, tx_count_1
             "drain_ratio": drain_ratio,
             "amount_to_avg": amount_to_avg,
             "speed_kmh": speed_kmh,
-            "reason": f"Impossible travel speed ({speed_kmh:,.0f} km/h). Geo-location anomaly."
+            "reason": f"Impossible transit speed ({speed_kmh:,.0f} km/h) from last location."
         }
 
     if is_new_device and drain_ratio > 0.70 and distance_km < 5.0:
@@ -70,21 +71,34 @@ def evaluate_transaction_backend(amount, balance, avg_spend, hour_24, tx_count_1
             "drain_ratio": drain_ratio,
             "amount_to_avg": amount_to_avg,
             "speed_kmh": speed_kmh,
-            "reason": "High-drain transaction from an unrecognized device token."
+            "reason": "High account drain initiated from an unrecognized device token."
         }
 
-    # LAYER 2: RANDOM FOREST INFERENCE
-    features = np.array([[
-        amount,
-        amount_to_avg,
-        drain_ratio,
-        hour_24,
-        tx_count_10m,
-        1 if is_new_device else 0,
-        distance_km,
-        speed_kmh,
-        time_gap_sec
-    ]])
+    # LAYER 2: RANDOM FOREST INFERENCE (Matching Active Scaler)
+    n_expected = getattr(scaler, "n_features_in_", 8)
+    if n_expected == 8:
+        features = np.array([[
+            amount,
+            amount_to_avg,
+            drain_ratio,
+            hour_24,
+            tx_count_10m,
+            1 if is_new_device else 0,
+            speed_kmh,
+            time_gap_sec
+        ]])
+    else:
+        features = np.array([[
+            amount,
+            amount_to_avg,
+            drain_ratio,
+            hour_24,
+            tx_count_10m,
+            1 if is_new_device else 0,
+            distance_km,
+            speed_kmh,
+            time_gap_sec
+        ]])
     
     scaled_feats = scaler.transform(features)
     risk_score = float(model.predict_proba(scaled_feats)[0][1])
@@ -93,15 +107,15 @@ def evaluate_transaction_backend(amount, balance, avg_spend, hour_24, tx_count_1
     if risk_score > 0.70:
         tier = "TIER_3_COOLING"
         status = "CRITICAL_RISK_BLOCK"
-        reason = f"High fraud probability ({risk_score*100:.1f}%). 24-hour cooling lock applied."
+        reason = f"High fraud risk ({risk_score*100:.1f}%). 24h cooling lock applied to safeguard balance."
     elif risk_score > 0.35:
         tier = "TIER_2_CHALLENGE"
         status = "STEP_UP_2FA"
-        reason = f"Unusual spend surge ({amount_to_avg:.1f}x baseline). Step-up biometric OTP required."
+        reason = f"Unusual spend surge ({amount_to_avg:.1f}x baseline). Biometric / OTP challenge required."
     else:
         tier = "TIER_1_PASS"
         status = "INSTANT_APPROVAL"
-        reason = "Normal telemetry pattern. Transaction cleared."
+        reason = "Normal behavioral telemetry. Transaction verified."
 
     return {
         "tier": tier,
@@ -122,12 +136,12 @@ st.markdown("**Deterministic Firewall + Behavioral Random Forest + Adaptive Miti
 tab_viva, tab_sim = st.tabs(["Viva Manual Evaluation", "Production App Simulator"])
 
 # -------------------------------------------------------------
-# TAB 1: VIVA MANUAL EVALUATION (DEFAULT)
+# TAB 1: VIVA MANUAL EVALUATION (FIRST BY DEFAULT)
 # -------------------------------------------------------------
 with tab_viva:
     st.subheader("Manual Telemetry Verification")
     
-    sel_prof = st.selectbox("Preset Profession Baseline:", list(PROFESSIONS.keys()))
+    sel_prof = st.selectbox("Select Profession Profile:", list(PROFESSIONS.keys()))
     prof = PROFESSIONS[sel_prof]
 
     c1, c2 = st.columns(2)
@@ -137,23 +151,31 @@ with tab_viva:
         v_balance = st.number_input("Account Balance (₹)", min_value=1.0, value=float(prof['balance']), step=500.0)
         v_avg_spend = st.number_input("Baseline Average Spend (₹)", min_value=1.0, value=float(prof['avg_spend']), step=50.0)
         
-        st.markdown("**Transaction Time**")
-        t1, t2 = st.columns(2)
-        with t1:
-            t_input = st.time_input("Pick Time", datetime.strptime("14:30", "%H:%M").time())
-        with t2:
-            st.markdown(f"**{t_input.strftime('%I:%M %p')}**")
-            st.caption(f"24h: {t_input.hour}:00")
-        v_hour = t_input.hour
+        st.markdown("**Time of Transaction (12-Hour Format)**")
+        t_col1, t_col2, t_col3 = st.columns([1.2, 1.2, 1.2])
+        with t_col1:
+            hour_12 = st.selectbox("Hour", list(range(1, 13)), index=10)
+        with t_col2:
+            minute_val = st.selectbox("Minute", ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"], index=6)
+        with t_col3:
+            meridiem = st.radio("AM / PM", ["AM", "PM"], horizontal=True, index=0)
+
+        # Convert 12-Hour AM/PM into 24-Hour Integer
+        if meridiem == "AM":
+            v_hour = 0 if hour_12 == 12 else hour_12
+        else:
+            v_hour = 12 if hour_12 == 12 else hour_12 + 12
+            
+        st.caption(f"Selected Time: **{hour_12}:{minute_val} {meridiem}** (24h Equivalent: {v_hour:02d}:{minute_val})")
 
     with c2:
         st.markdown("**Behavioral & Hardware Telemetry**")
-        v_dist = st.number_input("Distance from Usual Base (km)", min_value=0.0, value=2.0, step=1.0)
+        v_dist = st.number_input("Distance from Last Transaction Location (km)", min_value=0.0, value=2.0, step=1.0)
         
         st.markdown("**Inter-Arrival Time Gap**")
         g1, g2 = st.columns([1, 1])
         with g1:
-            g_val = st.number_input("Value", min_value=0.1, value=30.0, step=1.0)
+            g_val = st.number_input("Time Gap Value", min_value=0.1, value=30.0, step=1.0)
         with g2:
             g_unit = st.selectbox("Unit", ["Seconds", "Minutes", "Hours"])
         
@@ -164,7 +186,7 @@ with tab_viva:
         else:
             v_gap = g_val
 
-        v_tx_count = st.number_input("Transactions in Last 10 Minutes", min_value=0, max_value=10, value=1)
+        v_tx_count = st.number_input("Transaction Count in Last 10 Minutes", min_value=0, max_value=10, value=1)
         v_device = st.selectbox("Device Token State", ["Trusted Device (Known)", "Unrecognized / New Device"]) == "Unrecognized / New Device"
 
     if st.button("Run Verification Pipeline", type="primary"):
@@ -211,13 +233,12 @@ with tab_sim:
         st.markdown(f"**Account Balance:** `₹{s_user['balance']:,.2f}` | **Normal Daily Spend:** `₹{s_user['avg_spend']:,.2f}`")
 
     with sim_env_col:
-        st.markdown("**Simulated Environmental Context**")
+        st.markdown("**Simulated Context Flags**")
         sim_call = st.checkbox("Active Phone Call with Unknown Caller")
         sim_link = st.checkbox("App Opened via External Chat/SMS Link")
 
     st.markdown("---")
     
-    # User Mobile Interface Layout
     mobile_col, backend_col = st.columns([1.2, 1])
     
     with mobile_col:
@@ -225,7 +246,6 @@ with tab_sim:
         payee = st.text_input("Payee Virtual Payment Address (VPA)", "chai_point@upi")
         pay_amount = st.number_input("Enter Amount to Transfer (₹)", min_value=1.0, value=40.0, step=10.0)
 
-        # Pre-Payment Threat Interceptor (Warn -> Confirm -> Proceed)
         is_threat = sim_call or sim_link
         proceed_permitted = True
 
@@ -233,7 +253,7 @@ with tab_sim:
             st.error("⚠️ **CRITICAL PRE-PAYMENT WARNING (Potential Impersonation Scam)**")
             st.markdown(
                 "> **CAUTION:** An active unknown phone call or external link is detected. "
-                "Police, bank managers, and customs **NEVER** request money transfers over the phone to unblock accounts or cancel arrest warrants."
+                "Police, bank managers, and customs **NEVER** request money transfers over the phone."
             )
             confirm_override = st.checkbox("I verify this recipient personally and wish to proceed under my own discretion.")
             proceed_permitted = confirm_override
@@ -247,12 +267,10 @@ with tab_sim:
         backend_status_box.info("Awaiting payment initiation from client device...")
 
     if pay_clicked:
-        # Backend Processing
         with backend_status_box.container():
             st.write("1. Incoming payload received from mobile client.")
             st.write("2. Resolving account baseline and telemetry variables...")
             
-            # Simulate realistic network context
             dist_val = 250.0 if pay_amount > 20000 else 1.5
             gap_val = 1.2 if pay_amount > 20000 else 2400.0
             burst_val = 4 if pay_amount > 20000 else 0
@@ -276,7 +294,6 @@ with tab_sim:
                 "Speed": f"{b_res.get('speed_kmh', 0):,.1f} km/h"
             })
 
-        # Render Outcome to the Mobile User
         st.markdown("---")
         if b_res['tier'] == "TIER_1_PASS":
             st.success(f"✅ **Payment Successful!** ₹{pay_amount:,.2f} transferred to `{payee}`.")
@@ -284,11 +301,8 @@ with tab_sim:
             st.warning(f"⚠️ **Payment Paused for Step-Up Verification:** Unusual spending surge. Enter 6-digit biometric OTP sent to your registered SIM.")
         else:
             st.error(f"🚫 **Transaction Declined for Security:** Unusual activity detected. To protect your funds, ₹{pay_amount:,.2f} was not debited.")
-            
-            # Simulated Automated In-App Security Alert
             st.info(f"🔔 **Security Notification Dispatched:** 'Attempted debit of ₹{pay_amount:,.2f} to {payee} was intercepted by bank security.'")
 
-            # Post-Incident Emergency Action Protocol
             st.markdown("---")
             st.markdown("### 🚨 Immediate Incident Response Protocol")
             
