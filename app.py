@@ -30,7 +30,6 @@ st.markdown("""
         background-color: #F8FAFC;
     }
     
-    /* Input Labels and Text */
     p, span, label, .stMarkdown {
         font-size: 1.05rem !important;
         font-weight: 700 !important;
@@ -43,38 +42,40 @@ st.markdown("""
         justify-content: space-between;
         align-items: center;
         background: #FFFFFF;
-        padding: 16px 28px;
+        padding: 18px 28px;
         border-radius: 18px;
         border: 2px solid #CBD5E1;
         margin-bottom: 24px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.04);
     }
-    .brand-title {
-        font-size: 1.35rem;
+    .brand-title-main {
+        font-size: 1.55rem;
         font-weight: 900;
-        color: #000000;
+        color: #0F172A;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
+        letter-spacing: -0.5px;
     }
     .brand-badge {
-        font-size: 0.8rem;
+        font-size: 0.82rem;
         background: #DBEAFE;
         color: #1D4ED8;
         padding: 3px 10px;
         border-radius: 8px;
         font-weight: 800;
     }
-    .user-pill {
+    .team-pill {
         display: flex;
         align-items: center;
         gap: 10px;
         background: #F1F5F9;
         border: 2px solid #94A3B8;
-        padding: 6px 16px;
+        padding: 8px 18px;
         border-radius: 24px;
-        font-weight: 800;
-        color: #000000;
+        font-weight: 900;
+        font-size: 1.1rem !important;
+        color: #0F172A;
     }
     
     /* Main Cards */
@@ -96,7 +97,7 @@ st.markdown("""
         gap: 10px;
     }
 
-    /* Verification Button */
+    /* Primary Buttons */
     div.stButton > button[kind="primary"] {
         background: linear-gradient(90deg, #E11D48 0%, #BE123C 100%) !important;
         color: #FFFFFF !important;
@@ -179,7 +180,6 @@ st.markdown("""
         border: 1px solid #FCA5A5;
     }
 
-    /* Large Prominent OTP Box */
     .otp-container {
         background: #FFFFFF;
         border: 2px solid #F59E0B;
@@ -191,23 +191,22 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. TOP NAVBAR & HERO
+# 2. TOP NAVBAR & HEADLINE
 # ==========================================
 st.markdown("""
 <div class="top-header">
-    <div class="brand-title">
-        <span>🛡️ UPI Shield</span>
+    <div class="brand-title-main">
+        <span>🛡️ <strong>UPI Shield — Intelligent Fraud Mitigation Gateway</strong></span>
         <span class="brand-badge">v2.0</span>
-        <span style="color:#64748B; font-weight:700; font-size:1rem; margin-left:8px;">| Intelligent Fraud Mitigation Gateway</span>
     </div>
     <div style="display:flex; align-items:center; gap:24px;">
         <div style="font-size:0.95rem; font-weight:800; color:#16A34A; display:flex; align-items:center; gap:8px;">
             <span style="width:10px; height:10px; background:#16A34A; border-radius:50%; display:inline-block;"></span>
             Bank Switch Online
         </div>
-        <div class="user-pill">
-            <span style="background:#2563EB; color:#FFF; border-radius:50%; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; font-size:0.85rem;">P</span>
-            <span>Palak (AI Engineer)</span>
+        <div class="team-pill">
+            <span style="font-size:1.2rem;">⚡</span>
+            <span>Spark Squad</span>
         </div>
     </div>
 </div>
@@ -237,7 +236,7 @@ PROFESSIONS = {
 }
 
 # ==========================================
-# 4. ROBUST EVALUATION ENGINE
+# 4. INVESTIGATION ENGINE
 # ==========================================
 def run_investigation(amount, balance, avg_spend, hour_24, tx_count, is_new_device, is_new_payee, dist_km, gap_sec):
     drain_ratio = float(amount) / (float(balance) + 1e-5)
@@ -310,7 +309,7 @@ def run_investigation(amount, balance, avg_spend, hour_24, tx_count, is_new_devi
     scaled = scaler.transform(feats)
     rf_risk = float(model.predict_proba(scaled)[0][1])
 
-    # Dynamic Score Harmonization (Prevents 0.0% Glitch)
+    # Score Harmonization
     if "IMPOSSIBLE SPEED" in flags:
         score = 0.99
     elif "HIGH DRAIN" in flags and "NEW DEVICE" in flags:
@@ -322,7 +321,7 @@ def run_investigation(amount, balance, avg_spend, hour_24, tx_count, is_new_devi
     else:
         score = min(max(rf_risk, 0.05), 0.18)
 
-    # Threshold Arbitration
+    # Threshold Enforcement
     if score >= 0.90:
         tier = "TIER_3_COOLING"
         status = "CRITICAL RISK, BLOCKED"
@@ -349,10 +348,13 @@ def run_investigation(amount, balance, avg_spend, hour_24, tx_count, is_new_devi
     }
 
 # ==========================================
-# 5. STREAMLIT UI
+# 5. STREAMLIT DUAL-TAB UI
 # ==========================================
 tab_manual, tab_prod = st.tabs(["📋 Manual Testing Panel", "📱 Production App Simulator"])
 
+# -------------------------------------------------------------
+# TAB 1: VIVA MANUAL TESTING PANEL
+# -------------------------------------------------------------
 with tab_manual:
     st.markdown("""
     <div class="custom-card">
@@ -399,7 +401,6 @@ with tab_manual:
         st.markdown("**Phone Used**")
         in_device = st.selectbox("Phone Used", ["Trusted Phone (Known)", "New / Unrecognized Phone"], index=0, label_visibility="collapsed") == "New / Unrecognized Phone"
 
-    # Time of Transaction Row
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("**4. Time of Transaction**")
     t_c1, t_c2, t_c3, t_c4 = st.columns([1, 1, 1.2, 2.5])
@@ -433,9 +434,6 @@ with tab_manual:
     tier = res['tier']
     score = res['score']
 
-    # ---------------------------------------------
-    # DYNAMIC STATUS BAR (POINTS 3 & 4)
-    # ---------------------------------------------
     if tier == "TIER_1_PASS":
         box_bg = "#ECFDF5"
         box_border = "#10B981"
@@ -471,13 +469,9 @@ with tab_manual:
     </div>
     """, unsafe_allow_html=True)
 
-    # ---------------------------------------------
-    # CONDITIONAL DASHBOARD SPLIT (POINTS 6 & 7)
-    # ---------------------------------------------
     col_left, col_right = st.columns([1.15, 1])
 
     with col_left:
-        # If Instant Approval, show clean verified badge instead of Frozen box
         if tier == "TIER_1_PASS":
             st.markdown("""
             <div class="custom-card" style="border:2px solid #10B981; background:#F0FDF4;">
@@ -490,7 +484,6 @@ with tab_manual:
             </div>
             """, unsafe_allow_html=True)
         
-        # If Suspicious/Frozen, show Large Prominent OTP Box
         elif tier == "TIER_2_CHALLENGE":
             st.markdown("""
             <div class="otp-container">
@@ -516,7 +509,6 @@ with tab_manual:
                     else:
                         st.error("❌ Invalid OTP. Hold maintained.")
 
-            # Reason Card
             st.markdown(f"""
             <div class="custom-card" style="border:2px solid #F59E0B; margin-top:14px;">
                 <div style="font-size:1.2rem; font-weight:900; color:#B45309; margin-bottom:8px;">⚠️ Decision Reason</div>
@@ -526,7 +518,7 @@ with tab_manual:
             </div>
             """, unsafe_allow_html=True)
             
-        else: # TIER_3_COOLING
+        else:
             st.markdown(f"""
             <div class="custom-card" style="border:2px solid #EF4444; background:#FEF2F2;">
                 <div style="font-size:1.3rem; font-weight:900; color:#DC2626; margin-bottom:8px;">🚫 Transaction Terminated</div>
@@ -536,7 +528,6 @@ with tab_manual:
             </div>
             """, unsafe_allow_html=True)
 
-        # Behavioral Metrics Bento Grid
         st.markdown(f"""
         <div class="custom-card" style="margin-top:14px;">
             <div class="card-header-bar">📊 Behavioral Metrics Summary</div>
@@ -562,7 +553,6 @@ with tab_manual:
         """, unsafe_allow_html=True)
 
     with col_right:
-        # Step-by-Step Checklist
         st.markdown("""
         <div class="custom-card">
             <div class="card-header-bar">🔍 Security Investigation (Step-by-Step)</div>
@@ -582,9 +572,6 @@ with tab_manual:
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # ---------------------------------------------
-    # EMERGENCY RESPONSE ACTIONS (POINT 5)
-    # ---------------------------------------------
     st.markdown("""
     <div class="custom-card" style="margin-top:10px;">
         <div class="card-header-bar" style="color:#B91C1C;">
@@ -631,9 +618,168 @@ Statutory Authority: Filed under RBI Circular on Limiting Customer Liability in 
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ==========================================
-# 6. PRODUCTION APP SIMULATOR TAB
-# ==========================================
+# -------------------------------------------------------------
+# TAB 2: RESTORED PRODUCTION APP SIMULATOR
+# -------------------------------------------------------------
 with tab_prod:
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.info("📱 Production Checkout Mode: Switch here to demonstrate client-side checkout context.")
+    st.markdown("""
+    <div class="custom-card">
+        <div class="card-header-bar">
+            <span>📱 Real-World Production Payment Simulation</span>
+        </div>
+        <div style="font-size:1rem; font-weight:700; color:#64748B; margin-bottom:14px;">
+            Dual view comparing customer-facing mobile payment interface against live backend forensic telemetry.
+        </div>
+    """, unsafe_allow_html=True)
+
+    sim_user_col, sim_env_col = st.columns([1, 1])
+    with sim_user_col:
+        s_prof_name = st.selectbox("Active Account Profile:", list(PROFESSIONS.keys()), key="sim_user_prof")
+        s_user = PROFESSIONS[s_prof_name]
+        st.markdown(f"**Available Balance:** `₹{s_user['balance']:,.2f}` &nbsp;|&nbsp; **Typical Spend:** `₹{s_user['avg_spend']:,.2f}`")
+
+    with sim_env_col:
+        st.markdown("**Simulated Environmental Threat Context**")
+        sim_call = st.checkbox("Active Phone Call with Unknown Caller (Potential Digital Arrest)", key="s_call")
+        sim_link = st.checkbox("App Opened via External Chat/SMS Link (Phishing Context)", key="s_link")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    mobile_col, backend_col = st.columns([1.15, 1])
+    
+    with mobile_col:
+        st.markdown("""
+        <div class="custom-card" style="border: 2px solid #3B82F6;">
+            <div class="card-header-bar" style="color:#1D4ED8;">
+                <span>📱 UPI Mobile Client Interface</span>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        payee = st.text_input("Beneficiary Virtual Payment Address (VPA):", "chai_point@upi", key="s_payee_vpa")
+        pay_amount = st.number_input("Enter Amount to Transfer (₹):", min_value=1.0, value=40.0, step=10.0, key="s_pay_amt")
+        s_payee_new = st.selectbox("Beneficiary History:", ["Known / Frequently Paid Contact", "New / Unsaved Payee"], index=0, key="s_payee_type") == "New / Unsaved Payee"
+
+        is_threat = sim_call or sim_link
+        proceed_permitted = True
+
+        if is_threat:
+            st.error("⚠️ **CRITICAL PRE-PAYMENT WARNING (Potential Impersonation Scam)**")
+            st.markdown(
+                "> **CAUTION:** An active unknown phone call or external link is detected. "
+                "Police, bank managers, and customs **NEVER** request money transfers over the phone."
+            )
+            confirm_override = st.checkbox("I verify this recipient personally and wish to proceed under my own discretion.", key="s_override")
+            proceed_permitted = confirm_override
+
+        pay_clicked = st.button("Authorize & Pay", type="primary", disabled=not proceed_permitted, key="s_pay_btn")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with backend_col:
+        st.markdown("""
+        <div class="custom-card" style="border: 2px solid #0F172A; background:#0F172A; color:#FFFFFF;">
+            <div class="card-header-bar" style="color:#60A5FA;">
+                <span>⚙️ Bank Switch Server (Backend)</span>
+            </div>
+            <div style="font-size:0.85rem; color:#94A3B8; margin-bottom:12px;">
+                Live packet inspection log executed on the switch level (invisible to consumer).
+            </div>
+        """, unsafe_allow_html=True)
+        
+        backend_status_box = st.empty()
+        backend_status_box.info("Awaiting payment initiation payload from mobile client...")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    if pay_clicked:
+        with backend_status_box.container():
+            st.write("1. Incoming payment authorization payload received.")
+            st.write("2. Resolving account baseline, payee history, and telemetry...")
+            
+            # Contextual triggers for demonstration
+            dist_val = 500.0 if pay_amount > 20000 else 1.5
+            gap_val = 1800.0 if pay_amount > 20000 else 2400.0
+            burst_val = 4 if pay_amount > 20000 else 0
+            new_dev_flag = True if pay_amount > 20000 else False
+
+            b_res = run_investigation(
+                amount=pay_amount,
+                balance=s_user['balance'],
+                avg_spend=s_user['avg_spend'],
+                hour_24=datetime.now().hour,
+                tx_count=burst_val,
+                is_new_device=new_dev_flag,
+                is_new_payee=s_payee_new,
+                dist_km=dist_val,
+                gap_sec=gap_val
+            )
+
+            st.session_state['sim_res'] = b_res
+            st.session_state['sim_tx_details'] = {"amount": pay_amount, "payee": payee, "prof": s_prof_name}
+
+            st.write(f"3. Decision Engine Tier: **{b_res['tier']}** | Risk Score: **{b_res['score']*100:.1f}%**")
+            with st.expander("Switch Audit Trail", expanded=True):
+                for l_name, l_detail, l_st in b_res.get('log', []):
+                    st.write(f"- **{l_name}:** {l_detail} ({l_st})")
+
+    if 'sim_res' in st.session_state:
+        b_res = st.session_state['sim_res']
+        sim_dt = st.session_state['sim_tx_details']
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        if b_res['tier'] == "TIER_1_PASS":
+            st.success(f"✅ **Payment Successful!** ₹{sim_dt['amount']:,.2f} transferred to `{sim_dt['payee']}`.")
+        elif b_res['tier'] == "TIER_2_CHALLENGE":
+            st.warning(f"⚠️ **Payment Frozen on Hold:** Unusual spending activity detected. An OTP challenge has been dispatched to verify authorization.")
+            st.info(f"**Reason:** {b_res['reason']}")
+            
+            s_otp_col1, s_otp_col2 = st.columns([1.5, 1])
+            with s_otp_col1:
+                s_entered_otp = st.text_input("Enter 4-digit Security OTP (Mock: 4921):", max_chars=4, key="sim_otp_input")
+            with s_otp_col2:
+                st.write("")
+                st.write("")
+                if st.button("Submit OTP & Complete Payment", key="sim_sub_otp"):
+                    if s_entered_otp == "4921":
+                        st.success(f"✅ OTP Verified! Hold released. ₹{sim_dt['amount']:,.2f} sent to {sim_dt['payee']}.")
+                    else:
+                        st.error("❌ Invalid OTP. Payment remains frozen.")
+        else:
+            st.error(f"🚫 **Transaction Blocked by Bank Security:** {b_res['reason']}")
+            st.info(f"🔔 **Security Alert Dispatched:** 'Attempted debit of ₹{sim_dt['amount']:,.2f} to {sim_dt['payee']} was blocked to protect your account.'")
+
+            st.markdown("""
+            <div class="custom-card" style="margin-top:14px;">
+                <div class="card-header-bar" style="color:#B91C1C;">
+                    <span>🚨 Immediate Incident Response Protocol</span>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            se1, se2, se3 = st.columns(3)
+            with se1:
+                st.markdown("**1. National Cyber Crime Desk**")
+                st.markdown("Dial **1930** immediately.")
+                st.link_button("cybercrime.gov.in", "https://cybercrime.gov.in", key="s_cyber_btn")
+
+            with se2:
+                st.markdown("**2. Inter-Bank Switch Freeze**")
+                if st.button("Request Recipient Account Lien", key="sim_lien_btn"):
+                    st.success("Automated lien dispatch transmitted to beneficiary bank switch.")
+
+            with se3:
+                st.markdown("**3. Bank Dispute Documentation**")
+                report_text = f"""OFFICIAL FRAUD DISPUTE NOTICE - ELECTRONIC BANKING
+Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+UTR Number: 429184{int(time.time())%1000000:06d}
+Beneficiary VPA: {sim_dt['payee']}
+Attempted Amount: INR {sim_dt['amount']:,.2f}
+Originating Profile: {sim_dt['prof']}
+Decision Flag: {b_res['status']}
+Reason: {b_res['reason']}
+Statutory Basis: Filed under RBI Circular on Limiting Customer Liability in Unauthorized Electronic Banking Transactions (Zero-Liability Framework)."""
+                
+                st.download_button(
+                    label="Download Bank Dispute Report (.txt)",
+                    data=report_text,
+                    file_name=f"Bank_Dispute_{int(time.time())}.txt",
+                    key="sim_download_btn"
+                )
+            st.markdown("</div>", unsafe_allow_html=True)
