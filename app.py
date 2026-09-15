@@ -1,171 +1,270 @@
 import streamlit as st
-import joblib
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pickle
+import os
+import time
+from datetime import datetime
 
-# Page Configuration
-st.set_page_config(
-    page_title="UPI Shield | Intelligent Mitigation Gateway",
-    page_icon="🛡️",
-    layout="wide"
-)
+# Page Layout
+st.set_page_config(page_title="Intelligent UPI Fraud Mitigation Engine", page_icon="🛡️", layout="wide")
 
-# Custom Theme Styling
-st.markdown("""
-    <style>
-    .stApp { background-color: #0b0f19; color: #f1f5f9; }
-    .metric-container {
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 10px;
-        padding: 16px;
-        text-align: center;
-    }
-    div.stButton > button:first-child {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        color: #ffffff;
-        font-weight: 700;
-        border-radius: 8px;
-        height: 3em;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# Load Model
+# ==========================================
+# 1. AUTO-LOAD MODEL & SCALER
+# ==========================================
 @st.cache_resource
-def load_model():
-    return joblib.load('upi_fraud_model.pkl')
-
-model = load_model()
-
-# State Management
-if "eval_state" not in st.session_state:
-    st.session_state.eval_state = None
-if "pending_data" not in st.session_state:
-    st.session_state.pending_data = {}
-
-st.title("🛡️ UPI Intelligent Fraud Mitigation Engine")
-st.caption("Hybrid Gate: Multi-Flag Deterministic Firewall + Behavioral Random Forest")
-
-# Sidebar Configuration
-with st.sidebar:
-    st.header("⚙️ User Profile Baseline")
-    user_avg_spend = st.number_input("Typical Historical Spend (₹)", min_value=10.0, value=2000.0, step=100.0)
-    is_whitelisted = st.checkbox("Payee in Verified / Frequent Contacts", value=False)
-    sim_compromised = st.checkbox("Simulate Screen Share / SIM Swap Alert", value=False)
-    st.markdown("---")
-    st.markdown("**Engine Specifications:**")
-    st.write("• Model: Calibrated Random Forest")
-    st.write("• Layer 1: Multi-Flag Firewall")
-    st.write("• Layer 2: Behavioral Probability Inference")
-    st.write("• Layer 3: Risk-Adaptive Verification")
-
-# 1. Input Layout
-st.subheader("1. Transaction Parameters")
-col1, col2 = st.columns(2)
-
-with col1:
-    amount = st.number_input("Transfer Amount (₹)", min_value=1.0, value=8000.0, step=100.0)
-    hour = st.slider("Transaction Hour", min_value=0, max_value=23, value=23, format="%d:00 hrs")
-    balance_before = st.number_input("Account Balance Prior to Transfer (₹)", min_value=1.0, value=8000.0, step=100.0)
-
-with col2:
-    distance_km = st.number_input("Distance from Previous Location (km)", min_value=0.0, value=50.0, step=10.0)
-    time_since_last = st.number_input("Time Elapsed Since Last Transfer (hours)", min_value=0.01, value=1.0, step=0.5)
-
-# Derived Telemetry
-drain_ratio = min(amount / balance_before, 1.0) if balance_before > 0 else 1.0
-speed_kmh = distance_km / time_since_last if time_since_last > 0 else 0.0
-amount_deviation = amount / user_avg_spend
-
-# Telemetry Displays
-st.markdown("---")
-st.subheader("2. Behavioral Telemetry")
-t1, t2, t3 = st.columns(3)
-with t1:
-    st.markdown(f"<div class='metric-container'><small>Account Drain</small><h3>{drain_ratio:.1%}</h3></div>", unsafe_allow_html=True)
-with t2:
-    st.markdown(f"<div class='metric-container'><small>Velocity</small><h3>{speed_kmh:.1f} km/h</h3></div>", unsafe_allow_html=True)
-with t3:
-    st.markdown(f"<div class='metric-container'><small>Spend vs Baseline</small><h3>{amount_deviation:.1f}x</h3></div>", unsafe_allow_html=True)
-
-st.markdown("---")
-
-# Execution Engine
-if st.button("Evaluate Transaction Risk", use_container_width=True):
-    st.session_state.eval_state = None
-
-    # LAYER 1: MULTI-FLAG DETERMINISTIC FIREWALL
-    # Hard Block only triggers when multiple anomalies converge simultaneously
-    flag_speed = speed_kmh >= 250.0
-    flag_drain = drain_ratio >= 0.90
-    flag_surge = amount_deviation >= 3.0
-    flag_nocturnal = hour in [0, 1, 2, 3, 4, 22, 23]
+def load_artifacts():
+    # Looks for 'upi_fraud_model (3).pkl' first, then fallback to original name
+    model_filename = 'upi_fraud_model (3).pkl' if os.path.exists('upi_fraud_model (3).pkl') else 'upi_fraud_model.pkl'
+    scaler_filename = 'scaler (3).pkl' if os.path.exists('scaler (3).pkl') else 'scaler.pkl'
     
-    total_flags = sum([flag_speed, flag_drain, flag_surge, flag_nocturnal])
-    
-    if (total_flags >= 3 and not is_whitelisted) or sim_compromised:
-        st.session_state.eval_state = "HARD_BLOCK"
-        reasons = []
-        if flag_speed: reasons.append(f"Impossible Velocity ({speed_kmh:.0f} km/h)")
-        if flag_drain: reasons.append(f"Severe Balance Drain ({drain_ratio:.0%})")
-        if flag_surge: reasons.append(f"Spike Factor ({amount_deviation:.1f}x)")
-        if flag_nocturnal: reasons.append("Off-Hour Nocturnal Execution")
-        if sim_compromised: reasons.append("Remote Access Tool / SIM Anomaly Detected")
-        st.session_state.pending_data = {"reasons": " + ".join(reasons)}
+    with open(model_filename, 'rb') as f:
+        model = pickle.load(f)
+    with open(scaler_filename, 'rb') as f:
+        scaler = pickle.load(f)
+    return model, scaler
+
+model, scaler = load_artifacts()
+
+# ==========================================
+# 2. USER PERSONAS
+# ==========================================
+USER_PERSONAS = {
+    "College Student (Daily Low Spends)": {
+        "name": "Palak",
+        "balance": 12000.0,
+        "avg_spend": 250.0,
+        "trusted_device": True,
+        "last_city": "Kamptee",
+        "tx_count_10m": 0,
+        "last_tx_time_gap": 1800.0
+    },
+    "Wholesale Merchant (High Volume Cashflow)": {
+        "name": "Sharma Textiles",
+        "balance": 450000.0,
+        "avg_spend": 35000.0,
+        "trusted_device": True,
+        "last_city": "Nagpur",
+        "tx_count_10m": 1,
+        "last_tx_time_gap": 300.0
+    },
+    "Compromised Account (Victim Under Attack)": {
+        "name": "Aakash Verma",
+        "balance": 85000.0,
+        "avg_spend": 300.0,
+        "trusted_device": False,
+        "last_city": "Mumbai",
+        "tx_count_10m": 4,
+        "last_tx_time_gap": 0.8
+    }
+}
+
+# ==========================================
+# 3. PIPELINE EVALUATION
+# ==========================================
+def evaluate_transaction(amount, balance, avg_spend, hour, tx_count_10m, is_new_device, velocity_kmh, inter_arrival_sec):
+    if inter_arrival_sec < 1.0 and tx_count_10m <= 1:
+        return {
+            "status": "APPROVED_DEDUPLICATED",
+            "score": 0.05,
+            "reason": "Duplicate transaction filtered (Hardware/Network stutter detected). Single charge authorized."
+        }
+
+    drain_ratio = amount / (balance + 1e-5)
+    if amount > balance:
+        return {
+            "status": "DECLINED_INSUFFICIENT_FUNDS",
+            "score": 1.0,
+            "reason": "Transaction amount exceeds current account balance."
+        }
+
+    amount_to_avg = amount / (avg_spend + 1e-5)
+    features = np.array([[
+        amount,
+        amount_to_avg,
+        drain_ratio,
+        hour,
+        tx_count_10m,
+        1 if is_new_device else 0,
+        velocity_kmh,
+        inter_arrival_sec
+    ]])
+
+    scaled_features = scaler.transform(features)
+    risk_score = float(model.predict_proba(scaled_features)[0][1])
+
+    if is_new_device and drain_ratio > 0.7:
+        risk_score = max(risk_score, 0.92)
+
+    if risk_score > 0.70:
+        status = "BLOCKED_FRAUD"
+    elif risk_score > 0.35:
+        status = "STEP_UP_CHALLENGE"
     else:
-        # LAYER 2: MACHINE LEARNING RISK INFERENCE
-        input_data = pd.DataFrame(
-            [[amount, hour, drain_ratio, speed_kmh, amount_deviation]],
-            columns=['amount', 'hour', 'drain_ratio', 'speed_kmh', 'amount_deviation']
+        status = "APPROVED"
+
+    return {
+        "status": status,
+        "score": risk_score,
+        "drain_ratio": drain_ratio,
+        "amount_to_avg": amount_to_avg
+    }
+
+# ==========================================
+# 4. STREAMLIT DUAL-TAB UI
+# ==========================================
+st.title("Intelligent UPI Fraud Mitigation Engine")
+st.markdown("**Hybrid Telemetry Firewall + Random Forest Behavioral Classifier**")
+
+tab1, tab2 = st.tabs(["Production Simulator (Automated Mock)", "Viva Evaluation (Manual Testing)"])
+
+# -------------------------------------------------------------
+# TAB 1: PRODUCTION SIMULATOR
+# -------------------------------------------------------------
+with tab1:
+    col_user, col_threat = st.columns([1, 1])
+    with col_user:
+        selected_persona_name = st.selectbox("Select Active User Account:", list(USER_PERSONAS.keys()))
+        persona = USER_PERSONAS[selected_persona_name]
+        st.info(f"**Account Holder:** {persona['name']} | **Balance:** ₹{persona['balance']:,.2f} | **Avg Spend:** ₹{persona['avg_spend']:,.2f}")
+
+    with col_threat:
+        st.markdown("**Simulated Environmental Threat Vectors:**")
+        active_call = st.checkbox("Active Phone Call with Unknown Number Detected", value=False)
+        link_opened = st.checkbox("Payment Triggered via External Link (SMS / Telegram / WhatsApp)", value=False)
+
+    if active_call or link_opened:
+        st.warning(
+            "⚠️ **Digital Arrest / Phishing Warning:** Legitimate enforcement, banks, and courier agencies never demand money transfers over a phone call or chat link. Do NOT enter your UPI PIN if instructed by an unknown caller."
         )
-        
-        prob_raw = float(model.predict_proba(input_data)[0][1])
-        
-        # Moderate friction for solitary drain or late hours
-        if drain_ratio >= 0.90 and not is_whitelisted:
-            prob_raw = max(prob_raw, 0.45)
-            
-        if is_whitelisted:
-            prob_raw = max(0.0, prob_raw - 0.25)
-            
-        prob_pct = prob_raw * 100.0
 
-        # LAYER 3: RISK-ADAPTIVE 3-TIER OUTCOMES
-        if prob_raw >= 0.75:
-            st.session_state.eval_state = "COOLING_PERIOD"
-            st.session_state.pending_data = {"score": prob_pct, "amount": amount}
-        elif prob_raw >= 0.35:
-            st.session_state.eval_state = "CHALLENGE_2FA"
-            st.session_state.pending_data = {"score": prob_pct}
+    st.markdown("---")
+    st.subheader("Select a Payment Scenario to Test (Simulated QR Code)")
+
+    qr_col1, qr_col2, qr_col3 = st.columns(3)
+    preset_tx = None
+
+    with qr_col1:
+        st.markdown("☕ **Local Chai & Breakfast**")
+        st.caption("P2M Micro-payment")
+        if st.button("Pay ₹40 to `chaipoint@upi`"):
+            preset_tx = {"amount": 40.0, "receiver": "chaipoint@upi", "velocity": 5.0}
+
+    with qr_col2:
+        st.markdown("🛍️ **Festival Clothing Store**")
+        st.caption("Festival In-Store Purchase")
+        if st.button("Pay ₹8,500 to `ethnicwear@okhdfc`"):
+            preset_tx = {"amount": 8500.0, "receiver": "ethnicwear@okhdfc", "velocity": 15.0}
+
+    with qr_col3:
+        st.markdown("⚠️ **Emergency Transfer / Unknown Account**")
+        st.caption("High-Value Drain Vector")
+        if st.button("Pay ₹78,000 to `secure_escrow_agent@ybl`"):
+            preset_tx = {"amount": 78000.0, "receiver": "secure_escrow_agent@ybl", "velocity": 900.0}
+
+    if preset_tx:
+        current_hour = datetime.now().hour
+        result = evaluate_transaction(
+            amount=preset_tx['amount'],
+            balance=persona['balance'],
+            avg_spend=persona['avg_spend'],
+            hour=current_hour,
+            tx_count_10m=persona['tx_count_10m'],
+            is_new_device=not persona['trusted_device'],
+            velocity_kmh=preset_tx['velocity'],
+            inter_arrival_sec=persona['last_tx_time_gap']
+        )
+
+        st.markdown("### Transaction Authorization Result")
+        score = result['score']
+
+        if result['status'] == "APPROVED":
+            st.success(f"Payment Authorized: ₹{preset_tx['amount']:,.2f} to {preset_tx['receiver']}. Risk Score: {score*100:.1f}%")
+        elif result['status'] == "STEP_UP_CHALLENGE":
+            st.warning(f"Step-Up Authentication Required. Risk Score: {score*100:.1f}%. Biometric verification required due to unusual spending ratio.")
         else:
-            st.session_state.eval_state = "APPROVED"
-            st.session_state.pending_data = {"score": prob_pct}
+            st.error(f"Transaction Blocked: High Fraud Probability ({score*100:.1f}%). Account safety lock engaged.")
 
-# Display Engine Verdicts
-if st.session_state.eval_state == "HARD_BLOCK":
-    st.error("🚨 **TRANSACTION TERMINATED: MULTI-FLAG CRITICAL INTERCEPT**")
-    st.write(f"**Triggered Criteria:** {st.session_state.pending_data['reasons']}")
-    st.progress(1.0)
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Risk Score", f"{score*100:.1f}%")
+        m2.metric("Drain Ratio", f"{(preset_tx['amount']/persona['balance'])*100:.1f}%")
+        m3.metric("Spend vs Avg", f"{(preset_tx['amount']/persona['avg_spend']):.1f}x")
+        m4.metric("Device State", "Untrusted Device" if not persona['trusted_device'] else "Trusted Device")
 
-elif st.session_state.eval_state == "COOLING_PERIOD":
-    st.warning(f"⏳ **TRANSACTION PLACED IN A 2-HOUR COOLING PERIOD ({st.session_state.pending_data['score']:.1f}% Risk)**")
-    st.write(f"To safeguard your funds against potential social engineering, a token transfer of ₹2,000 has been cleared. The remaining ₹{st.session_state.pending_data['amount'] - 2000:,.2f} is queued for settlement after mandatory hold.")
-    st.progress(min(1.0, st.session_state.pending_data['score'] / 100.0))
+        if score > 0.70 or active_call:
+            st.markdown("---")
+            st.error("🚨 **Incident Mitigation & Cyber-Response Suite**")
+            inc_col1, inc_col2 = st.columns([1, 1])
+            with inc_col1:
+                st.markdown("**Emergency Assistance:**")
+                st.markdown("📞 **National Cyber Crime Helpline:** Dial **1930** immediately.")
+                st.markdown("🌐 **Official Reporting Portal:** [cybercrime.gov.in](https://cybercrime.gov.in)")
+                if st.button("Simulate Emergency NPCI Freeze on Receiver Account"):
+                    st.success("Automated Request Dispatched to NPCI Central Switch: Lien requested on beneficiary account.")
 
-elif st.session_state.eval_state == "CHALLENGE_2FA":
-    st.info(f"⚠️ **ELEVATED ACTIVITY DETECTED ({st.session_state.pending_data['score']:.1f}% Risk): STEP-UP VERIFICATION**")
-    st.write("A 6-digit cryptographic verification code has been dispatched to your primary banking device.")
-    st.progress(min(1.0, st.session_state.pending_data['score'] / 100.0))
-    
-    otp_input = st.text_input("Enter 6-Digit Verification Code:", max_chars=6, placeholder="e.g. 849201")
-    if st.button("Authenticate & Release Payment"):
-        if len(otp_input) == 6 and otp_input.isdigit():
-            st.success("✅ **Authentication Succeeded. Payment Cleared and Settled.**")
+            with inc_col2:
+                st.markdown("**Official Bank Dispute Documentation:**")
+                report_content = f"""OFFICIAL INCIDENT REPORT - ELECTRONIC PAYMENT DISPUTE
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Reference UTR: 429184{int(time.time())%1000000:06d}
+Beneficiary UPI VPA: {preset_tx['receiver']}
+Transaction Amount: INR {preset_tx['amount']}
+Risk Probability: {score*100:.2f}%
+Originating Account: {persona['name']}
+Flagged Vectors: Drain Ratio: {(preset_tx['amount']/persona['balance']):.2f}, Spikes: {(preset_tx['amount']/persona['avg_spend']):.1f}x
+Declaration: Filed under RBI Circular on Customer Protection - Limiting Liability in Unauthorized Electronic Banking Transactions.
+"""
+                st.download_button(
+                    label="Download Official Bank Incident Report (.txt)",
+                    data=report_content,
+                    file_name=f"UPI_Fraud_Report_{int(time.time())}.txt",
+                    mime="text/plain"
+                )
+
+# -------------------------------------------------------------
+# TAB 2: VIVA EVALUATION (MANUAL INPUTS)
+# -------------------------------------------------------------
+with tab2:
+    st.subheader("Manual Parameter Verification (Viva Testing)")
+    st.caption("Directly adjust mathematical features to evaluate the Random Forest model and rule engine.")
+
+    v_col1, v_col2 = st.columns(2)
+    with v_col1:
+        v_amount = st.number_input("Transaction Amount (₹)", min_value=1.0, value=25000.0, step=500.0)
+        v_balance = st.number_input("Account Balance (₹)", min_value=1.0, value=30000.0, step=1000.0)
+        v_avg_spend = st.number_input("Historical Average Spend (₹)", min_value=1.0, value=400.0, step=50.0)
+        v_hour = st.slider("Hour of Day (24-Hour Clock)", 0, 23, 2)
+
+    with v_col2:
+        v_tx_10m = st.number_input("Transactions in Last 10 Minutes (Frequency)", min_value=0, max_value=10, value=4)
+        v_new_device = st.selectbox("Device Status", options=["Trusted Device (0)", "Unrecognized/New Device (1)"]) == "Unrecognized/New Device (1)"
+        v_velocity = st.number_input("Calculated Geo-Velocity (km/h)", min_value=0.0, value=650.0, step=50.0)
+        v_inter_arrival = st.number_input("Inter-arrival Time (seconds since last tx)", min_value=0.1, value=0.8, step=0.5)
+
+    if st.button("Evaluate Transaction Parameters"):
+        v_result = evaluate_transaction(
+            amount=v_amount,
+            balance=v_balance,
+            avg_spend=v_avg_spend,
+            hour=v_hour,
+            tx_count_10m=v_tx_10m,
+            is_new_device=v_new_device,
+            velocity_kmh=v_velocity,
+            inter_arrival_sec=v_inter_arrival
+        )
+
+        v_score = v_result['score']
+        st.markdown("### Model Verdict")
+        if v_result['status'] == "APPROVED":
+            st.success(f"Status: APPROVED | Fraud Probability: {v_score*100:.2f}%")
+        elif v_result['status'] == "STEP_UP_CHALLENGE":
+            st.warning(f"Status: STEP-UP CHALLENGE | Fraud Probability: {v_score*100:.2f}%")
         else:
-            st.error("❌ Invalid authorization code. Please enter 6 numeric digits.")
+            st.error(f"Status: BLOCKED / FRAUD | Fraud Probability: {v_score*100:.2f}%")
 
-elif st.session_state.eval_state == "APPROVED":
-    st.success(f"✅ **TRANSACTION APPROVED: IMMEDIATE SETTLEMENT ({st.session_state.pending_data['score']:.1f}%)**")
-    st.write("Behavioral telemetry matches clean profile baseline.")
-    st.progress(max(0.05, st.session_state.pending_data['score'] / 100.0))
+        st.json({
+            "Risk Score": f"{v_score*100:.2f}%",
+            "Account Drain Ratio": f"{v_result.get('drain_ratio', 0)*100:.2f}%",
+            "Amount vs Average Multiplier": f"{v_result.get('amount_to_avg', 0):.2f}x",
+            "Engine Decision": v_result['status']
+        })
