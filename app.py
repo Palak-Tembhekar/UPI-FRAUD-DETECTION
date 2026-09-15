@@ -14,18 +14,27 @@ st.set_page_config(
 )
 
 # ==========================================
-# 1. EXACT PIXEL-MATCH CSS THEME
+# 1. HIGH-CONTRAST, LARGE-FONT CSS THEME
 # ==========================================
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap');
     
     html, body, [class*="css"] {
         font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 18px !important;
+        color: #000000 !important;
     }
     
     .stApp {
-        background-color: #F6F8FC;
+        background-color: #F8FAFC;
+    }
+    
+    /* Input Labels and Text */
+    p, span, label, .stMarkdown {
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        color: #000000 !important;
     }
     
     /* Top Header Bar */
@@ -34,411 +43,149 @@ st.markdown("""
         justify-content: space-between;
         align-items: center;
         background: #FFFFFF;
-        padding: 10px 24px;
-        border-radius: 16px;
-        border: 1px solid #E9EFF6;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        padding: 16px 28px;
+        border-radius: 18px;
+        border: 2px solid #CBD5E1;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.04);
     }
-    .brand-group {
+    .brand-title {
+        font-size: 1.35rem;
+        font-weight: 900;
+        color: #000000;
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
     }
-    .brand-icon {
-        background: #EFF4FF;
-        color: #3B82F6;
-        border-radius: 12px;
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        font-weight: 700;
-    }
-    .brand-text {
-        font-size: 1.05rem;
+    .brand-badge {
+        font-size: 0.8rem;
+        background: #DBEAFE;
+        color: #1D4ED8;
+        padding: 3px 10px;
+        border-radius: 8px;
         font-weight: 800;
-        color: #1E293B;
-    }
-    .version-tag {
-        font-size: 0.7rem;
-        background: #F1F5F9;
-        color: #64748B;
-        padding: 2px 7px;
-        border-radius: 6px;
-        font-weight: 600;
-        margin-left: 6px;
-    }
-    .sub-brand {
-        font-size: 0.8rem;
-        color: #94A3B8;
-        font-weight: 500;
-    }
-    .header-right {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-    }
-    .system-status {
-        font-size: 0.8rem;
-        color: #10B981;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .status-dot {
-        width: 8px;
-        height: 8px;
-        background: #10B981;
-        border-radius: 50%;
     }
     .user-pill {
         display: flex;
         align-items: center;
-        gap: 8px;
-        background: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        padding: 4px 12px 4px 6px;
-        border-radius: 20px;
-    }
-    .avatar {
-        background: #3B82F6;
-        color: white;
-        font-weight: 700;
-        border-radius: 50%;
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.75rem;
-    }
-    
-    /* Hero Banner */
-    .hero-banner {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-    .hero-title {
-        font-size: 1.5rem;
+        gap: 10px;
+        background: #F1F5F9;
+        border: 2px solid #94A3B8;
+        padding: 6px 16px;
+        border-radius: 24px;
         font-weight: 800;
-        color: #0F172A;
-        margin: 0;
-    }
-    .hero-sub {
-        font-size: 0.85rem;
-        color: #64748B;
-        margin-top: 4px;
-        font-weight: 500;
-    }
-    .hero-right-badge {
-        background: linear-gradient(135deg, #EFF6FF 0%, #E0EDFF 100%);
-        border: 1px solid #BFDBFE;
-        border-radius: 14px;
-        padding: 10px 18px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
+        color: #000000;
     }
     
-    /* Cards */
+    /* Main Cards */
     .custom-card {
         background: #FFFFFF;
-        border-radius: 16px;
-        border: 1px solid #EAEFF5;
-        padding: 22px;
-        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.02);
-        margin-bottom: 18px;
+        border-radius: 18px;
+        border: 2px solid #CBD5E1;
+        padding: 24px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+        margin-bottom: 22px;
     }
     .card-header-bar {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-weight: 800;
-        font-size: 1.02rem;
-        color: #0F172A;
-        margin-bottom: 16px;
-    }
-    .header-icon-box {
-        background: #F1F5F9;
-        color: #3B82F6;
-        border-radius: 8px;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-    }
-    
-    /* Run Pipeline Button */
-    div.stButton > button[kind="primary"] {
-        background: linear-gradient(90deg, #F43F5E 0%, #E11D48 100%);
-        color: white;
-        font-size: 1rem;
-        font-weight: 700;
-        border-radius: 12px;
-        padding: 14px 28px;
-        border: none;
-        box-shadow: 0 6px 18px rgba(225, 29, 72, 0.28);
-        width: 100%;
-        margin-top: 10px;
-    }
-    div.stButton > button[kind="primary"]:hover {
-        background: linear-gradient(90deg, #E11D48 0%, #BE123C 100%);
-    }
-    
-    /* Status Top Banner */
-    .status-alert-box {
-        background: #FFF1EE;
-        border: 1px solid #FFD5CC;
-        border-radius: 14px;
-        padding: 14px 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        font-weight: 900;
+        font-size: 1.3rem;
+        color: #000000;
         margin-bottom: 18px;
-    }
-    .status-alert-title {
         display: flex;
         align-items: center;
         gap: 10px;
-        font-weight: 800;
-        font-size: 0.98rem;
-        color: #C2410C;
-    }
-    .status-alert-right {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .risk-score-pill {
-        background: #FFFFFF;
-        border: 1px solid #FFD5CC;
-        color: #C2410C;
-        font-weight: 700;
-        font-size: 0.8rem;
-        padding: 4px 12px;
-        border-radius: 14px;
-    }
-    .risk-level-badge {
-        background: #FFE4DE;
-        color: #C2410C;
-        font-weight: 700;
-        font-size: 0.8rem;
-        padding: 4px 12px;
-        border-radius: 14px;
     }
 
-    /* Frozen Card */
-    .frozen-card {
-        background: #FFF8F6;
-        border: 1px solid #FFE4DE;
-        border-radius: 16px;
-        padding: 18px 20px;
-        margin-bottom: 16px;
+    /* Verification Button */
+    div.stButton > button[kind="primary"] {
+        background: linear-gradient(90deg, #E11D48 0%, #BE123C 100%) !important;
+        color: #FFFFFF !important;
+        font-size: 1.25rem !important;
+        font-weight: 900 !important;
+        border-radius: 14px !important;
+        padding: 16px 32px !important;
+        border: none !important;
+        box-shadow: 0 6px 20px rgba(225, 29, 72, 0.35) !important;
+        width: 100% !important;
+        margin-top: 14px !important;
     }
-    .frozen-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .frozen-icon {
-        background: #F43F5E;
-        color: white;
-        border-radius: 10px;
-        width: 38px;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-    }
-    .frozen-title {
-        font-weight: 800;
-        font-size: 1.05rem;
-        color: #E11D48;
-    }
-    .frozen-sub {
-        font-size: 0.82rem;
-        color: #64748B;
-        margin-top: 2px;
-    }
-    
-    /* OTP Cells Mock */
-    .otp-row {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        margin-top: 14px;
-    }
-    .otp-cell {
-        width: 44px;
-        height: 44px;
-        border: 1px solid #CBD5E1;
-        background: #FFFFFF;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        color: #0F172A;
-        font-weight: 700;
-    }
-    
-    /* Reason Box */
-    .reason-card {
-        background: #FFF8F6;
-        border: 1px solid #FFE4DE;
-        border-radius: 16px;
-        padding: 16px 20px;
-        margin-bottom: 16px;
-    }
-    .reason-title {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-weight: 800;
-        font-size: 0.95rem;
-        color: #E11D48;
-        margin-bottom: 6px;
-    }
-    .reason-text {
-        font-size: 0.85rem;
-        color: #475569;
-        line-height: 1.4;
-    }
-    
-    /* Summary Bento Tiles */
+
+    /* Bento Metric Tiles */
     .summary-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
-        margin-top: 10px;
+        gap: 14px;
+        margin-top: 14px;
     }
     .bento-tile {
-        border-radius: 12px;
-        padding: 12px 14px;
+        border-radius: 14px;
+        padding: 16px 18px;
+        border: 2px solid #CBD5E1;
     }
-    .tile-drain { background: #FAF5FF; border: 1px solid #F3E8FF; }
-    .tile-spike { background: #EFF6FF; border: 1px solid #DBEAFE; }
-    .tile-speed { background: #ECFDF5; border: 1px solid #D1FAE5; }
-    .tile-risk  { background: #FFFBEB; border: 1px solid #FEF3C7; }
+    .tile-drain { background: #FAF5FF; border-color: #D8B4FE; }
+    .tile-spike { background: #EFF6FF; border-color: #93C5FD; }
+    .tile-speed { background: #F0FDF4; border-color: #86EFAC; }
+    .tile-risk  { background: #FFFBEB; border-color: #FDE68A; }
     
     .tile-lbl {
-        font-size: 0.7rem;
-        font-weight: 600;
-        color: #64748B;
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #1E293B;
+        text-transform: uppercase;
         margin-bottom: 4px;
     }
-    .tile-val-drain { font-size: 1.35rem; font-weight: 800; color: #DC2626; }
-    .tile-val-spike { font-size: 1.35rem; font-weight: 800; color: #2563EB; }
-    .tile-val-speed { font-size: 1.35rem; font-weight: 800; color: #059669; }
-    .tile-val-risk  { font-size: 1.35rem; font-weight: 800; color: #D97706; }
+    .tile-val {
+        font-size: 1.7rem;
+        font-weight: 900;
+    }
     
-    /* Investigation Steps */
+    /* Checklist Steps */
     .step-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 10px 14px;
-        border-radius: 10px;
-        margin-bottom: 8px;
-        background: #FAFCFF;
-        border: 1px solid #F1F5F9;
-    }
-    .step-left {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .step-num-icon-ok {
-        background: #DCFCE7;
-        color: #16A34A;
-        border-radius: 50%;
-        width: 26px;
-        height: 26px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8rem;
-        font-weight: 700;
-    }
-    .step-num-icon-warn {
-        background: #FEF3C7;
-        color: #D97706;
-        border-radius: 50%;
-        width: 26px;
-        height: 26px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8rem;
-        font-weight: 700;
+        padding: 14px 18px;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        background: #F8FAFC;
+        border: 2px solid #E2E8F0;
     }
     .step-title {
-        font-weight: 700;
-        font-size: 0.85rem;
-        color: #1E293B;
+        font-weight: 900;
+        font-size: 1.05rem;
+        color: #000000;
     }
     .step-sub {
-        font-size: 0.75rem;
-        color: #64748B;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #334155;
     }
     .pill-ok {
         background: #DCFCE7;
-        color: #15803D;
-        font-weight: 700;
-        font-size: 0.7rem;
-        padding: 4px 10px;
-        border-radius: 8px;
+        color: #166534;
+        font-weight: 900;
+        font-size: 0.85rem;
+        padding: 6px 14px;
+        border-radius: 10px;
+        border: 1px solid #86EFAC;
     }
     .pill-alert {
         background: #FEE2E2;
-        color: #DC2626;
-        font-weight: 700;
-        font-size: 0.7rem;
-        padding: 4px 10px;
-        border-radius: 8px;
-    }
-    
-    /* Emergency Response Tiles */
-    .emergency-tile {
-        background: #FFFFFF;
-        border: 1px solid #F1F5F9;
-        border-radius: 14px;
-        padding: 14px 18px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-    .tile-left-content {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .action-icon-box {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-    }
-    .action-title {
+        color: #991B1B;
+        font-weight: 900;
         font-size: 0.85rem;
-        font-weight: 700;
-        color: #0F172A;
+        padding: 6px 14px;
+        border-radius: 10px;
+        border: 1px solid #FCA5A5;
     }
-    .action-sub {
-        font-size: 0.75rem;
-        color: #64748B;
+
+    /* Large Prominent OTP Box */
+    .otp-container {
+        background: #FFFFFF;
+        border: 2px solid #F59E0B;
+        border-radius: 16px;
+        padding: 20px;
+        margin-top: 14px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -448,46 +195,19 @@ st.markdown("""
 # ==========================================
 st.markdown("""
 <div class="top-header">
-    <div class="brand-group">
-        <div class="brand-icon">🛡️</div>
-        <div>
-            <div style="display:flex; align-items:center;">
-                <span class="brand-text">UPI Shield</span>
-                <span class="version-tag">v2.0</span>
-            </div>
-            <div class="sub-brand">Intelligent Fraud Mitigation Gateway</div>
-        </div>
-        <div style="color:#CBD5E1; margin: 0 10px;">|</div>
-        <div style="font-size:0.8rem; color:#64748B; font-weight:500;">
-            <span style="color:#3B82F6;">Smarter Checks</span> &nbsp;→&nbsp; Safer Payments
-        </div>
+    <div class="brand-title">
+        <span>🛡️ UPI Shield</span>
+        <span class="brand-badge">v2.0</span>
+        <span style="color:#64748B; font-weight:700; font-size:1rem; margin-left:8px;">| Intelligent Fraud Mitigation Gateway</span>
     </div>
-    <div class="header-right">
-        <div class="system-status">
-            <span class="status-dot"></span>
-            System Online
+    <div style="display:flex; align-items:center; gap:24px;">
+        <div style="font-size:0.95rem; font-weight:800; color:#16A34A; display:flex; align-items:center; gap:8px;">
+            <span style="width:10px; height:10px; background:#16A34A; border-radius:50%; display:inline-block;"></span>
+            Bank Switch Online
         </div>
         <div class="user-pill">
-            <div class="avatar">P</div>
-            <div style="text-align:left;">
-                <div style="font-size:0.8rem; font-weight:700; color:#0F172A; line-height:1.1;">Palak</div>
-                <div style="font-size:0.65rem; color:#64748B;">Analyst</div>
-            </div>
-            <span style="font-size:0.7rem; color:#94A3B8;">▼</span>
-        </div>
-    </div>
-</div>
-
-<div class="hero-banner">
-    <div>
-        <h1 class="hero-title">Intelligent UPI Fraud Mitigation Engine</h1>
-        <div class="hero-sub">Pre-ML Rules + Behavioral Random Forest + Adaptive Mitigation</div>
-    </div>
-    <div class="hero-right-badge">
-        <div style="font-size:1.4rem;">🛡️</div>
-        <div>
-            <div style="font-size:0.82rem; font-weight:700; color:#1E40AF;">Smarter Detection.</div>
-            <div style="font-size:0.78rem; font-weight:600; color:#3B82F6;">Faster Protection.</div>
+            <span style="background:#2563EB; color:#FFF; border-radius:50%; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; font-size:0.85rem;">P</span>
+            <span>Palak (AI Engineer)</span>
         </div>
     </div>
 </div>
@@ -517,7 +237,7 @@ PROFESSIONS = {
 }
 
 # ==========================================
-# 4. BACKEND VERIFICATION PIPELINE
+# 4. ROBUST EVALUATION ENGINE
 # ==========================================
 def run_investigation(amount, balance, avg_spend, hour_24, tx_count, is_new_device, is_new_payee, dist_km, gap_sec):
     drain_ratio = float(amount) / (float(balance) + 1e-5)
@@ -528,56 +248,59 @@ def run_investigation(amount, balance, avg_spend, hour_24, tx_count, is_new_devi
     flags = []
     log = []
 
-    # 1. Balance & basics
-    if amount <= balance:
-        log.append(("1. Balance & basics OK", "Sufficient funds, positive amount.", "OK"))
-    else:
-        log.append(("1. Balance & basics", "Insufficient funds for amount.", "ALERT"))
-        flags.append("OVERDRAW")
+    # 1. Deterministic Checks
+    if amount <= 0:
+        return {"tier": "REJECTED", "status": "INVALID AMOUNT", "score": 1.0, "reason": "Amount must be strictly positive.", "drain_ratio": 0, "amount_to_avg": 0, "speed_kmh": 0, "log": [("Balance & basics", "Failed: Amount <= 0", "ALERT")], "flags": ["INVALID"]}
 
-    # 2. Speed Check
-    if speed_kmh <= 300.0:
-        log.append(("2. Speed OK", f"{speed_kmh:,.0f} km/h – normal travel.", "OK"))
+    if amount > balance:
+        log.append(("1. Balance & Liquidity", f"FAILED: Amount ₹{amount:,.0f} exceeds balance ₹{balance:,.0f}", "ALERT"))
+        return {"tier": "REJECTED", "status": "INSUFFICIENT FUNDS", "score": 1.0, "reason": f"Amount (₹{amount:,.2f}) exceeds available balance (₹{balance:,.2f}).", "drain_ratio": drain_ratio, "amount_to_avg": amount_to_avg, "speed_kmh": speed_kmh, "log": log, "flags": ["OVERDRAW"]}
     else:
-        log.append(("2. Speed ALERT", f"Impossible travel speed: {speed_kmh:,.0f} km/h.", "ALERT"))
-        flags.append("IMPOSSIBLE_SPEED")
+        log.append(("1. Balance & Liquidity", "Sufficient balance verified.", "OK"))
 
-    # 3. Drain Check
+    # 2. Velocity Check
+    if speed_kmh > 300.0 and dist_km > 20.0:
+        log.append(("2. Travel Speed", f"ALERT: Impossible speed ({speed_kmh:,.0f} km/h).", "ALERT"))
+        flags.append("IMPOSSIBLE SPEED")
+    else:
+        log.append(("2. Travel Speed", f"{speed_kmh:,.0f} km/h (Physically feasible).", "OK"))
+
+    # 3. Account Drain Check
     if drain_ratio > 0.65:
-        log.append(("3. Drain ALERT", f"Attempting to spend {drain_ratio*100:.1f}% of total balance.", "ALERT"))
-        flags.append("HIGH_DRAIN")
+        log.append(("3. Balance Drain", f"ALERT: High drain ({drain_ratio*100:.1f}% of total funds).", "ALERT"))
+        flags.append("HIGH DRAIN")
     else:
-        log.append(("3. Drain OK", f"{drain_ratio*100:.1f}% of balance.", "OK"))
+        log.append(("3. Balance Drain", f"{drain_ratio*100:.1f}% of balance (Safe).", "OK"))
 
-    # 4. Spending Spike
+    # 4. Spending Surge
     if amount_to_avg > 3.5:
-        log.append(("4. Spending Spike", f"{amount_to_avg:.1f}x higher than usual average.", "ALERT"))
-        flags.append("SPENDING_SPIKE")
+        log.append(("4. Spend Baseline", f"ALERT: Surge of {amount_to_avg:.1f}x historical average.", "ALERT"))
+        flags.append("SPENDING SPIKE")
     else:
-        log.append(("4. Spending Spike", f"{amount_to_avg:.1f}x average (Normal).", "OK"))
+        log.append(("4. Spend Baseline", f"{amount_to_avg:.1f}x baseline (Normal spend habit).", "OK"))
 
     # 5. Device Integrity
     if is_new_device:
-        log.append(("5. Device ALERT", "Unrecognized new handset detected.", "ALERT"))
-        flags.append("NEW_DEVICE")
+        log.append(("5. Device Token", "ALERT: Unrecognized hardware token.", "ALERT"))
+        flags.append("NEW DEVICE")
     else:
-        log.append(("5. Device OK", "Recognized trusted phone.", "OK"))
+        log.append(("5. Device Token", "Recognized trusted handset.", "OK"))
 
     # 6. Timing Window
     if hour_24 in [0, 1, 2, 3, 4, 23]:
-        log.append(("6. Timing Notice", f"Late night transaction at {hour_24:02d}:00 hrs.", "ALERT"))
-        flags.append("OFF_HOURS")
+        log.append(("6. Timing Window", f"NOTICE: Late night transaction ({hour_24:02d}:00 hrs).", "ALERT"))
+        flags.append("OFF-HOURS")
     else:
-        log.append(("6. Timing OK", f"Daytime transaction at {hour_24:02d}:00.", "OK"))
+        log.append(("6. Timing Window", f"Standard daylight window ({hour_24:02d}:00 hrs).", "OK"))
 
-    # 7. Payee Trust
+    # 7. Payee Status
     if is_new_payee:
-        log.append(("7. Payee Notice", "First-time transfer to unverified contact.", "ALERT"))
-        flags.append("NEW_PAYEE")
+        log.append(("7. Recipient Trust", "NOTICE: First-time transfer to new contact.", "ALERT"))
+        flags.append("NEW PAYEE")
     else:
-        log.append(("7. Payee OK", "Own contact you paid before.", "OK"))
+        log.append(("7. Recipient Trust", "Established contact previously transacted with.", "OK"))
 
-    # Synthesize Score
+    # Machine Learning Inference
     n_expected = getattr(scaler, "n_features_in_", 8)
     if n_expected == 8:
         feats = np.array([[amount, amount_to_avg, drain_ratio, hour_24, tx_count, 1 if is_new_device else 0, speed_kmh, gap_sec]])
@@ -587,24 +310,31 @@ def run_investigation(amount, balance, avg_spend, hour_24, tx_count, is_new_devi
     scaled = scaler.transform(feats)
     rf_risk = float(model.predict_proba(scaled)[0][1])
 
-    score = 0.52 if ("HIGH_DRAIN" in flags or "SPENDING_SPIKE" in flags) else rf_risk
-    if "IMPOSSIBLE_SPEED" in flags:
+    # Dynamic Score Harmonization (Prevents 0.0% Glitch)
+    if "IMPOSSIBLE SPEED" in flags:
         score = 0.99
+    elif "HIGH DRAIN" in flags and "NEW DEVICE" in flags:
+        score = 0.96
     elif len(flags) >= 3:
-        score = max(score, 0.75)
+        score = max(rf_risk, 0.76)
+    elif len(flags) >= 1:
+        score = max(rf_risk, 0.52)
+    else:
+        score = min(max(rf_risk, 0.05), 0.18)
 
-    tier = "TIER_2_CHALLENGE"
-    status = "SUSPICIOUS PAYMENT, FROZEN"
-    reason = "Suspicious Activity Detected: Triggered by HIGH SPEND, SPENDING SPIKE. Payment temporarily frozen pending OTP verification."
-
+    # Threshold Arbitration
     if score >= 0.90:
         tier = "TIER_3_COOLING"
-        status = "CRITICAL RISK BLOCK"
-        reason = f"Payment Blocked: High risk detected across {', '.join(flags)}."
-    elif score < 0.35 and len(flags) == 0:
+        status = "CRITICAL RISK, BLOCKED"
+        reason = f"Payment Blocked: High risk detected ({', '.join(flags)}). Transaction terminated to protect funds."
+    elif score >= 0.35 or len(flags) >= 1:
+        tier = "TIER_2_CHALLENGE"
+        status = "SUSPICIOUS PAYMENT, FROZEN"
+        reason = f"Suspicious Activity Detected: Triggered by {', '.join(flags)}. Payment held on security freeze pending OTP verification."
+    else:
         tier = "TIER_1_PASS"
         status = "INSTANT APPROVAL"
-        reason = "All security telemetry checks verified safely."
+        reason = "All security telemetry checks verified safely. Transaction cleared."
 
     return {
         "tier": tier,
@@ -619,284 +349,285 @@ def run_investigation(amount, balance, avg_spend, hour_24, tx_count, is_new_devi
     }
 
 # ==========================================
-# 5. MAIN APPLICATION UI
+# 5. STREAMLIT UI
 # ==========================================
-tab_manual, tab_prod = st.tabs(["📋 Manual Testing", "📱 Production App Store"])
+tab_manual, tab_prod = st.tabs(["📋 Manual Testing Panel", "📱 Production App Simulator"])
 
 with tab_manual:
-    # ---------------------------------------------
-    # INPUT SECTION (MATCHING SCREENSHOT FORM)
-    # ---------------------------------------------
     st.markdown("""
     <div class="custom-card">
         <div class="card-header-bar">
-            <div class="header-icon-box">📋</div>
-            <div>
-                <div>Manual Testing Panel</div>
-                <div style="font-size:0.75rem; color:#64748B; font-weight:500;">Enter the details below to analyse the transaction in real-time.</div>
-            </div>
+            <span>📋 Manual Testing Panel</span>
         </div>
     """, unsafe_allow_html=True)
 
     c_in1, c_in2 = st.columns(2)
 
     with c_in1:
-        st.caption("**1. Select Profession Profile**")
+        st.markdown("**1. Select Profession Profile**")
         sel_prof = st.selectbox("", list(PROFESSIONS.keys()), label_visibility="collapsed")
         prof = PROFESSIONS[sel_prof]
 
-        st.caption("**2. Payment Details**")
-        st.caption("Transaction Amount (₹)")
+        st.markdown("**2. Payment Details**")
+        st.markdown("**Transaction Amount (₹)**")
         in_amount = st.number_input("Transaction Amount", min_value=1.0, value=10000.0, step=500.0, label_visibility="collapsed")
         
-        st.caption("Account Balance (₹)")
-        in_balance = st.number_input("Account Balance", min_value=1.0, value=12000.0, step=1000.0, label_visibility="collapsed")
+        st.markdown("**Account Balance (₹)**")
+        in_balance = st.number_input("Account Balance", min_value=1.0, value=float(prof['balance']), step=1000.0, label_visibility="collapsed")
         
-        st.caption("Usual Average Spend (₹)")
-        in_avg = st.number_input("Usual Average Spend", min_value=1.0, value=2000.0, step=100.0, label_visibility="collapsed")
+        st.markdown("**Usual Average Spend (₹)**")
+        in_avg = st.number_input("Usual Average Spend", min_value=1.0, value=float(prof['avg_spend']), step=100.0, label_visibility="collapsed")
         
-        st.caption("Payee History")
+        st.markdown("**Payee History**")
         in_payee_new = st.selectbox("Payee History", ["Known / Frequently Paid Contact", "New / Unverified Payee"], index=0, label_visibility="collapsed") == "New / Unverified Payee"
 
     with c_in2:
-        st.caption("**3. Location & Phone Context**")
-        st.caption("Distance from Last Transaction (km)")
+        st.markdown("**3. Location & Phone Context**")
+        st.markdown("**Distance from Last Transaction (km)**")
         in_dist = st.number_input("Distance from Last Transaction (km)", min_value=0.0, value=50.0, step=5.0, label_visibility="collapsed")
 
-        st.caption("Time Gap Since Last Payment")
+        st.markdown("**Time Gap Since Last Payment**")
         g_val_col, g_unit_col = st.columns([1, 1])
         with g_val_col:
             in_gap_val = st.number_input("Value", min_value=0.1, value=30.0, step=1.0, label_visibility="collapsed")
         with g_unit_col:
             in_gap_unit = st.selectbox("Unit", ["Minutes", "Seconds", "Hours"], index=0, label_visibility="collapsed")
 
-        st.caption("Number of Payments in Last 10 Mins")
+        st.markdown("**Number of Payments in Last 10 Mins**")
         in_tx_count = st.number_input("Payments in 10 Mins", min_value=0, max_value=10, value=1, label_visibility="collapsed")
 
-        st.caption("Phone Used")
+        st.markdown("**Phone Used**")
         in_device = st.selectbox("Phone Used", ["Trusted Phone (Known)", "New / Unrecognized Phone"], index=0, label_visibility="collapsed") == "New / Unrecognized Phone"
 
-    # Time Selection Row
+    # Time of Transaction Row
     st.markdown("<br>", unsafe_allow_html=True)
-    st.caption("**4. Time of Transaction**")
+    st.markdown("**4. Time of Transaction**")
     t_c1, t_c2, t_c3, t_c4 = st.columns([1, 1, 1.2, 2.5])
     with t_c1:
-        st.caption("Hour")
+        st.caption("**Hour**")
         h_12 = st.selectbox("Hour", list(range(1, 13)), index=11, label_visibility="collapsed")
     with t_c2:
-        st.caption("Minute")
+        st.caption("**Minute**")
         m_val = st.selectbox("Minute", ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"], index=6, label_visibility="collapsed")
     with t_c3:
-        st.caption("AM / PM")
+        st.caption("**AM / PM**")
         ampm = st.radio("AM/PM", ["AM", "PM"], horizontal=True, index=0, label_visibility="collapsed")
     with t_c4:
         st.write("")
-        st.caption(f"Selected Time: **{h_12}:{m_val} {ampm}** (24h: {('00' if h_12==12 else f'{h_12:02d}') if ampm=='AM' else ('12' if h_12==12 else str(h_12+12))}:{m_val})")
+        st.markdown(f"**Selected Time:** `{h_12}:{m_val} {ampm}`")
 
     calc_gap_sec = in_gap_val * 60.0 if in_gap_unit == "Minutes" else (in_gap_val * 3600.0 if in_gap_unit == "Hours" else in_gap_val)
     calc_hour_24 = (0 if h_12 == 12 else h_12) if ampm == "AM" else (12 if h_12 == 12 else h_12 + 12)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    btn_trigger = st.button("⚡ Run Verification Pipeline", type="primary")
+    btn_trigger = st.button("Run Verification Pipeline", type="primary")
 
     if btn_trigger or 'res_data' not in st.session_state:
         st.session_state['res_data'] = run_investigation(
             in_amount, in_balance, in_avg, calc_hour_24, in_tx_count, in_device, in_payee_new, in_dist, calc_gap_sec
         )
+        st.session_state['v_inputs'] = {"amount": in_amount, "prof": sel_prof, "payee": "New Payee" if in_payee_new else "Known Contact"}
 
     res = st.session_state['res_data']
+    tier = res['tier']
+    score = res['score']
 
     # ---------------------------------------------
-    # STATUS BAR (MATCHING THE SCREENSHOT EXACTLY)
+    # DYNAMIC STATUS BAR (POINTS 3 & 4)
     # ---------------------------------------------
+    if tier == "TIER_1_PASS":
+        box_bg = "#ECFDF5"
+        box_border = "#10B981"
+        txt_color = "#047857"
+        right_badge_txt = "● Low Risk (Passed)"
+        right_badge_bg = "#D1FAE5"
+    elif tier == "TIER_2_CHALLENGE":
+        box_bg = "#FFFBEB"
+        box_border = "#F59E0B"
+        txt_color = "#B45309"
+        right_badge_txt = "● Medium Risk (Frozen)"
+        right_badge_bg = "#FDE68A"
+    else:
+        box_bg = "#FEF2F2"
+        box_border = "#EF4444"
+        txt_color = "#B91C1C"
+        right_badge_txt = "● High Risk (Blocked)"
+        right_badge_bg = "#FECACA"
+
     st.markdown(f"""
-    <div class="status-alert-box">
-        <div class="status-alert-title">
-            <span style="background:#EA580C; color:white; border-radius:50%; width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem;">!</span>
+    <div style="background:{box_bg}; border:2px solid {box_border}; border-radius:16px; padding:16px 24px; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <div style="font-weight:900; font-size:1.25rem; color:{txt_color};">
             STATUS: {res['status']}
         </div>
-        <div class="status-alert-right">
-            <span class="risk-score-pill">Risk Score: {res['score']*100:.1f}%</span>
-            <span class="risk-level-badge">● High Risk</span>
+        <div style="display:flex; gap:14px; align-items:center;">
+            <span style="background:#FFFFFF; border:2px solid {box_border}; color:{txt_color}; font-weight:900; font-size:1rem; padding:6px 16px; border-radius:20px;">
+                Risk Score: {score*100:.1f}%
+            </span>
+            <span style="background:{right_badge_bg}; color:{txt_color}; font-weight:900; font-size:1rem; padding:6px 16px; border-radius:20px;">
+                {right_badge_txt}
+            </span>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     # ---------------------------------------------
-    # 2-COLUMN SPLIT (FORENSIC AUDIT + VERIFICATION)
+    # CONDITIONAL DASHBOARD SPLIT (POINTS 6 & 7)
     # ---------------------------------------------
-    split_left, split_right = st.columns([1.15, 1])
+    col_left, col_right = st.columns([1.15, 1])
 
-    with split_left:
-        # 1. Payment Frozen Card
-        st.markdown("""
-        <div class="frozen-card">
-            <div class="frozen-header">
-                <div class="frozen-icon">🔒</div>
-                <div>
-                    <div class="frozen-title">Payment Frozen</div>
-                    <div class="frozen-sub">Held for safety. Enter the 4-digit SMS OTP to approve.</div>
+    with col_left:
+        # If Instant Approval, show clean verified badge instead of Frozen box
+        if tier == "TIER_1_PASS":
+            st.markdown("""
+            <div class="custom-card" style="border:2px solid #10B981; background:#F0FDF4;">
+                <div style="font-size:1.3rem; font-weight:900; color:#166534; display:flex; align-items:center; gap:10px;">
+                    ✅ Transaction Cleared & Safe
+                </div>
+                <div style="font-size:1.05rem; font-weight:700; color:#15803D; margin-top:8px;">
+                    No anomalous telemetry detected. Payment was instantly authorized without challenge.
                 </div>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                <div class="otp-row">
-                    <div class="otp-cell">*</div>
-                    <div class="otp-cell">*</div>
-                    <div class="otp-cell">*</div>
-                    <div class="otp-cell">*</div>
+            """, unsafe_allow_html=True)
+        
+        # If Suspicious/Frozen, show Large Prominent OTP Box
+        elif tier == "TIER_2_CHALLENGE":
+            st.markdown("""
+            <div class="otp-container">
+                <div style="font-size:1.3rem; font-weight:900; color:#DC2626; display:flex; align-items:center; gap:10px;">
+                    ⏸️ Payment Frozen
                 </div>
-                <div style="text-align:right;">
-                    <div style="font-weight:700; color:#EF4444; font-size:0.95rem;">04:48</div>
-                    <div style="font-size:0.7rem; color:#94A3B8;">OTP expires in</div>
+                <div style="font-size:1.05rem; font-weight:700; color:#000000; margin-top:4px;">
+                    Held for safety. Enter the 4-digit SMS OTP to approve release of funds.
                 </div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
-        otp_in_col, otp_btn_col = st.columns([2, 1])
-        with otp_in_col:
-            entered_otp = st.text_input("Enter OTP (Mock: 4921)", max_chars=4, label_visibility="collapsed", placeholder="Enter 4-digit OTP")
-        with otp_btn_col:
-            if st.button("Verify OTP"):
-                if entered_otp == "4921":
-                    st.success("✅ Payment Released!")
-                else:
-                    st.error("❌ Invalid OTP")
+            otp_c1, otp_c2 = st.columns([1.8, 1])
+            with otp_c1:
+                st.markdown("**Enter 4-Digit Security OTP (Mock: 4921):**")
+                user_otp = st.text_input("Enter 4-digit Security OTP", max_chars=4, label_visibility="collapsed", placeholder="Enter 4-digit OTP here")
+            with otp_c2:
+                st.write("")
+                st.write("")
+                if st.button("Verify & Release Funds", key="v_otp_btn"):
+                    if user_otp == "4921":
+                        st.success("✅ OTP Verified! Payment approved and funds released.")
+                    else:
+                        st.error("❌ Invalid OTP. Hold maintained.")
 
-        # 2. Reason Card
+            # Reason Card
+            st.markdown(f"""
+            <div class="custom-card" style="border:2px solid #F59E0B; margin-top:14px;">
+                <div style="font-size:1.2rem; font-weight:900; color:#B45309; margin-bottom:8px;">⚠️ Decision Reason</div>
+                <div style="font-size:1.05rem; font-weight:700; color:#000000; line-height:1.5;">
+                    {res['reason']}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        else: # TIER_3_COOLING
+            st.markdown(f"""
+            <div class="custom-card" style="border:2px solid #EF4444; background:#FEF2F2;">
+                <div style="font-size:1.3rem; font-weight:900; color:#DC2626; margin-bottom:8px;">🚫 Transaction Terminated</div>
+                <div style="font-size:1.05rem; font-weight:700; color:#991B1B; line-height:1.5;">
+                    {res['reason']}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # Behavioral Metrics Bento Grid
         st.markdown(f"""
-        <div class="reason-card">
-            <div class="reason-title">
-                <span style="background:#EF4444; color:white; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font-size:0.75rem;">!</span>
-                Reason
-            </div>
-            <div class="reason-text">
-                Suspicious Activity Detected: Triggered by<br>
-                <strong style="color:#DC2626;">HIGH SPEND, SPENDING SPIKE.</strong><br>
-                Payment temporarily frozen pending OTP verification.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # 3. Transaction Summary Bento Grid
-        st.markdown(f"""
-        <div class="custom-card">
-            <div class="card-header-bar" style="margin-bottom:8px;">
-                <div class="header-icon-box">📊</div>
-                <div>Transaction Summary</div>
-            </div>
+        <div class="custom-card" style="margin-top:14px;">
+            <div class="card-header-bar">📊 Behavioral Metrics Summary</div>
             <div class="summary-grid">
                 <div class="bento-tile tile-drain">
                     <div class="tile-lbl">Account Drain</div>
-                    <div class="tile-val-drain">{res['drain_ratio']*100:.1f}%</div>
+                    <div class="tile-val" style="color:#7E22CE;">{res['drain_ratio']*100:.1f}%</div>
                 </div>
                 <div class="bento-tile tile-spike">
-                    <div class="tile-lbl">Spike Average</div>
-                    <div class="tile-val-spike">{res['amount_to_avg']:.1f}x</div>
+                    <div class="tile-lbl">Spike Ratio</div>
+                    <div class="tile-val" style="color:#1D4ED8;">{res['amount_to_avg']:.1f}x</div>
                 </div>
                 <div class="bento-tile tile-speed">
                     <div class="tile-lbl">Travel Speed</div>
-                    <div class="tile-val-speed">{res['speed_kmh']:,.0f} km/h</div>
+                    <div class="tile-val" style="color:#15803D;">{res['speed_kmh']:,.0f} <span style="font-size:0.9rem;">km/h</span></div>
                 </div>
                 <div class="bento-tile tile-risk">
                     <div class="tile-lbl">Risk Score</div>
-                    <div class="tile-val-risk">{res['score']*100:.1f}%</div>
+                    <div class="tile-val" style="color:#B45309;">{score*100:.1f}%</div>
                 </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-    with split_right:
-        # 4. Security Investigation (Step-by-Step)
+    with col_right:
+        # Step-by-Step Checklist
         st.markdown("""
         <div class="custom-card">
-            <div class="card-header-bar">
-                <div class="header-icon-box">🔍</div>
-                <div>
-                    <div>Security Investigation <span style="font-size:0.8rem; color:#64748B; font-weight:500;">(Step-by-Step)</span></div>
-                </div>
-            </div>
+            <div class="card-header-bar">🔍 Security Investigation (Step-by-Step)</div>
         """, unsafe_allow_html=True)
 
         for name, detail, state in res['log']:
-            is_ok = state == "OK"
-            icon_cls = "step-num-icon-ok" if is_ok else "step-num-icon-warn"
-            icon_sym = "✓" if is_ok else "▲"
-            pill_cls = "pill-ok" if is_ok else "pill-alert"
-            
+            pill_class = "pill-ok" if state == "OK" else "pill-alert"
             st.markdown(f"""
             <div class="step-item">
-                <div class="step-left">
-                    <div class="{icon_cls}">{icon_sym}</div>
-                    <div>
-                        <div class="step-title">{name}</div>
-                        <div class="step-sub">{detail}</div>
-                    </div>
+                <div>
+                    <div class="step-title">{name}</div>
+                    <div class="step-sub">{detail}</div>
                 </div>
-                <span class="{pill_cls}">▲ {state}</span>
+                <span class="{pill_class}">▲ {state}</span>
             </div>
             """, unsafe_allow_html=True)
 
         st.markdown("</div>", unsafe_allow_html=True)
 
     # ---------------------------------------------
-    # EMERGENCY RESPONSE ACTIONS (BOTTOM BAR)
+    # EMERGENCY RESPONSE ACTIONS (POINT 5)
     # ---------------------------------------------
     st.markdown("""
-    <div class="custom-card">
-        <div class="card-header-bar" style="margin-bottom:12px;">
-            <div class="header-icon-box" style="color:#EF4444; background:#FFF1F2;">🛡️</div>
-            <div>
-                <div>Emergency Response Actions</div>
-                <div style="font-size:0.75rem; color:#64748B; font-weight:500;">Take immediate action to secure the account and prevent further loss.</div>
-            </div>
+    <div class="custom-card" style="margin-top:10px;">
+        <div class="card-header-bar" style="color:#B91C1C;">
+            <span>🚨 Emergency Response Actions</span>
+        </div>
+        <div style="font-size:1rem; font-weight:700; color:#475569; margin-bottom:16px;">
+            Take immediate action to secure the account, dispatch liens, or report incidents under RBI regulations.
         </div>
     """, unsafe_allow_html=True)
 
     e_c1, e_c2, e_c3 = st.columns(3)
 
     with e_c1:
-        st.markdown("""
-        <div class="emergency-tile">
-            <div class="tile-left-content">
-                <div class="action-icon-box" style="background:#FFF1F2; color:#E11D48;">📞</div>
-                <div>
-                    <div class="action-title">1. Cyber Police Helpline</div>
-                    <div class="action-sub">Call 1930 immediately.</div>
-                </div>
-            </div>
-            <div style="color:#CBD5E1;">→</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("**1. Cyber Police Helpline**")
+        st.markdown("Immediate national escalation: Dial **1930**")
+        st.link_button("🌐 Open cybercrime.gov.in", "https://cybercrime.gov.in")
 
     with e_c2:
-        st.markdown("""
-        <div class="emergency-tile">
-            <div class="tile-left-content">
-                <div class="action-icon-box" style="background:#FFFBEB; color:#D97706;">🔒</div>
-                <div>
-                    <div class="action-title">2. Beneficiary Lock</div>
-                    <div class="action-sub">Request account freeze.</div>
-                </div>
-            </div>
-            <div style="color:#CBD5E1;">→</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("**2. Beneficiary Account Lock**")
+        st.markdown("Send urgent freeze signal to switch.")
+        if st.button("🔒 Request Account Freeze", key="v_freeze_btn"):
+            st.success("✅ Lien notice dispatched to beneficiary bank switch.")
 
     with e_c3:
-        st.markdown("""
-        <div class="emergency-tile">
-            <div class="tile-left-content">
-                <div class="action-icon-box" style="background:#EFF6FF; color:#2563EB;">📄</div>
-                <div>
-                    <div class="action-title">3. Bank Dispute File</div>
-                    <div class="action-sub">Download dispute report (1:1).</div>
-                </div>
-            </div>
-            <div style="color:#CBD5E1;">→</div>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("**3. Bank Dispute File**")
+        st.markdown("Statutory Zero-Liability dossier.")
+        v_in = st.session_state['v_inputs']
+        report_txt = f"""OFFICIAL ELECTRONIC FRAUD DISPUTE DOSSIER
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+UTR Reference: 429184{int(time.time())%1000000:06d}
+Amount Evaluated: INR {v_in['amount']:,.2f}
+Account Profile: {v_in['prof']}
+Recipient Status: {v_in['payee']}
+Final Verdict: {res['status']}
+Calculated Risk: {score*100:.1f}%
+Reason: {res['reason']}
+Statutory Authority: Filed under RBI Circular on Limiting Customer Liability in Unauthorized Electronic Transactions."""
+        st.download_button(
+            label="📄 Download Dispute Report (.txt)",
+            data=report_txt,
+            file_name=f"Dispute_Report_{int(time.time())}.txt",
+            key="v_download_btn"
+        )
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -905,4 +636,4 @@ with tab_manual:
 # ==========================================
 with tab_prod:
     st.markdown("<br>", unsafe_allow_html=True)
-    st.info("📱 Production Checkout Mode: Switch to this tab when demonstrating the client-side Google Pay/PhonePe checkout interface.")
+    st.info("📱 Production Checkout Mode: Switch here to demonstrate client-side checkout context.")
