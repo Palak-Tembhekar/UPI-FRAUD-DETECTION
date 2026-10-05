@@ -144,13 +144,29 @@ st.markdown("""
     div.stButton > button[kind="primary"] {
         background: linear-gradient(90deg, #E11D48 0%, #BE123C 100%) !important;
         color: #FFFFFF !important;
-        font-size: 1.35rem !important;
+        font-size: 1.25rem !important;
         font-weight: 900 !important;
         border-radius: 14px !important;
-        padding: 16px 32px !important;
+        padding: 16px 24px !important;
         border: none !important;
         width: 100% !important;
         margin-top: 14px !important;
+    }
+    div.stButton > button[kind="secondary"] {
+        background: #F1F5F9 !important;
+        color: #334155 !important;
+        font-size: 1.25rem !important;
+        font-weight: 800 !important;
+        border-radius: 14px !important;
+        padding: 16px 24px !important;
+        border: 2px solid #CBD5E1 !important;
+        width: 100% !important;
+        margin-top: 14px !important;
+    }
+    div.stButton > button[kind="secondary"]:hover {
+        background: #E2E8F0 !important;
+        color: #0F172A !important;
+        border-color: #94A3B8 !important;
     }
 
     /* STEPS */
@@ -252,7 +268,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 2. SESSION NAVIGATION STATE
+# 2. SESSION NAVIGATION & FORM RESET CONTROLLER
 # ==============================================================================
 if "active_nav" not in st.session_state:
     st.session_state["active_nav"] = "Home"
@@ -260,6 +276,30 @@ if "active_nav" not in st.session_state:
 def navigate_to(page_name):
     st.session_state["active_nav"] = page_name
     st.session_state["sidebar_radio_selection"] = page_name
+
+def reset_telemetry_form():
+    """Resets every input widget and wipes the computed pipeline state to pure blank."""
+    st.session_state["has_run_pipeline"] = False
+    st.session_state.pop("res_data", None)
+    st.session_state.pop("v_inputs", None)
+    
+    # Reset widget state keys back to default baseline
+    st.session_state["v_sel_prof"] = "🎓 College Student"
+    st.session_state["v_in_amt"] = 10000.0
+    st.session_state["v_in_bal"] = 12000.0
+    st.session_state["v_in_avg"] = 2000.0
+    st.session_state["v_s_vpa"] = "user@oksbi"
+    st.session_state["v_r_vpa"] = "chai_point@upi"
+    st.session_state["v_is_new_p"] = "⭐ Known / Frequently Paid Contact"
+    st.session_state["v_dist_km"] = 50.0
+    st.session_state["v_gap_val"] = 30.0
+    st.session_state["v_gap_unit"] = "Minutes ⏳"
+    st.session_state["v_tx_burst"] = 1
+    st.session_state["v_dev_state"] = "🔒 Trusted Handset & Known Carrier Subnet"
+    st.session_state["v_delegated"] = "Primary Account Holder"
+    st.session_state["v_h12"] = 12
+    st.session_state["v_mval"] = "30"
+    st.session_state["v_ampm"] = "AM"
 
 # ==============================================================================
 # 2B. HOME-PAGE-ONLY STYLE OVERRIDES
@@ -422,7 +462,7 @@ def execute_inline_investigation(
         }
 
     if amount > balance:
-        log.append(("1. ⚖️️ Balance & Liquidity", f"FAILED: Amount ₹{amount:,.0f} exceeds balance ₹{balance:,.0f}", "ALERT"))
+        log.append(("1. ⚖️ Balance & Liquidity", f"FAILED: Amount ₹{amount:,.0f} exceeds balance ₹{balance:,.0f}", "ALERT"))
         t_end = time.perf_counter()
         return {
             "tier": "REJECTED", "status": "INSUFFICIENT FUNDS (ISO: U12)", "score": 1.0, 
@@ -631,7 +671,7 @@ if st.session_state["active_nav"] == "Home":
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 6. VIEW 2: DASHBOARD & ANALYTICS (CLEAN COLOR-FREE HEADINGS)
+# 6. VIEW 2: DASHBOARD & ANALYTICS
 # ==============================================================================
 elif st.session_state["active_nav"] == "Dashboard":
     st.markdown("""
@@ -693,7 +733,7 @@ elif st.session_state["active_nav"] == "Dashboard":
             })
             st.bar_chart(df_types.set_index("Type Category"))
 
-    # SUB-TAB 2: EDA VISUALIZATIONS (CLEAN HEADINGS: BLUE, RED, GREEN REMOVED)
+    # SUB-TAB 2: EDA VISUALIZATIONS
     with tab_eda:
         st.markdown('<h2 style="font-size:2.4rem; font-weight:900; color:#0F172A; margin:16px 0 24px 0;">Exploratory Data Analysis</h2>', unsafe_allow_html=True)
         
@@ -920,63 +960,103 @@ else:
 
         with c_in1:
             st.markdown("**1. 👤 Account Baseline & Persona Profile**")
-            sel_prof = st.selectbox("Select Account Profile:", list(PROFESSIONS.keys()), label_visibility="collapsed", key="v_sel_prof")
+            
+            # Use dynamic session states to enable instant form clearing
+            prof_keys = list(PROFESSIONS.keys())
+            if "v_sel_prof" not in st.session_state:
+                st.session_state["v_sel_prof"] = prof_keys[0]
+            sel_prof = st.selectbox("Select Account Profile:", prof_keys, key="v_sel_prof", label_visibility="collapsed")
             prof = PROFESSIONS[sel_prof]
 
             st.markdown("**2. 💳 Payment & VPA Identifiers**")
             st.markdown("**💵 Transaction Amount (₹)**")
-            in_amount = st.number_input("Transaction Amount", min_value=1.0, value=10000.0, step=500.0, label_visibility="collapsed", key="v_in_amt")
+            if "v_in_amt" not in st.session_state:
+                st.session_state["v_in_amt"] = 10000.0
+            in_amount = st.number_input("Transaction Amount", min_value=1.0, step=500.0, key="v_in_amt", label_visibility="collapsed")
             
             st.markdown("**🏦 Account Available Balance (₹)**")
-            in_balance = st.number_input("Account Balance", min_value=1.0, value=float(prof['balance']), step=1000.0, label_visibility="collapsed", key="v_in_bal")
+            if "v_in_bal" not in st.session_state:
+                st.session_state["v_in_bal"] = float(prof['balance'])
+            in_balance = st.number_input("Account Balance", min_value=1.0, step=1000.0, key="v_in_bal", label_visibility="collapsed")
             
             st.markdown("**📊 Historical Daily Spend Baseline (₹)**")
-            in_avg = st.number_input("Usual Average Spend", min_value=1.0, value=float(prof['avg_spend']), step=100.0, label_visibility="collapsed", key="v_in_avg")
+            if "v_in_avg" not in st.session_state:
+                st.session_state["v_in_avg"] = float(prof['avg_spend'])
+            in_avg = st.number_input("Usual Average Spend", min_value=1.0, step=100.0, key="v_in_avg", label_visibility="collapsed")
             
             vpa_c1, vpa_c2 = st.columns(2)
             with vpa_c1:
                 st.markdown("**Sender UPI ID**")
-                in_sender_vpa = st.text_input("Sender VPA", "user@oksbi", label_visibility="collapsed", key="v_s_vpa")
+                if "v_s_vpa" not in st.session_state:
+                    st.session_state["v_s_vpa"] = "user@oksbi"
+                in_sender_vpa = st.text_input("Sender VPA", key="v_s_vpa", label_visibility="collapsed")
             with vpa_c2:
                 st.markdown("**Recipient UPI ID**")
-                in_receiver_vpa = st.text_input("Receiver VPA", "chai_point@upi", label_visibility="collapsed", key="v_r_vpa")
+                if "v_r_vpa" not in st.session_state:
+                    st.session_state["v_r_vpa"] = "chai_point@upi"
+                in_receiver_vpa = st.text_input("Receiver VPA", key="v_r_vpa", label_visibility="collapsed")
 
             st.markdown("**👥 Recipient Contact Trust Level**")
-            in_payee_new = st.selectbox("Payee History", ["⭐ Known / Frequently Paid Contact", "🆕 New / First-Time Payee"], index=0, label_visibility="collapsed", key="v_is_new_p") == "🆕 New / First-Time Payee"
+            payee_opts = ["⭐ Known / Frequently Paid Contact", "🆕 New / First-Time Payee"]
+            if "v_is_new_p" not in st.session_state:
+                st.session_state["v_is_new_p"] = payee_opts[0]
+            in_payee_new = st.selectbox("Payee History", payee_opts, key="v_is_new_p", label_visibility="collapsed") == payee_opts[1]
 
         with c_in2:
             st.markdown("**3. 📍 Spatial, Hardware & Network Context**")
             st.markdown("**📍 Displacement from Last Transaction (km)**")
-            in_dist = st.number_input("Distance from Last Transaction (km)", min_value=0.0, value=50.0, step=5.0, label_visibility="collapsed", key="v_dist_km")
+            if "v_dist_km" not in st.session_state:
+                st.session_state["v_dist_km"] = 50.0
+            in_dist = st.number_input("Distance from Last Transaction (km)", min_value=0.0, step=5.0, key="v_dist_km", label_visibility="collapsed")
 
             st.markdown("**⏱️ Elapsed Time Since Previous Activity**")
             g_val_col, g_unit_col = st.columns([1, 1])
             with g_val_col:
-                in_gap_val = st.number_input("Value", min_value=0.1, value=30.0, step=1.0, label_visibility="collapsed", key="v_gap_val")
+                if "v_gap_val" not in st.session_state:
+                    st.session_state["v_gap_val"] = 30.0
+                in_gap_val = st.number_input("Value", min_value=0.1, step=1.0, key="v_gap_val", label_visibility="collapsed")
             with g_unit_col:
-                in_gap_unit = st.selectbox("Unit", ["Minutes ⏳", "Seconds ⏱️", "Hours ⌛"], index=0, label_visibility="collapsed", key="v_gap_unit")
+                unit_opts = ["Minutes ⏳", "Seconds ⏱️", "Hours ⌛"]
+                if "v_gap_unit" not in st.session_state:
+                    st.session_state["v_gap_unit"] = unit_opts[0]
+                in_gap_unit = st.selectbox("Unit", unit_opts, key="v_gap_unit", label_visibility="collapsed")
 
             st.markdown("**🔢 Velocity: Number of Rapid Transactions (Last 10 Mins)**")
-            in_tx_count = st.number_input("Payments in 10 Mins", min_value=0, max_value=15, value=1, label_visibility="collapsed", key="v_tx_burst")
+            if "v_tx_burst" not in st.session_state:
+                st.session_state["v_tx_burst"] = 1
+            in_tx_count = st.number_input("Payments in 10 Mins", min_value=0, max_value=15, key="v_tx_burst", label_visibility="collapsed")
 
             st.markdown("**📱 Hardware Fingerprint & Subnet Match**")
-            in_device = st.selectbox("Device State", ["🔒 Trusted Handset & Known Carrier Subnet", "⚠️ Unrecognized Handset / Foreign Gateway"], index=0, label_visibility="collapsed", key="v_dev_state") == "⚠️ Unrecognized Handset / Foreign Gateway"
+            dev_opts = ["🔒 Trusted Handset & Known Carrier Subnet", "⚠️ Unrecognized Handset / Foreign Gateway"]
+            if "v_dev_state" not in st.session_state:
+                st.session_state["v_dev_state"] = dev_opts[0]
+            in_device = st.selectbox("Device State", dev_opts, key="v_dev_state", label_visibility="collapsed") == dev_opts[1]
 
             st.markdown("**👥 Delegation Mode (UPI Circle)**")
-            in_delegated = st.selectbox("Authorized User Session", ["Primary Account Holder", "UPI Circle Secondary User (Family Member)"], index=0, key="v_delegated")
+            circle_opts = ["Primary Account Holder", "UPI Circle Secondary User (Family Member)"]
+            if "v_delegated" not in st.session_state:
+                st.session_state["v_delegated"] = circle_opts[0]
+            in_delegated = st.selectbox("Authorized User Session", circle_opts, key="v_delegated")
 
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("**4. 🕒 Transaction Timestamp (12-Hour Format)**")
         t_c1, t_c2, t_c3, t_c4 = st.columns([1, 1, 1.2, 2.5])
         with t_c1:
             st.caption("**Hour 🕐**")
-            h_12 = st.selectbox("Hour", list(range(1, 13)), index=11, label_visibility="collapsed", key="v_h12")
+            if "v_h12" not in st.session_state:
+                st.session_state["v_h12"] = 12
+            h_12 = st.selectbox("Hour", list(range(1, 13)), key="v_h12", label_visibility="collapsed")
         with t_c2:
             st.caption("**Minute ⏱️**")
-            m_val = st.selectbox("Minute", ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"], index=6, label_visibility="collapsed", key="v_mval")
+            min_opts = ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"]
+            if "v_mval" not in st.session_state:
+                st.session_state["v_mval"] = "30"
+            m_val = st.selectbox("Minute", min_opts, key="v_mval", label_visibility="collapsed")
         with t_c3:
             st.caption("**AM / PM ☀️🌙**")
-            ampm = st.radio("AM/PM", ["AM", "PM"], horizontal=True, index=0, label_visibility="collapsed", key="v_ampm")
+            if "v_ampm" not in st.session_state:
+                st.session_state["v_ampm"] = "AM"
+            ampm = st.radio("AM/PM", ["AM", "PM"], horizontal=True, key="v_ampm", label_visibility="collapsed")
         with t_c4:
             st.write("")
             st.markdown(f"**Calculated Window:** `{h_12}:{m_val} {ampm}`")
@@ -986,9 +1066,20 @@ else:
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-        btn_trigger = st.button("⚡ Run Inline Switch Verification Pipeline 🚀", type="primary", key="v_run_pipeline_btn")
+        # ACTION BUTTONS: RUN PIPELINE + CLEAR & RESET BUTTON
+        btn_run_col, btn_clear_col = st.columns([2.2, 1])
 
-        # 1. STRICT INITIAL BLANK STATE: NOTHING IS CALCULATED OR RENDERED UNTIL EXPLICIT CLICK
+        with btn_run_col:
+            btn_trigger = st.button("⚡ Run Inline Switch Verification Pipeline 🚀", type="primary", key="v_run_pipeline_btn")
+        
+        with btn_clear_col:
+            btn_clear = st.button("🔄 Clear All Inputs & Reset Gateway", type="secondary", key="v_clear_inputs_btn")
+
+        if btn_clear:
+            reset_telemetry_form()
+            st.rerun()
+
+        # PIPELINE EXECUTION TRIGGER
         if btn_trigger:
             st.session_state['has_run_pipeline'] = True
             st.session_state['res_data'] = execute_inline_investigation(
@@ -1001,7 +1092,7 @@ else:
                 "sender": in_sender_vpa, "delegated": in_delegated
             }
 
-        # ONLY DISPLAY RESULTS BELOW WHEN USER CLICKS THE BUTTON
+        # STRICT INITIAL BLANK STATE: ONLY DISPLAY BELOW IF BUTTON WAS CLICKED
         if st.session_state.get('has_run_pipeline', False) and 'res_data' in st.session_state:
             res = st.session_state['res_data']
             tier = res['tier']
@@ -1028,7 +1119,7 @@ else:
 
             # 1. TOP STATUS BAR
             st.markdown(f"""
-            <div style="background:{box_bg}; border:2px solid {box_border}; border-radius:18px; padding:20px 28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div style="background:{box_bg}; border:2px solid {box_border}; border-radius:18px; padding:20px 28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
                 <div>
                     <div style="font-weight:900; font-size:1.4rem; color:{txt_color}; line-height:1.2;">
                         STATUS: {res['status']}
@@ -1051,114 +1142,116 @@ else:
             </div>
             """, unsafe_allow_html=True)
 
-            # 2. LIVE BEHAVIORAL RISK GAUGE DIRECTLY BELOW STATUS BAR
-            st.markdown("""
-            <div class="bento-card" style="margin-bottom:22px;">
-                <div class="bento-card-title">🍩 Live Behavioral Risk Gauge</div>
-            """, unsafe_allow_html=True)
-            st.markdown(render_native_svg_donut(res['score'], res['tier']), unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+            # RESTORED 2-COLUMN LAYOUT
+            col_left, col_right = st.columns([1.15, 1])
 
-            # 3. PRE-DEBIT SECURITY FREEZE / DECISION CARD & FORENSIC TILES
-            if tier == "TIER_1_PASS":
-                st.markdown("""
-                <div class="bento-card" style="border:2px solid #10B981; background:#F0FDF4;">
-                    <div style="font-size:1.35rem; font-weight:900; color:#166534; display:flex; align-items:center; gap:10px;">
-                        ✅ Transaction Cleared for Settlement
-                    </div>
-                    <div style="font-size:1.05rem; font-weight:700; color:#15803D; margin-top:8px;">
-                        ISO 20022 Code 00: Verified liquidity, known token, and normal velocity. Cleared without step-up challenge.
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            elif tier == "TIER_2_CHALLENGE":
-                st.markdown("""
-                <div class="bento-card" style="border:2px solid #F59E0B; background:#FFFBEB;">
-                    <div style="font-size:1.35rem; font-weight:900; color:#DC2626; display:flex; align-items:center; gap:10px;">
-                        ⏸️ Pre-Debit Security Freeze (ISO: U16)
-                    </div>
-                    <div style="font-size:1.05rem; font-weight:700; color:#000000; margin-top:6px;">
-                        Held for safety. Enter the 4-digit SMS OTP dispatched to registered SIM to authorize debit.
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-                otp_c1, otp_c2 = st.columns([1.8, 1])
-                with otp_c1:
-                    st.markdown("**🔐 Enter 4-Digit Security OTP (Mock: 4921):**")
-                    user_otp = st.text_input("Enter 4-digit Security OTP", max_chars=4, label_visibility="collapsed", placeholder="Enter OTP here", key="v_otp_val_in")
-                with otp_c2:
-                    st.write("")
-                    st.write("")
-                    if st.button("🔓 Verify & Release Debit", key="v_otp_release_btn"):
-                        if user_otp == "4921":
-                            st.success("✅ OTP Verified! ISO 20022 response Code 00 dispatched. Funds cleared.")
-                        else:
-                            st.error("❌ Invalid OTP. Hold maintained under bank FRM guidelines.")
-
-                st.markdown(f"""
-                <div class="bento-card" style="border:2px solid #F59E0B; margin-top:14px;">
-                    <div style="font-size:1.25rem; font-weight:900; color:#B45309; margin-bottom:8px;">⚠️ Decision Reason & Anomaly Triggers</div>
-                    <div style="font-size:1.05rem; font-weight:700; color:#000000; line-height:1.5;">
-                        {res['reason']}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-            else:
-                st.markdown(f"""
-                <div class="bento-card" style="border:2px solid #EF4444; background:#FEF2F2;">
-                    <div style="font-size:1.35rem; font-weight:900; color:#DC2626; margin-bottom:8px;">🚫 Transaction Terminated at Switch (ISO: U28)</div>
-                    <div style="font-size:1.05rem; font-weight:700; color:#991B1B; line-height:1.5;">
-                        {res['reason']}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            # Forensic Metrics Bento Grid
-            st.markdown(f"""
-            <div class="bento-card" style="margin-top:14px;">
-                <div class="bento-card-title">📊 Key Forensic Metrics</div>
-                <div class="metric-grid">
-                    <div class="metric-tile tile-drain">
-                        <div class="tile-lbl" style="color:#7E22CE;">Account Drain</div>
-                        <div class="tile-val" style="color:#581C87;">{res['drain_ratio']*100:.1f}%</div>
-                    </div>
-                    <div class="metric-tile tile-spike">
-                        <div class="tile-lbl" style="color:#1D4ED8;">Spike Multiplier</div>
-                        <div class="tile-val" style="color:#1E40AF;">{res['amount_to_avg']:.1f}x</div>
-                    </div>
-                    <div class="metric-tile tile-speed">
-                        <div class="tile-lbl" style="color:#15803D;">Transit Speed</div>
-                        <div class="tile-val" style="color:#166534;">{res['speed_kmh']:,.0f} <span style="font-size:0.95rem;">km/h</span></div>
-                    </div>
-                    <div class="metric-tile tile-risk">
-                        <div class="tile-lbl" style="color:#B45309;">ML Risk Score</div>
-                        <div class="tile-val" style="color:#92400E;">{score*100:.1f}%</div>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
-            # 4. EXPLAINABLE AI (XAI) CHECKLIST - COLLAPSED BY DEFAULT
-            with st.expander("🔍 Explainable AI (XAI) Audit Checklist (Click to Expand)", expanded=False):
-                st.markdown("<div style='padding: 10px 0;'>", unsafe_allow_html=True)
-                for name, detail, state in res['log']:
-                    pill_class = "pill-ok" if state == "OK" else "pill-alert"
-                    symbol_badge = "✓" if state == "OK" else "⚠️"
-                    st.markdown(f"""
-                    <div class="step-item">
-                        <div>
-                            <div class="step-title">{name}</div>
-                            <div class="step-sub">{detail}</div>
+            with col_left:
+                if tier == "TIER_1_PASS":
+                    st.markdown("""
+                    <div class="bento-card" style="border:2px solid #10B981; background:#F0FDF4;">
+                        <div style="font-size:1.35rem; font-weight:900; color:#166534; display:flex; align-items:center; gap:10px;">
+                            ✅ Transaction Cleared for Settlement
                         </div>
-                        <span class="{pill_class}">{symbol_badge} {state}</span>
+                        <div style="font-size:1.05rem; font-weight:700; color:#15803D; margin-top:8px;">
+                            ISO 20022 Code 00: Verified liquidity, known token, and normal velocity. Cleared without step-up challenge.
+                        </div>
                     </div>
                     """, unsafe_allow_html=True)
+                
+                elif tier == "TIER_2_CHALLENGE":
+                    st.markdown("""
+                    <div class="bento-card" style="border:2px solid #F59E0B; background:#FFFBEB;">
+                        <div style="font-size:1.35rem; font-weight:900; color:#DC2626; display:flex; align-items:center; gap:10px;">
+                            ⏸️ Pre-Debit Security Freeze (ISO: U16)
+                        </div>
+                        <div style="font-size:1.05rem; font-weight:700; color:#000000; margin-top:6px;">
+                            Held for safety. Enter the 4-digit SMS OTP dispatched to registered SIM to authorize debit.
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    otp_c1, otp_c2 = st.columns([1.8, 1])
+                    with otp_c1:
+                        st.markdown("**🔐 Enter 4-Digit Security OTP (Mock: 4921):**")
+                        user_otp = st.text_input("Enter 4-digit Security OTP", max_chars=4, label_visibility="collapsed", placeholder="Enter OTP here", key="v_otp_val_in")
+                    with otp_c2:
+                        st.write("")
+                        st.write("")
+                        if st.button("🔓 Verify & Release Debit", key="v_otp_release_btn"):
+                            if user_otp == "4921":
+                                st.success("✅ OTP Verified! ISO 20022 response Code 00 dispatched. Funds cleared.")
+                            else:
+                                st.error("❌ Invalid OTP. Hold maintained under bank FRM guidelines.")
+
+                    st.markdown(f"""
+                    <div class="bento-card" style="border:2px solid #F59E0B; margin-top:14px;">
+                        <div style="font-size:1.25rem; font-weight:900; color:#B45309; margin-bottom:8px;">⚠️ Decision Reason & Anomaly Triggers</div>
+                        <div style="font-size:1.05rem; font-weight:700; color:#000000; line-height:1.5;">
+                            {res['reason']}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                else:
+                    st.markdown(f"""
+                    <div class="bento-card" style="border:2px solid #EF4444; background:#FEF2F2;">
+                        <div style="font-size:1.35rem; font-weight:900; color:#DC2626; margin-bottom:8px;">🚫 Transaction Terminated at Switch (ISO: U28)</div>
+                        <div style="font-size:1.05rem; font-weight:700; color:#991B1B; line-height:1.5;">
+                            {res['reason']}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                st.markdown(f"""
+                <div class="bento-card" style="margin-top:14px;">
+                    <div class="bento-card-title">📊 Key Forensic Metrics</div>
+                    <div class="metric-grid">
+                        <div class="metric-tile tile-drain">
+                            <div class="tile-lbl" style="color:#7E22CE;">Account Drain</div>
+                            <div class="tile-val" style="color:#581C87;">{res['drain_ratio']*100:.1f}%</div>
+                        </div>
+                        <div class="metric-tile tile-spike">
+                            <div class="tile-lbl" style="color:#1D4ED8;">Spike Multiplier</div>
+                            <div class="tile-val" style="color:#1E40AF;">{res['amount_to_avg']:.1f}x</div>
+                        </div>
+                        <div class="metric-tile tile-speed">
+                            <div class="tile-lbl" style="color:#15803D;">Transit Speed</div>
+                            <div class="tile-val" style="color:#166534;">{res['speed_kmh']:,.0f} <span style="font-size:0.95rem;">km/h</span></div>
+                        </div>
+                        <div class="metric-tile tile-risk">
+                            <div class="tile-lbl" style="color:#B45309;">ML Risk Score</div>
+                            <div class="tile-val" style="color:#92400E;">{score*100:.1f}%</div>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                st.markdown("""
+                <div class="bento-card">
+                    <div class="bento-card-title">🍩 Live Behavioral Risk Gauge</div>
+                """, unsafe_allow_html=True)
+                
+                st.markdown(render_native_svg_donut(res['score'], res['tier']), unsafe_allow_html=True)
                 st.markdown("</div>", unsafe_allow_html=True)
 
-            # 5. REGULATORY EMERGENCY ACTIONS
+            with col_right:
+                with st.expander("🔍 Explainable AI (XAI) Audit Checklist (Click to Expand)", expanded=False):
+                    st.markdown("<div style='padding: 10px 0;'>", unsafe_allow_html=True)
+                    for name, detail, state in res['log']:
+                        pill_class = "pill-ok" if state == "OK" else "pill-alert"
+                        symbol_badge = "✓" if state == "OK" else "⚠️"
+                        st.markdown(f"""
+                        <div class="step-item">
+                            <div>
+                                <div class="step-title">{name}</div>
+                                <div class="step-sub">{detail}</div>
+                            </div>
+                            <span class="{pill_class}">{symbol_badge} {state}</span>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    st.markdown("</div>", unsafe_allow_html=True)
+
+            # Regulatory Emergency Actions
             st.markdown("""
             <div class="bento-card" style="margin-top:10px;">
                 <div class="bento-card-title" style="color:#B91C1C;">
@@ -1317,7 +1410,7 @@ Statutory Reference: Limiting Customer Liability in Unauthorized Electronic Tran
             if b_res['tier'] == "TIER_1_PASS":
                 st.success(f"✅ **Payment Cleared (ISO: 00)!** ₹{sim_dt['amount']:,.2f} sent to `{sim_dt['payee']}`. UTR: 429184{int(time.time())%1000000:06d}")
             elif b_res['tier'] == "TIER_2_CHALLENGE":
-                st.warning(f"⚠️️ **Pre-Debit Hold Engaged (ISO: U16):** Unusual telemetry detected. An OTP challenge has been dispatched to authenticate authorization.")
+                st.warning(f"⚠️ **Pre-Debit Hold Engaged (ISO: U16):** Unusual telemetry detected. An OTP challenge has been dispatched to authenticate authorization.")
                 st.info(f"**Reason:** {b_res['reason']}")
                 
                 s_otp_col1, s_otp_col2 = st.columns([1.5, 1])
