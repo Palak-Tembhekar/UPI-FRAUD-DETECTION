@@ -281,7 +281,7 @@ def navigate_to(page_name):
     st.session_state["sidebar_radio_selection"] = page_name
 
 def trigger_reset_telemetry():
-    """Bumps form_reset_counter to re-mount fresh widgets and wipe computed results."""
+    """Bumps form_reset_counter to instantiate fresh widgets with zero/blank defaults."""
     st.session_state["form_reset_counter"] += 1
     st.session_state["has_run_pipeline"] = False
     st.session_state.pop("res_data", None)
@@ -380,11 +380,11 @@ def load_artifacts():
 model, scaler = load_artifacts()
 
 PROFESSIONS = {
+    "🌐 Custom / Zero Profile": {"balance": 0.0, "avg_spend": 0.0},
     "🎓 College Student": {"balance": 12000.0, "avg_spend": 2000.0},
     "💼 Salaried Employee": {"balance": 65000.0, "avg_spend": 750.0},
     "🏪 Small Retailer / Kirana": {"balance": 180000.0, "avg_spend": 8500.0},
-    "🏢 Wholesale Merchant / SME": {"balance": 750000.0, "avg_spend": 38000.0},
-    "🌐 Custom Profile": {"balance": 25000.0, "avg_spend": 1500.0}
+    "🏢 Wholesale Merchant / SME": {"balance": 750000.0, "avg_spend": 38000.0}
 }
 
 # ENLARGED NATIVE SVG DONUT (DIAMETER: 220PX)
@@ -403,7 +403,7 @@ def render_native_svg_donut(risk_score, tier):
     dash_val = round(pct * 2.83, 1)
 
     return f"""
-    <div style="display:flex; align-items:center; justify-content:center; gap:26px; padding:12px 0;">
+    <div style="display:flex; align-items:center; justify-content:center; gap:36px; padding:16px 0;">
         <div style="position:relative; width:220px; height:220px;">
             <svg viewBox="0 0 100 100" style="width:220px; height:220px; transform:rotate(-90deg);">
                 <circle cx="50" cy="50" r="45" fill="none" stroke="#E2E8F0" stroke-width="10"/>
@@ -944,7 +944,7 @@ else:
 
         c_in1, c_in2 = st.columns(2)
 
-        # Dynamic suffix derived from form_reset_counter: completely avoids StreamlitWidgetAlreadyInstantiatedError
+        # Dynamic suffix derived from form_reset_counter: mounts clean zero/blank state
         suffix = f"_{st.session_state['form_reset_counter']}"
 
         with c_in1:
@@ -962,8 +962,8 @@ else:
             st.markdown("**💵 Transaction Amount (₹)**")
             in_amount = st.number_input(
                 "Transaction Amount",
-                min_value=1.0,
-                value=10000.0,
+                min_value=0.0,
+                value=0.0,
                 step=500.0,
                 label_visibility="collapsed",
                 key=f"v_in_amt{suffix}"
@@ -972,8 +972,8 @@ else:
             st.markdown("**🏦 Account Available Balance (₹)**")
             in_balance = st.number_input(
                 "Account Balance",
-                min_value=1.0,
-                value=float(prof['balance']),
+                min_value=0.0,
+                value=0.0,
                 step=1000.0,
                 label_visibility="collapsed",
                 key=f"v_in_bal{suffix}"
@@ -982,8 +982,8 @@ else:
             st.markdown("**📊 Historical Daily Spend Baseline (₹)**")
             in_avg = st.number_input(
                 "Usual Average Spend",
-                min_value=1.0,
-                value=float(prof['avg_spend']),
+                min_value=0.0,
+                value=0.0,
                 step=100.0,
                 label_visibility="collapsed",
                 key=f"v_in_avg{suffix}"
@@ -994,7 +994,8 @@ else:
                 st.markdown("**Sender UPI ID**")
                 in_sender_vpa = st.text_input(
                     "Sender VPA",
-                    value="user@oksbi",
+                    value="",
+                    placeholder="e.g. user@oksbi",
                     label_visibility="collapsed",
                     key=f"v_s_vpa{suffix}"
                 )
@@ -1002,7 +1003,8 @@ else:
                 st.markdown("**Recipient UPI ID**")
                 in_receiver_vpa = st.text_input(
                     "Receiver VPA",
-                    value="chai_point@upi",
+                    value="",
+                    placeholder="e.g. merchant@upi",
                     label_visibility="collapsed",
                     key=f"v_r_vpa{suffix}"
                 )
@@ -1022,19 +1024,19 @@ else:
             in_dist = st.number_input(
                 "Distance from Last Transaction (km)",
                 min_value=0.0,
-                value=50.0,
+                value=0.0,
                 step=5.0,
                 label_visibility="collapsed",
                 key=f"v_dist_km{suffix}"
             )
 
-            st.markdown("**⏱️️ Elapsed Time Since Previous Activity**")
+            st.markdown("**⏱️ Elapsed Time Since Previous Activity**")
             g_val_col, g_unit_col = st.columns([1, 1])
             with g_val_col:
                 in_gap_val = st.number_input(
                     "Value",
-                    min_value=0.1,
-                    value=30.0,
+                    min_value=0.0,
+                    value=0.0,
                     step=1.0,
                     label_visibility="collapsed",
                     key=f"v_gap_val{suffix}"
@@ -1053,7 +1055,7 @@ else:
                 "Payments in 10 Mins",
                 min_value=0,
                 max_value=15,
-                value=1,
+                value=0,
                 label_visibility="collapsed",
                 key=f"v_tx_burst{suffix}"
             )
@@ -1092,7 +1094,7 @@ else:
             m_val = st.selectbox(
                 "Minute",
                 ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"],
-                index=6,
+                index=0,
                 label_visibility="collapsed",
                 key=f"v_mval{suffix}"
             )
@@ -1115,7 +1117,7 @@ else:
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ACTION BUTTONS: RUN PIPELINE + CLEAR ALL INPUTS
+        # ACTION BUTTONS: RUN PIPELINE + CLEAR & RESET BUTTON
         btn_run_col, btn_clear_col = st.columns([2.2, 1])
 
         with btn_run_col:
@@ -1132,9 +1134,18 @@ else:
         if btn_trigger:
             st.session_state['has_run_pipeline'] = True
             st.session_state['res_data'] = execute_inline_investigation(
-                in_amount, in_balance, in_avg, calc_hour_24, in_tx_count, 
-                in_device, in_payee_new, in_dist, calc_gap_sec,
-                in_sender_vpa, in_receiver_vpa, in_delegated
+                amount=in_amount,
+                balance=in_balance,
+                avg_spend=in_avg,
+                hour_24=calc_hour_24,
+                tx_count=in_tx_count,
+                is_new_device=in_device,
+                is_new_payee=in_payee_new,
+                dist_km=in_dist,
+                gap_sec=calc_gap_sec,
+                sender_vpa=in_sender_vpa if in_sender_vpa else "user@oksbi",
+                receiver_vpa=in_receiver_vpa if in_receiver_vpa else "chai_point@upi",
+                delegated_user=in_delegated
             )
             st.session_state['v_inputs'] = {
                 "amount": in_amount, "prof": sel_prof, "payee": in_receiver_vpa,
@@ -1168,13 +1179,13 @@ else:
 
             # 1. TOP STATUS BAR
             st.markdown(f"""
-            <div style="background:{box_bg}; border:2px solid {box_border}; border-radius:18px; padding:20px 28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+            <div style="background:{box_bg}; border:2px solid {box_border}; border-radius:18px; padding:20px 28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <div>
                     <div style="font-weight:900; font-size:1.4rem; color:{txt_color}; line-height:1.2;">
                         STATUS: {res['status']}
                     </div>
                     <div style="font-size:0.95rem; font-weight:700; color:{txt_color}; margin-top:4px;">
-                        Session: {in_delegated} &nbsp;|&nbsp; Payee: {in_receiver_vpa}
+                        Session: {in_delegated} &nbsp;|&nbsp; Payee: {in_receiver_vpa if in_receiver_vpa else 'N/A'}
                     </div>
                 </div>
                 <div style="display:flex; gap:14px; align-items:center;">
@@ -1191,7 +1202,15 @@ else:
             </div>
             """, unsafe_allow_html=True)
 
-            # RESTORED 2-COLUMN LAYOUT
+            # 2. LIVE BEHAVIORAL RISK GAUGE DIRECTLY BELOW STATUS BAR & ABOVE PRE-DEBIT FREEZE
+            st.markdown("""
+            <div class="bento-card" style="margin-bottom:22px;">
+                <div class="bento-card-title">🍩 Live Behavioral Risk Gauge</div>
+            """, unsafe_allow_html=True)
+            st.markdown(render_native_svg_donut(res['score'], res['tier']), unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+
+            # 3. PRE-DEBIT SECURITY FREEZE / DECISION CARD & FORENSIC TILES
             col_left, col_right = st.columns([1.15, 1])
 
             with col_left:
@@ -1275,20 +1294,12 @@ else:
                 </div>
                 """, unsafe_allow_html=True)
 
-                st.markdown("""
-                <div class="bento-card">
-                    <div class="bento-card-title">🍩 Live Behavioral Risk Gauge</div>
-                """, unsafe_allow_html=True)
-                
-                st.markdown(render_native_svg_donut(res['score'], res['tier']), unsafe_allow_html=True)
-                st.markdown("</div>", unsafe_allow_html=True)
-
             with col_right:
                 with st.expander("🔍 Explainable AI (XAI) Audit Checklist (Click to Expand)", expanded=False):
                     st.markdown("<div style='padding: 10px 0;'>", unsafe_allow_html=True)
                     for name, detail, state in res['log']:
                         pill_class = "pill-ok" if state == "OK" else "pill-alert"
-                        symbol_badge = "✓" if state == "OK" else "⚠️️"
+                        symbol_badge = "✓" if state == "OK" else "⚠️"
                         st.markdown(f"""
                         <div class="step-item">
                             <div>
