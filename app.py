@@ -144,10 +144,10 @@ st.markdown("""
     div.stButton > button[kind="primary"] {
         background: linear-gradient(90deg, #E11D48 0%, #BE123C 100%) !important;
         color: #FFFFFF !important;
-        font-size: 1.25rem !important;
+        font-size: 1.35rem !important;
         font-weight: 900 !important;
         border-radius: 14px !important;
-        padding: 16px 24px !important;
+        padding: 16px 32px !important;
         border: none !important;
         width: 100% !important;
         margin-top: 14px !important;
@@ -268,38 +268,24 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 2. SESSION NAVIGATION & FORM RESET CONTROLLER
+# 2. SESSION NAVIGATION & RESET COUNTER
 # ==============================================================================
 if "active_nav" not in st.session_state:
     st.session_state["active_nav"] = "Home"
+
+if "form_reset_counter" not in st.session_state:
+    st.session_state["form_reset_counter"] = 0
 
 def navigate_to(page_name):
     st.session_state["active_nav"] = page_name
     st.session_state["sidebar_radio_selection"] = page_name
 
-def reset_telemetry_form():
-    """Resets every input widget and wipes the computed pipeline state to pure blank."""
+def trigger_reset_telemetry():
+    """Bumps form_reset_counter to re-mount fresh widgets and wipe computed results."""
+    st.session_state["form_reset_counter"] += 1
     st.session_state["has_run_pipeline"] = False
     st.session_state.pop("res_data", None)
     st.session_state.pop("v_inputs", None)
-    
-    # Reset widget state keys back to default baseline
-    st.session_state["v_sel_prof"] = "🎓 College Student"
-    st.session_state["v_in_amt"] = 10000.0
-    st.session_state["v_in_bal"] = 12000.0
-    st.session_state["v_in_avg"] = 2000.0
-    st.session_state["v_s_vpa"] = "user@oksbi"
-    st.session_state["v_r_vpa"] = "chai_point@upi"
-    st.session_state["v_is_new_p"] = "⭐ Known / Frequently Paid Contact"
-    st.session_state["v_dist_km"] = 50.0
-    st.session_state["v_gap_val"] = 30.0
-    st.session_state["v_gap_unit"] = "Minutes ⏳"
-    st.session_state["v_tx_burst"] = 1
-    st.session_state["v_dev_state"] = "🔒 Trusted Handset & Known Carrier Subnet"
-    st.session_state["v_delegated"] = "Primary Account Holder"
-    st.session_state["v_h12"] = 12
-    st.session_state["v_mval"] = "30"
-    st.session_state["v_ampm"] = "AM"
 
 # ==============================================================================
 # 2B. HOME-PAGE-ONLY STYLE OVERRIDES
@@ -368,7 +354,7 @@ with st.sidebar:
     <div style="font-size:1.15rem; color:#475569; font-weight:800; line-height: 2.0;">
         ⚡ Team: <strong>Spark Squad</strong><br>
         🏛️ Bank Switch: <strong>Online 🟢</strong><br>
-        ⏱️️ Protocol: <strong>ISO 20022</strong>
+        ⏱️ Protocol: <strong>ISO 20022</strong>
     </div>
     """, unsafe_allow_html=True)
 
@@ -958,105 +944,168 @@ else:
 
         c_in1, c_in2 = st.columns(2)
 
+        # Dynamic suffix derived from form_reset_counter: completely avoids StreamlitWidgetAlreadyInstantiatedError
+        suffix = f"_{st.session_state['form_reset_counter']}"
+
         with c_in1:
             st.markdown("**1. 👤 Account Baseline & Persona Profile**")
-            
-            # Use dynamic session states to enable instant form clearing
-            prof_keys = list(PROFESSIONS.keys())
-            if "v_sel_prof" not in st.session_state:
-                st.session_state["v_sel_prof"] = prof_keys[0]
-            sel_prof = st.selectbox("Select Account Profile:", prof_keys, key="v_sel_prof", label_visibility="collapsed")
+            sel_prof = st.selectbox(
+                "Select Account Profile:",
+                list(PROFESSIONS.keys()),
+                index=0,
+                label_visibility="collapsed",
+                key=f"v_sel_prof{suffix}"
+            )
             prof = PROFESSIONS[sel_prof]
 
             st.markdown("**2. 💳 Payment & VPA Identifiers**")
             st.markdown("**💵 Transaction Amount (₹)**")
-            if "v_in_amt" not in st.session_state:
-                st.session_state["v_in_amt"] = 10000.0
-            in_amount = st.number_input("Transaction Amount", min_value=1.0, step=500.0, key="v_in_amt", label_visibility="collapsed")
+            in_amount = st.number_input(
+                "Transaction Amount",
+                min_value=1.0,
+                value=10000.0,
+                step=500.0,
+                label_visibility="collapsed",
+                key=f"v_in_amt{suffix}"
+            )
             
             st.markdown("**🏦 Account Available Balance (₹)**")
-            if "v_in_bal" not in st.session_state:
-                st.session_state["v_in_bal"] = float(prof['balance'])
-            in_balance = st.number_input("Account Balance", min_value=1.0, step=1000.0, key="v_in_bal", label_visibility="collapsed")
+            in_balance = st.number_input(
+                "Account Balance",
+                min_value=1.0,
+                value=float(prof['balance']),
+                step=1000.0,
+                label_visibility="collapsed",
+                key=f"v_in_bal{suffix}"
+            )
             
             st.markdown("**📊 Historical Daily Spend Baseline (₹)**")
-            if "v_in_avg" not in st.session_state:
-                st.session_state["v_in_avg"] = float(prof['avg_spend'])
-            in_avg = st.number_input("Usual Average Spend", min_value=1.0, step=100.0, key="v_in_avg", label_visibility="collapsed")
+            in_avg = st.number_input(
+                "Usual Average Spend",
+                min_value=1.0,
+                value=float(prof['avg_spend']),
+                step=100.0,
+                label_visibility="collapsed",
+                key=f"v_in_avg{suffix}"
+            )
             
             vpa_c1, vpa_c2 = st.columns(2)
             with vpa_c1:
                 st.markdown("**Sender UPI ID**")
-                if "v_s_vpa" not in st.session_state:
-                    st.session_state["v_s_vpa"] = "user@oksbi"
-                in_sender_vpa = st.text_input("Sender VPA", key="v_s_vpa", label_visibility="collapsed")
+                in_sender_vpa = st.text_input(
+                    "Sender VPA",
+                    value="user@oksbi",
+                    label_visibility="collapsed",
+                    key=f"v_s_vpa{suffix}"
+                )
             with vpa_c2:
                 st.markdown("**Recipient UPI ID**")
-                if "v_r_vpa" not in st.session_state:
-                    st.session_state["v_r_vpa"] = "chai_point@upi"
-                in_receiver_vpa = st.text_input("Receiver VPA", key="v_r_vpa", label_visibility="collapsed")
+                in_receiver_vpa = st.text_input(
+                    "Receiver VPA",
+                    value="chai_point@upi",
+                    label_visibility="collapsed",
+                    key=f"v_r_vpa{suffix}"
+                )
 
             st.markdown("**👥 Recipient Contact Trust Level**")
-            payee_opts = ["⭐ Known / Frequently Paid Contact", "🆕 New / First-Time Payee"]
-            if "v_is_new_p" not in st.session_state:
-                st.session_state["v_is_new_p"] = payee_opts[0]
-            in_payee_new = st.selectbox("Payee History", payee_opts, key="v_is_new_p", label_visibility="collapsed") == payee_opts[1]
+            in_payee_new = st.selectbox(
+                "Payee History",
+                ["⭐ Known / Frequently Paid Contact", "🆕 New / First-Time Payee"],
+                index=0,
+                label_visibility="collapsed",
+                key=f"v_is_new_p{suffix}"
+            ) == "🆕 New / First-Time Payee"
 
         with c_in2:
             st.markdown("**3. 📍 Spatial, Hardware & Network Context**")
             st.markdown("**📍 Displacement from Last Transaction (km)**")
-            if "v_dist_km" not in st.session_state:
-                st.session_state["v_dist_km"] = 50.0
-            in_dist = st.number_input("Distance from Last Transaction (km)", min_value=0.0, step=5.0, key="v_dist_km", label_visibility="collapsed")
+            in_dist = st.number_input(
+                "Distance from Last Transaction (km)",
+                min_value=0.0,
+                value=50.0,
+                step=5.0,
+                label_visibility="collapsed",
+                key=f"v_dist_km{suffix}"
+            )
 
-            st.markdown("**⏱️ Elapsed Time Since Previous Activity**")
+            st.markdown("**⏱️️ Elapsed Time Since Previous Activity**")
             g_val_col, g_unit_col = st.columns([1, 1])
             with g_val_col:
-                if "v_gap_val" not in st.session_state:
-                    st.session_state["v_gap_val"] = 30.0
-                in_gap_val = st.number_input("Value", min_value=0.1, step=1.0, key="v_gap_val", label_visibility="collapsed")
+                in_gap_val = st.number_input(
+                    "Value",
+                    min_value=0.1,
+                    value=30.0,
+                    step=1.0,
+                    label_visibility="collapsed",
+                    key=f"v_gap_val{suffix}"
+                )
             with g_unit_col:
-                unit_opts = ["Minutes ⏳", "Seconds ⏱️", "Hours ⌛"]
-                if "v_gap_unit" not in st.session_state:
-                    st.session_state["v_gap_unit"] = unit_opts[0]
-                in_gap_unit = st.selectbox("Unit", unit_opts, key="v_gap_unit", label_visibility="collapsed")
+                in_gap_unit = st.selectbox(
+                    "Unit",
+                    ["Minutes ⏳", "Seconds ⏱️", "Hours ⌛"],
+                    index=0,
+                    label_visibility="collapsed",
+                    key=f"v_gap_unit{suffix}"
+                )
 
             st.markdown("**🔢 Velocity: Number of Rapid Transactions (Last 10 Mins)**")
-            if "v_tx_burst" not in st.session_state:
-                st.session_state["v_tx_burst"] = 1
-            in_tx_count = st.number_input("Payments in 10 Mins", min_value=0, max_value=15, key="v_tx_burst", label_visibility="collapsed")
+            in_tx_count = st.number_input(
+                "Payments in 10 Mins",
+                min_value=0,
+                max_value=15,
+                value=1,
+                label_visibility="collapsed",
+                key=f"v_tx_burst{suffix}"
+            )
 
             st.markdown("**📱 Hardware Fingerprint & Subnet Match**")
-            dev_opts = ["🔒 Trusted Handset & Known Carrier Subnet", "⚠️ Unrecognized Handset / Foreign Gateway"]
-            if "v_dev_state" not in st.session_state:
-                st.session_state["v_dev_state"] = dev_opts[0]
-            in_device = st.selectbox("Device State", dev_opts, key="v_dev_state", label_visibility="collapsed") == dev_opts[1]
+            in_device = st.selectbox(
+                "Device State",
+                ["🔒 Trusted Handset & Known Carrier Subnet", "⚠️ Unrecognized Handset / Foreign Gateway"],
+                index=0,
+                label_visibility="collapsed",
+                key=f"v_dev_state{suffix}"
+            ) == "⚠️ Unrecognized Handset / Foreign Gateway"
 
             st.markdown("**👥 Delegation Mode (UPI Circle)**")
-            circle_opts = ["Primary Account Holder", "UPI Circle Secondary User (Family Member)"]
-            if "v_delegated" not in st.session_state:
-                st.session_state["v_delegated"] = circle_opts[0]
-            in_delegated = st.selectbox("Authorized User Session", circle_opts, key="v_delegated")
+            in_delegated = st.selectbox(
+                "Authorized User Session",
+                ["Primary Account Holder", "UPI Circle Secondary User (Family Member)"],
+                index=0,
+                key=f"v_delegated{suffix}"
+            )
 
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("**4. 🕒 Transaction Timestamp (12-Hour Format)**")
         t_c1, t_c2, t_c3, t_c4 = st.columns([1, 1, 1.2, 2.5])
         with t_c1:
             st.caption("**Hour 🕐**")
-            if "v_h12" not in st.session_state:
-                st.session_state["v_h12"] = 12
-            h_12 = st.selectbox("Hour", list(range(1, 13)), key="v_h12", label_visibility="collapsed")
+            h_12 = st.selectbox(
+                "Hour",
+                list(range(1, 13)),
+                index=11,
+                label_visibility="collapsed",
+                key=f"v_h12{suffix}"
+            )
         with t_c2:
             st.caption("**Minute ⏱️**")
-            min_opts = ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"]
-            if "v_mval" not in st.session_state:
-                st.session_state["v_mval"] = "30"
-            m_val = st.selectbox("Minute", min_opts, key="v_mval", label_visibility="collapsed")
+            m_val = st.selectbox(
+                "Minute",
+                ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"],
+                index=6,
+                label_visibility="collapsed",
+                key=f"v_mval{suffix}"
+            )
         with t_c3:
             st.caption("**AM / PM ☀️🌙**")
-            if "v_ampm" not in st.session_state:
-                st.session_state["v_ampm"] = "AM"
-            ampm = st.radio("AM/PM", ["AM", "PM"], horizontal=True, key="v_ampm", label_visibility="collapsed")
+            ampm = st.radio(
+                "AM/PM",
+                ["AM", "PM"],
+                horizontal=True,
+                index=0,
+                label_visibility="collapsed",
+                key=f"v_ampm{suffix}"
+            )
         with t_c4:
             st.write("")
             st.markdown(f"**Calculated Window:** `{h_12}:{m_val} {ampm}`")
@@ -1066,7 +1115,7 @@ else:
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # ACTION BUTTONS: RUN PIPELINE + CLEAR & RESET BUTTON
+        # ACTION BUTTONS: RUN PIPELINE + CLEAR ALL INPUTS
         btn_run_col, btn_clear_col = st.columns([2.2, 1])
 
         with btn_run_col:
@@ -1076,10 +1125,10 @@ else:
             btn_clear = st.button("🔄 Clear All Inputs & Reset Gateway", type="secondary", key="v_clear_inputs_btn")
 
         if btn_clear:
-            reset_telemetry_form()
+            trigger_reset_telemetry()
             st.rerun()
 
-        # PIPELINE EXECUTION TRIGGER
+        # PIPELINE EXECUTION
         if btn_trigger:
             st.session_state['has_run_pipeline'] = True
             st.session_state['res_data'] = execute_inline_investigation(
@@ -1239,7 +1288,7 @@ else:
                     st.markdown("<div style='padding: 10px 0;'>", unsafe_allow_html=True)
                     for name, detail, state in res['log']:
                         pill_class = "pill-ok" if state == "OK" else "pill-alert"
-                        symbol_badge = "✓" if state == "OK" else "⚠️"
+                        symbol_badge = "✓" if state == "OK" else "⚠️️"
                         st.markdown(f"""
                         <div class="step-item">
                             <div>
