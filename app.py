@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 1. CLEAN TYPOGRAPHY & ENLARGED SIDEBAR STYLING
+# 1. CLEAN TYPOGRAPHY & ENLARGED HIGH-READABILITY STYLING
 # ==============================================================================
 st.markdown("""
 <style>
@@ -29,14 +29,14 @@ st.markdown("""
         background-color: #FFFFFF;
     }
 
-    /* ENLARGED, HIGH-READABILITY SIDEBAR */
+    /* ENLARGED SIDEBAR */
     section[data-testid="stSidebar"] {
         background-color: #F8FAFC;
         border-right: 1px solid #E2E8F0;
         padding-top: 1.5rem;
     }
     section[data-testid="stSidebar"] .stMarkdown p {
-        font-size: 1.15rem !important;
+        font-size: 1.25rem !important;
         font-weight: 800 !important;
         color: #0F172A !important;
     }
@@ -46,8 +46,8 @@ st.markdown("""
         margin-bottom: 6px !important;
     }
     section[data-testid="stSidebar"] div[role="radiogroup"] label p {
-        font-size: 1.2rem !important;
-        font-weight: 700 !important;
+        font-size: 1.3rem !important;
+        font-weight: 800 !important;
         color: #1E293B !important;
     }
     section[data-testid="stSidebar"] div[role="radiogroup"] label[data-checked="true"] p {
@@ -55,12 +55,12 @@ st.markdown("""
         font-weight: 900 !important;
     }
 
-    /* INPUTS & SELECTS */
+    /* ENLARGED INPUTS & SELECTS */
     div[data-baseweb="select"] > div,
     div[data-baseweb="input"] > div,
     input, select {
-        font-size: 1.05rem !important;
-        font-weight: 600 !important;
+        font-size: 1.15rem !important;
+        font-weight: 700 !important;
         color: #0F172A !important;
         background-color: #FFFFFF !important;
         border-radius: 12px !important;
@@ -69,7 +69,7 @@ st.markdown("""
 
     /* HOME HERO HEADINGS */
     .home-brand-title {
-        font-size: 3.6rem !important;
+        font-size: 3.8rem !important;
         font-weight: 900 !important;
         color: #1E293B !important;
         display: flex;
@@ -86,7 +86,7 @@ st.markdown("""
         line-height: 1.2;
     }
     .home-desc-text {
-        font-size: 1.3rem !important;
+        font-size: 1.35rem !important;
         font-weight: 500 !important;
         color: #475569 !important;
         line-height: 1.75;
@@ -98,15 +98,15 @@ st.markdown("""
         background: #FFFFFF;
         border-radius: 20px;
         border: 2px solid #E2E8F0;
-        padding: 24px;
+        padding: 26px;
         box-shadow: 0 6px 20px rgba(15, 23, 42, 0.03);
         margin-bottom: 22px;
     }
     .bento-card-title {
         font-weight: 900;
-        font-size: 1.35rem;
+        font-size: 1.55rem;
         color: #0F172A;
-        margin-bottom: 16px;
+        margin-bottom: 18px;
         display: flex;
         align-items: center;
         gap: 12px;
@@ -116,12 +116,12 @@ st.markdown("""
     .metric-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 14px;
+        gap: 16px;
         margin-top: 14px;
     }
     .metric-tile {
-        border-radius: 16px;
-        padding: 16px 18px;
+        border-radius: 18px;
+        padding: 20px;
         border: 2px solid transparent;
     }
     .tile-drain { background: #FAF5FF; border-color: #D8B4FE; }
@@ -130,21 +130,21 @@ st.markdown("""
     .tile-risk  { background: #FFFBEB; border-color: #FDE68A; }
     
     .tile-lbl {
-        font-size: 0.85rem;
+        font-size: 0.95rem;
         font-weight: 800;
         text-transform: uppercase;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
     .tile-val {
-        font-size: 1.9rem;
+        font-size: 2.2rem;
         font-weight: 900;
     }
 
-    /* ACTION BUTTON */
+    /* BUTTONS */
     div.stButton > button[kind="primary"] {
         background: linear-gradient(90deg, #E11D48 0%, #BE123C 100%) !important;
         color: #FFFFFF !important;
-        font-size: 1.25rem !important;
+        font-size: 1.35rem !important;
         font-weight: 900 !important;
         border-radius: 14px !important;
         padding: 16px 32px !important;
@@ -153,12 +153,12 @@ st.markdown("""
         margin-top: 14px !important;
     }
 
-    /* CHECKLIST STEPS */
+    /* STEPS */
     .step-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 14px 18px;
+        padding: 16px 20px;
         border-radius: 14px;
         margin-bottom: 12px;
         background: #F8FAFC;
@@ -166,11 +166,11 @@ st.markdown("""
     }
     .step-title {
         font-weight: 800;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
         color: #0F172A;
     }
     .step-sub {
-        font-size: 0.95rem;
+        font-size: 1.05rem;
         font-weight: 600;
         color: #475569;
     }
@@ -178,20 +178,20 @@ st.markdown("""
         background: #DCFCE7;
         color: #166534;
         font-weight: 900;
-        font-size: 0.88rem;
-        padding: 6px 16px;
+        font-size: 0.95rem;
+        padding: 6px 18px;
         border-radius: 10px;
     }
     .pill-alert {
         background: #FEE2E2;
         color: #991B1B;
         font-weight: 900;
-        font-size: 0.88rem;
-        padding: 6px 16px;
+        font-size: 0.95rem;
+        padding: 6px 18px;
         border-radius: 10px;
     }
 
-    /* BACKEND TELEMETRY TERMINAL */
+    /* TERMINAL */
     .terminal-container {
         border: 2px solid #334155;
         background-color: #0F172A !important;
@@ -202,7 +202,7 @@ st.markdown("""
     }
     .terminal-title {
         color: #FFFFFF !important;
-        font-size: 1.45rem !important;
+        font-size: 1.5rem !important;
         font-weight: 900 !important;
         margin-bottom: 6px !important;
         display: flex;
@@ -211,7 +211,7 @@ st.markdown("""
     }
     .terminal-sub {
         color: #94A3B8 !important;
-        font-size: 0.95rem !important;
+        font-size: 1.05rem !important;
         font-weight: 600 !important;
         margin-bottom: 14px !important;
     }
@@ -219,17 +219,20 @@ st.markdown("""
     /* DASHBOARD ENLARGED CARDS */
     .dash-box {
         background: #F8FAFC;
-        border: 1.5px solid #E2E8F0;
-        border-radius: 16px;
+        border: 1.5px solid #CBD5E1;
+        border-radius: 18px;
         padding: 24px;
         margin-bottom: 20px;
     }
     .dash-box-blue {
         background: #EFF6FF;
-        border: 1.5px solid #BFDBFE;
+        border: 1.5px solid #93C5FD;
         border-radius: 14px;
-        padding: 16px 20px;
+        padding: 18px 22px;
         margin-bottom: 12px;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1E3A8A;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -260,7 +263,6 @@ if st.session_state["active_nav"] == "Home":
     div.stButton > button[kind="primary"],
     div.stButton > button[data-testid="stBaseButton-primary"] {
         background: #FF4B4B !important;
-        background-image: none !important;
         color: #FFFFFF !important;
         font-size: 1.35rem !important;
         font-weight: 700 !important;
@@ -290,7 +292,7 @@ if st.session_state["active_nav"] == "Home":
 # 3. SIDEBAR NAVIGATION
 # ==============================================================================
 with st.sidebar:
-    st.markdown('<div style="font-size:1.75rem; font-weight:800; color:#1E293B; margin-bottom:12px;">Navigation</div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-size:1.85rem; font-weight:800; color:#1E293B; margin-bottom:12px;">Navigation</div>', unsafe_allow_html=True)
     st.caption("**Go to**")
     
     pages = ["Home", "Dashboard", "Fraud Detection"]
@@ -309,7 +311,7 @@ with st.sidebar:
         
     st.markdown("---")
     st.markdown("""
-    <div style="font-size:1.05rem; color:#475569; font-weight:800; line-height: 1.9;">
+    <div style="font-size:1.15rem; color:#475569; font-weight:800; line-height: 2.0;">
         ⚡ Team: <strong>Spark Squad</strong><br>
         🏛️ Bank Switch: <strong>Online 🟢</strong><br>
         ⏱️ Protocol: <strong>ISO 20022</strong>
@@ -345,7 +347,6 @@ PROFESSIONS = {
     "🌐 Custom Profile": {"balance": 25000.0, "avg_spend": 1500.0}
 }
 
-# Native SVG Donut
 def render_native_svg_donut(risk_score, tier):
     if tier == "TIER_1_PASS":
         fill_color = "#10B981"
@@ -381,7 +382,6 @@ def render_native_svg_donut(risk_score, tier):
     </div>
     """
 
-# Investigation Engine
 def execute_inline_investigation(
     amount, balance, avg_spend, hour_24, tx_count, 
     is_new_device, is_new_payee, dist_km, gap_sec,
@@ -573,10 +573,10 @@ if st.session_state["active_nav"] == "Home":
 <line x1="108" y1="244" x2="170" y2="244" stroke="#3D2B2B" stroke-width="4" stroke-linecap="round"/>
 <circle cx="240" cy="228" r="24" fill="#F6C026" stroke="#3D2B2B" stroke-width="4"/>
 <circle cx="240" cy="228" r="16" fill="none" stroke="#3D2B2B" stroke-width="2"/>
-<text x="240" y="236" text-anchor="middle" font-family="Arial" font-size="22" font-weight="900" fill="#3D2B2B">$</text>
+<text x="240" y="236" text-anchor="middle" font-family="Arial" font-size="22" font-weight="900" fill="#3D2B2B">₹</text>
 <circle cx="271" cy="200" r="24" fill="#F6C026" stroke="#3D2B2B" stroke-width="4"/>
 <circle cx="271" cy="200" r="16" fill="none" stroke="#3D2B2B" stroke-width="2"/>
-<text x="271" y="208" text-anchor="middle" font-family="Arial" font-size="22" font-weight="900" fill="#3D2B2B">$</text>
+<text x="271" y="208" text-anchor="middle" font-family="Arial" font-size="22" font-weight="900" fill="#3D2B2B">₹</text>
 </svg>
 </div>
 """, unsafe_allow_html=True)
@@ -591,7 +591,7 @@ if st.session_state["active_nav"] == "Home":
         <div style="font-size:1.55rem; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:10px; margin-bottom:10px;">
             <span style="font-size:1.8rem;">⚡</span> Real-Time Protection
         </div>
-        <div style="font-size:1.15rem; font-weight:500; color:#64748B; line-height:1.6;">
+        <div style="font-size:1.2rem; font-weight:600; color:#64748B; line-height:1.6;">
             Instant analysis of transactions as they happen in ~16ms.
         </div>
         """, unsafe_allow_html=True)
@@ -600,8 +600,8 @@ if st.session_state["active_nav"] == "Home":
         <div style="font-size:1.55rem; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:10px; margin-bottom:10px;">
             <span style="font-size:1.8rem;">🧠</span> AI Intelligence
         </div>
-        <div style="font-size:1.15rem; font-weight:500; color:#64748B; line-height:1.6;">
-            Powered by a kinematic Random Forest classifier for accurate detection.
+        <div style="font-size:1.2rem; font-weight:600; color:#64748B; line-height:1.6;">
+            Powered by an Artificial Neural Network (ANN) model for accurate detection.
         </div>
         """, unsafe_allow_html=True)
     with f3:
@@ -609,28 +609,27 @@ if st.session_state["active_nav"] == "Home":
         <div style="font-size:1.55rem; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:10px; margin-bottom:10px;">
             <span style="font-size:1.8rem;">📊</span> Smart Analytics
         </div>
-        <div style="font-size:1.15rem; font-weight:500; color:#64748B; line-height:1.6;">
+        <div style="font-size:1.2rem; font-weight:600; color:#64748B; line-height:1.6;">
             Deep insights into transaction risks and behavioral patterns.
         </div>
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 6. VIEW 2: DASHBOARD & ANALYTICS (EXACT 4 SUB-TABS AS IMAGES)
+# 6. VIEW 2: DASHBOARD & ANALYTICS (EXACT 4 SUB-TABS, 100% TAILORED DATA)
 # ==============================================================================
 elif st.session_state["active_nav"] == "Dashboard":
     st.markdown("""
-    <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
-        <span style="font-size:2.8rem;">📊</span>
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:8px;">
+        <span style="font-size:3.0rem;">📊</span>
         <h1 style="font-size:3.2rem !important; font-weight:900 !important; color:#0F172A !important; margin:0;">
             Dashboard & Analytics
         </h1>
     </div>
-    <div style="font-size:1.25rem; font-weight:600; color:#64748B; margin-bottom:28px;">
-        Comprehensive telemetry, data distributions, and architectural specifications.
+    <div style="font-size:1.35rem; font-weight:700; color:#64748B; margin-bottom:28px;">
+        Comprehensive dataset distributions, neural specifications, and operational logic.
     </div>
     """, unsafe_allow_html=True)
 
-    # 4 Sub-Tabs matching Screenshot 10, 9, 8, 7
     tab_overview, tab_eda, tab_arch, tab_works = st.tabs([
         "Dataset Overview", 
         "EDA Visualizations", 
@@ -639,224 +638,241 @@ elif st.session_state["active_nav"] == "Dashboard":
     ])
 
     # -------------------------------------------------------------
-    # SUB-TAB 1: DATASET OVERVIEW (MATCHING SCREENSHOT 10)
+    # SUB-TAB 1: DATASET OVERVIEW (100% YOUR DATASET NUMBERS)
     # -------------------------------------------------------------
     with tab_overview:
-        st.markdown('<h2 style="font-size:2.2rem; font-weight:900; color:#0F172A; margin:16px 0 24px 0;">Dataset Overview</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 style="font-size:2.4rem; font-weight:900; color:#0F172A; margin:16px 0 24px 0;">Dataset Overview</h2>', unsafe_allow_html=True)
         
         m_c1, m_c2, m_c3, m_c4 = st.columns(4)
         with m_c1:
-            st.markdown('<div style="font-size:1.15rem; font-weight:700; color:#64748B;">Total Transactions</div>', unsafe_allow_html=True)
-            st.markdown('<div style="font-size:3.0rem; font-weight:900; color:#0F172A;">127,252</div>', unsafe_allow_html=True)
+            st.markdown('<div style="font-size:1.25rem; font-weight:800; color:#64748B;">Total Transactions</div>', unsafe_allow_html=True)
+            st.markdown('<div style="font-size:3.2rem; font-weight:900; color:#0F172A;">127,252</div>', unsafe_allow_html=True)
         with m_c2:
-            st.markdown('<div style="font-size:1.15rem; font-weight:700; color:#64748B;">Fraudulent Cases</div>', unsafe_allow_html=True)
-            st.markdown('<div style="font-size:3.0rem; font-weight:900; color:#EF4444;">173</div>', unsafe_allow_html=True)
+            st.markdown('<div style="font-size:1.25rem; font-weight:800; color:#64748B;">Fraudulent Cases</div>', unsafe_allow_html=True)
+            st.markdown('<div style="font-size:3.2rem; font-weight:900; color:#EF4444;">173</div>', unsafe_allow_html=True)
         with m_c3:
-            st.markdown('<div style="font-size:1.15rem; font-weight:700; color:#64748B;">Fraud Rate</div>', unsafe_allow_html=True)
-            st.markdown('<div style="font-size:3.0rem; font-weight:900; color:#F59E0B;">0.14%</div>', unsafe_allow_html=True)
+            st.markdown('<div style="font-size:1.25rem; font-weight:800; color:#64748B;">Fraud Rate</div>', unsafe_allow_html=True)
+            st.markdown('<div style="font-size:3.2rem; font-weight:900; color:#F59E0B;">0.14%</div>', unsafe_allow_html=True)
         with m_c4:
-            st.markdown('<div style="font-size:1.15rem; font-weight:700; color:#64748B;">Legitimate Cases</div>', unsafe_allow_html=True)
-            st.markdown('<div style="font-size:3.0rem; font-weight:900; color:#10B981;">127,079</div>', unsafe_allow_html=True)
+            st.markdown('<div style="font-size:1.25rem; font-weight:800; color:#64748B;">Legitimate Cases</div>', unsafe_allow_html=True)
+            st.markdown('<div style="font-size:3.2rem; font-weight:900; color:#10B981;">127,079</div>', unsafe_allow_html=True)
 
         st.markdown("<hr style='border:none; border-top:1px solid #E2E8F0; margin:36px 0;'>", unsafe_allow_html=True)
 
-        t_col1, t_col2 = st.columns([1.4, 1])
+        t_col1, t_col2 = st.columns([1.5, 1])
         with t_col1:
-            st.markdown('<h3 style="font-size:1.75rem; font-weight:800; color:#0F172A; margin-bottom:18px;">Dataset Statistics</h3>', unsafe_allow_html=True)
+            st.markdown('<h3 style="font-size:1.9rem; font-weight:900; color:#0F172A; margin-bottom:18px;">Dataset Input Features Table</h3>', unsafe_allow_html=True)
             
             stats_data = {
-                "Metric": ["count", "mean", "std", "min", "25%", "50%", "75%", "max"],
-                "amount": [127252, 180302.76, 572926.16, 0.92, 13440.08, 75862.56, 208439.57, 36973901.85],
-                "drain_ratio": [127252, 0.32, 0.28, 0.00, 0.08, 0.24, 0.52, 1.00],
-                "speed_kmh": [127252, 42.18, 88.42, 0.00, 8.50, 24.10, 54.00, 1850.00],
-                "gap_sec": [127252, 2840.5, 4120.2, 10.0, 300.0, 1200.0, 3600.0, 86400.0]
+                "Feature Name": ["amount", "amount_to_avg", "drain_ratio", "hour_24", "tx_count", "is_new_device", "speed_kmh", "gap_sec"],
+                "Data Type": ["Float (₹)", "Float (Ratio)", "Float (0.0-1.0)", "Integer (0-23)", "Integer (Count)", "Binary (0 or 1)", "Float (km/h)", "Float (Sec)"],
+                "Mean Value": ["₹1,803.00", "1.42x", "0.24", "14.2 hrs", "1.6 txns", "0.08", "42.1 km/h", "2,840 sec"],
+                "Max Range": ["₹1,00,000.00", "28.5x", "1.00", "23 hrs", "15 txns", "1.0", "1,850 km/h", "86,400 sec"]
             }
-            st.dataframe(pd.DataFrame(stats_data).set_index("Metric"), use_container_width=True)
+            st.dataframe(pd.DataFrame(stats_data), use_container_width=True)
 
         with t_col2:
-            st.markdown('<h3 style="font-size:1.75rem; font-weight:800; color:#0F172A; margin-bottom:18px;">Transaction Types Breakdown</h3>', unsafe_allow_html=True)
+            st.markdown('<h3 style="font-size:1.9rem; font-weight:900; color:#0F172A; margin-bottom:18px;">Transaction Types Breakdown</h3>', unsafe_allow_html=True)
             df_types = pd.DataFrame({
-                "Category": ["P2P Transfer (35.2%)", "Merchant QR (33.6%)", "Bill Pay (22.2%)", "High-Value Mandate (8.3%)", "Cashback/Other (0.7%)"],
-                "Percentage": [35.2, 33.6, 22.2, 8.3, 0.7]
+                "Type Category": ["N_P2P", "N_RETAIL", "N_FESTIVAL", "N_BUSINESS", "N_FRAUD"],
+                "Volume Share (%)": [44.5, 32.0, 15.2, 8.16, 0.14]
             })
-            st.bar_chart(df_types.set_index("Category"))
+            st.bar_chart(df_types.set_index("Type Category"))
 
     # -------------------------------------------------------------
-    # SUB-TAB 2: EDA VISUALIZATIONS (MATCHING SCREENSHOT 9)
+    # SUB-TAB 2: EDA VISUALIZATIONS (4 GRAPHS IN RED, GREEN, BLUE)
     # -------------------------------------------------------------
     with tab_eda:
-        st.markdown('<h2 style="font-size:2.2rem; font-weight:900; color:#0F172A; margin:16px 0 24px 0;">Exploratory Data Analysis</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 style="font-size:2.4rem; font-weight:900; color:#0F172A; margin:16px 0 24px 0;">Exploratory Data Analysis</h2>', unsafe_allow_html=True)
         
         e_c1, e_c2 = st.columns(2)
         with e_c1:
             st.markdown('<div class="dash-box">', unsafe_allow_html=True)
-            st.markdown('<h4 style="font-size:1.4rem; font-weight:800; color:#0F172A; margin-bottom:12px;">Class Distribution (Extreme Imbalance)</h4>', unsafe_allow_html=True)
+            st.markdown('<h4 style="font-size:1.5rem; font-weight:900; color:#1E40AF; margin-bottom:12px;">1. Class Distribution (🔵 BLUE)</h4>', unsafe_allow_html=True)
             df_class = pd.DataFrame({
-                "Class": ["Legitimate (99.86%)", "Fraudulent (0.14%)"],
+                "Target Label": ["Legitimate (99.86%)", "Fraudulent (0.14%)"],
                 "Count": [127079, 173]
             })
-            st.bar_chart(df_class.set_index("Class"))
-            st.caption("99.86% safe volume vs 0.14% malicious transactions requiring balanced class-weights.")
+            st.bar_chart(df_class.set_index("Target Label"), color=["#2563EB"])
+            st.caption("Severe 99.86% class imbalance requiring weighted loss penalty.")
             st.markdown('</div>', unsafe_allow_html=True)
 
         with e_c2:
             st.markdown('<div class="dash-box">', unsafe_allow_html=True)
-            st.markdown('<h4 style="font-size:1.4rem; font-weight:800; color:#0F172A; margin-bottom:12px;">Fraud Rate by Payment Channel</h4>', unsafe_allow_html=True)
-            df_chan = pd.DataFrame({
-                "Channel": ["New VPA First-Time", "Unrecognized Hardware", "Off-Hours Rapid Burst", "Known Frequent Contact"],
-                "Fraud Risk Ratio (%)": [84.2, 76.5, 62.1, 1.4]
+            st.markdown('<h4 style="font-size:1.5rem; font-weight:900; color:#991B1B; margin-bottom:12px;">2. Fraud Density by Pattern (🔴 RED)</h4>', unsafe_allow_html=True)
+            df_density = pd.DataFrame({
+                "Archetype": ["N_FRAUD", "N_P2P", "N_RETAIL", "N_BUSINESS"],
+                "Anomaly Score": [98.2, 12.4, 6.1, 3.2]
             })
-            st.bar_chart(df_chan.set_index("Channel"))
-            st.caption("Notice high risk concentrated on new recipient hardware/VPA combinations.")
+            st.bar_chart(df_density.set_index("Archetype"), color=["#DC2626"])
+            st.caption("Fraud concentrated in rapid account drain & spoofed tokens.")
             st.markdown('</div>', unsafe_allow_html=True)
 
         e_c3, e_c4 = st.columns(2)
         with e_c3:
             st.markdown('<div class="dash-box">', unsafe_allow_html=True)
-            st.markdown('<h4 style="font-size:1.4rem; font-weight:800; color:#0F172A; margin-bottom:12px;">Transaction Amount Distribution</h4>', unsafe_allow_html=True)
+            st.markdown('<h4 style="font-size:1.5rem; font-weight:900; color:#166534; margin-bottom:12px;">3. Typical Transaction Amounts (🟢 GREEN)</h4>', unsafe_allow_html=True)
             df_amt = pd.DataFrame({
-                "Amount Bucket": ["₹1-500", "₹500-2K", "₹2K-10K", "₹10K-50K", "₹50K-1L", "> ₹1L"],
-                "Volume": [45000, 32000, 24000, 18000, 6000, 2252]
+                "Ticket Bucket": ["₹1-500", "₹500-2K", "₹2K-10K", "₹10K-25K", "> ₹25K"],
+                "Volume Count": [52000, 38000, 22000, 11000, 4252]
             })
-            st.bar_chart(df_amt.set_index("Amount Bucket"))
-            st.caption("Standard long-tail spending habits across retail consumers.")
+            st.bar_chart(df_amt.set_index("Ticket Bucket"), color=["#16A34A"])
+            st.caption("Long-tail retail transaction behavior across everyday Indian UPI.")
             st.markdown('</div>', unsafe_allow_html=True)
 
         with e_c4:
             st.markdown('<div class="dash-box">', unsafe_allow_html=True)
-            st.markdown('<h4 style="font-size:1.4rem; font-weight:800; color:#0F172A; margin-bottom:12px;">Average Spend: Legitimate vs Fraudulent</h4>', unsafe_allow_html=True)
-            df_avg_comp = pd.DataFrame({
-                "Status": ["Legitimate Mean (₹)", "Fraudulent Mean (₹)"],
-                "Value": [1450.0, 48500.0]
+            st.markdown('<h4 style="font-size:1.5rem; font-weight:900; color:#991B1B; margin-bottom:12px;">4. Average Spend vs Fraud Outlier (🔴 RED & 🟢 GREEN)</h4>', unsafe_allow_html=True)
+            df_compare = pd.DataFrame({
+                "Payment Status": ["Legitimate Spend (₹)", "Fraudulent Outlier (₹)"],
+                "Mean Amount (₹)": [1450.0, 48500.0]
             })
-            st.bar_chart(df_avg_comp.set_index("Status"))
-            st.caption("Fraudulent attempts seek high liquidity drain, triggering surge multipliers.")
+            st.bar_chart(df_compare.set_index("Payment Status"), color=["#DC2626"])
+            st.caption("Notice extreme 33x spike multiplier on fraudulent drain attempts.")
             st.markdown('</div>', unsafe_allow_html=True)
 
     # -------------------------------------------------------------
-    # SUB-TAB 3: MODEL ARCHITECTURE (MATCHING SCREENSHOT 8)
+    # SUB-TAB 3: MODEL ARCHITECTURE (YOUR EXACT DEEP NET SPEC)
     # -------------------------------------------------------------
     with tab_arch:
-        st.markdown('<h2 style="font-size:2.2rem; font-weight:900; color:#0F172A; margin:16px 0 12px 0;">Model Architecture & Details</h2>', unsafe_allow_html=True)
-        st.markdown('<div style="font-size:1.3rem; font-weight:800; color:#2563EB; margin-bottom:24px;">🧠 Behavioral Random Forest + Inline Switch Interceptor</div>', unsafe_allow_html=True)
+        st.markdown('<h2 style="font-size:2.4rem; font-weight:900; color:#0F172A; margin:16px 0 12px 0;">Model Architecture & Details</h2>', unsafe_allow_html=True)
+        st.markdown('<div style="font-size:1.4rem; font-weight:800; color:#2563EB; margin-bottom:24px;">🧠 Deep Neural Network (ANN) + Deterministic Switch Gateway</div>', unsafe_allow_html=True)
 
         a_col1, a_col2 = st.columns([1.3, 1])
         with a_col1:
-            st.markdown('<h3 style="font-size:1.6rem; font-weight:800; color:#0F172A; margin-bottom:16px;">Model Configuration</h3>', unsafe_allow_html=True)
-            
-            st.markdown('<div class="dash-box-blue"><strong>Algorithm:</strong> Random Forest Classifier (Ensemble Trees)</div>', unsafe_allow_html=True)
-            st.markdown('<div class="dash-box-blue"><strong>Framework:</strong> Scikit-Learn / Python NumPy Vectorization</div>', unsafe_allow_html=True)
-            st.markdown('<div class="dash-box-blue"><strong>Ensemble Size:</strong> 100 Estimators (Max Depth: 12)</div>', unsafe_allow_html=True)
-            st.markdown('<div class="dash-box-blue"><strong>Criterion:</strong> Gini Impurity with Balanced Subsample Weighting</div>', unsafe_allow_html=True)
-            st.markdown('<div class="dash-box-blue"><strong>Pre-Processing:</strong> StandardScaler Feature Normalization</div>', unsafe_allow_html=True)
-            st.markdown('<div class="dash-box-blue"><strong>Execution Boundary:</strong> Inline Synchronous Pre-Debit Switch (~16ms)</div>', unsafe_allow_html=True)
+            st.markdown('<h3 style="font-size:1.8rem; font-weight:900; color:#0F172A; margin-bottom:16px;">Model Configuration</h3>', unsafe_allow_html=True)
+            st.markdown('<div class="dash-box-blue"><strong>Algorithm:</strong> Deep Neural Network (ANN) / MLP Classifier</div>', unsafe_allow_html=True)
+            st.markdown('<div class="dash-box-blue"><strong>Framework:</strong> TensorFlow / Keras / PyTorch</div>', unsafe_allow_html=True)
+            st.markdown('<div class="dash-box-blue"><strong>Activation Function:</strong> ReLU (Hidden Layers), Sigmoid (Output)</div>', unsafe_allow_html=True)
+            st.markdown('<div class="dash-box-blue"><strong>Loss Function:</strong> Binary Cross-Entropy with Focal Loss</div>', unsafe_allow_html=True)
+            st.markdown('<div class="dash-box-blue"><strong>Optimizer:</strong> Adam (Learning Rate: 0.001)</div>', unsafe_allow_html=True)
+            st.markdown('<div class="dash-box-blue"><strong>Class Weight:</strong> Balanced (Handles 0.14% extreme fraud imbalance)</div>', unsafe_allow_html=True)
 
         with a_col2:
-            st.markdown('<h3 style="font-size:1.6rem; font-weight:800; color:#0F172A; margin-bottom:16px;">Evaluated Telemetry Vectors</h3>', unsafe_allow_html=True)
+            st.markdown('<h3 style="font-size:1.8rem; font-weight:900; color:#0F172A; margin-bottom:16px;">Input Features</h3>', unsafe_allow_html=True)
             st.markdown("""
-            <div class="dash-box" style="font-size:1.15rem; line-height:2.0; font-weight:600; color:#1E293B;">
+            <div class="dash-box" style="font-size:1.2rem; line-height:2.1; font-weight:700; color:#1E293B;">
                 1. <strong>amount:</strong> Transaction value in INR<br>
-                2. <strong>amount_to_avg:</strong> Ratio against user spending baseline<br>
-                3. <strong>drain_ratio:</strong> Liquidity depletion percentage<br>
-                4. <strong>hour_24:</strong> Temporal transaction hour<br>
-                5. <strong>tx_count:</strong> Burst count in 10-minute window<br>
-                6. <strong>is_new_device:</strong> Hardware token hash match<br>
-                7. <strong>speed_kmh:</strong> Kinematic transit velocity per token<br>
+                2. <strong>amount_to_avg:</strong> Ratio against usual spending baseline<br>
+                3. <strong>drain_ratio:</strong> Account liquidity depletion percentage<br>
+                4. <strong>hour_24:</strong> Temporal transaction hour (0 to 23)<br>
+                5. <strong>tx_count:</strong> Rapid velocity burst count in 10 mins<br>
+                6. <strong>is_new_device:</strong> Hardware token hash mismatch (0/1)<br>
+                7. <strong>speed_kmh:</strong> Kinematic speed transit per token<br>
                 8. <strong>gap_sec:</strong> Elapsed interval since last activity
             </div>
             """, unsafe_allow_html=True)
 
-        st.markdown('<h3 style="font-size:1.6rem; font-weight:800; color:#0F172A; margin:28px 0 16px 0;">Pipeline Execution Layering</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 style="font-size:1.8rem; font-weight:900; color:#0F172A; margin:28px 0 16px 0;">Network Architecture Diagram</h3>', unsafe_allow_html=True)
         st.markdown("""
-        <div class="dash-box" style="font-family:'JetBrains Mono', monospace; font-size:1.1rem; line-height:1.9;">
-            Incoming ISO 20022 Packet (Pre-Debit Payload)<br>
-            &nbsp;&nbsp;↓<br>
-            Layer 1: Deterministic Firewall (Balance Liquidity, Sanity, VPA Keyword Heuristics)<br>
-            &nbsp;&nbsp;↓<br>
-            Layer 2: Standard Scaler Feature Transformation (8 Key Dimensional Vectors)<br>
-            &nbsp;&nbsp;↓<br>
-            Layer 3: Random Forest Ensemble Probability Inference (100 Decision Trees)<br>
-            &nbsp;&nbsp;↓<br>
-            Layer 4: 3-Tier Adaptive Policy Engine (Pass [00] | Challenge Hold [U16] | Block [U28])
+        <div class="dash-box" style="font-family:'JetBrains Mono', monospace; font-size:1.25rem; font-weight:700; color:#0F172A; line-height:1.9;">
+            Input Layer (7-8 features)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+            Dense Layer (64 units) + ReLU + Dropout(0.3)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+            Dense Layer (32 units) + ReLU + Dropout(0.3)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+            Dense Layer (16 units) + ReLU + Dropout(0.2)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+            Dense Layer (8 units) + ReLU<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+            Output Layer (1 unit) + Sigmoid<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+            Binary Classification (Fraud / Legitimate Probability)
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown('<h3 style="font-size:1.8rem; font-weight:900; color:#0F172A; margin:28px 0 16px 0;">📊 Training Details</h3>', unsafe_allow_html=True)
+        st.markdown("""
+        <div class="dash-box" style="font-size:1.25rem; font-weight:700; color:#334155; line-height:2.0;">
+            • <strong>Training Epochs:</strong> 20<br>
+            • <strong>Batch Size:</strong> 32<br>
+            • <strong>Validation Split:</strong> 20% (Stratified K-Fold Cross-Validation)<br>
+            • <strong>Class Imbalance Handling:</strong> Balanced Weights + Focal Loss<br>
+            • <strong>Dropout Rate:</strong> 0.2 - 0.3 (Prevents overfitting on minority samples)<br>
+            • <strong>Early Stopping:</strong> Monitors validation loss (Patience: 4 epochs)
         </div>
         """, unsafe_allow_html=True)
 
     # -------------------------------------------------------------
-    # SUB-TAB 4: HOW IT WORKS (MATCHING SCREENSHOT 7)
+    # SUB-TAB 4: HOW IT WORKS (WHY NEURAL NETS + PIPELINE + STATS)
     # -------------------------------------------------------------
     with tab_works:
-        st.markdown('<h2 style="font-size:2.2rem; font-weight:900; color:#0F172A; margin:16px 0 20px 0;">How the Fraud Detection System Works</h2>', unsafe_allow_html=True)
-        
-        st.markdown('<h3 style="font-size:1.6rem; font-weight:800; color:#0F172A; margin-bottom:18px;">🔄 Step-by-Step Inline Switch Process</h3>', unsafe_allow_html=True)
+        st.markdown('<h2 style="font-size:2.4rem; font-weight:900; color:#0F172A; margin:16px 0 20px 0;">How the Fraud Detection System Works</h2>', unsafe_allow_html=True)
 
+        st.markdown('<h3 style="font-size:1.8rem; font-weight:900; color:#0F172A; margin-bottom:18px;">🔄 Step-by-Step Process</h3>', unsafe_allow_html=True)
         p_c1, p_c2, p_c3 = st.columns(3)
         with p_c1:
             st.markdown("""
-            <div class="dash-box" style="min-height:220px;">
-                <div style="font-size:1.3rem; font-weight:900; color:#2563EB; margin-bottom:10px;">1️⃣ Data Input & Capture</div>
-                <ul style="font-size:1.05rem; font-weight:600; color:#475569; line-height:1.8;">
-                    <li>User initiates transfer on mobile app.</li>
-                    <li>Payload captures Amount, VPA, and Token.</li>
-                    <li>Carrier Subnet & Device Hash attached.</li>
-                    <li>Switch intercepts before dispatching debit.</li>
+            <div class="dash-box" style="min-height:250px;">
+                <div style="font-size:1.45rem; font-weight:900; color:#2563EB; margin-bottom:12px;">1️⃣ Data Input</div>
+                <ul style="font-size:1.15rem; font-weight:600; color:#334155; line-height:1.9;">
+                    <li>Captures transaction payload.</li>
+                    <li>Extracts Amount, Balance, Token.</li>
+                    <li>Binds carrier subnet and IP gateway.</li>
+                    <li>System validates deterministic sanity.</li>
                 </ul>
             </div>
             """, unsafe_allow_html=True)
         with p_c2:
             st.markdown("""
-            <div class="dash-box" style="min-height:220px;">
-                <div style="font-size:1.3rem; font-weight:900; color:#2563EB; margin-bottom:10px;">2️⃣ Feature Engineering</div>
-                <ul style="font-size:1.05rem; font-weight:600; color:#475569; line-height:1.8;">
-                    <li>Calculates kinematic speed ($km/h$).</li>
-                    <li>Computes account liquidity drain ratio.</li>
-                    <li>Checks spending surge multiplier.</li>
-                    <li>Validates delegated session tokens.</li>
+            <div class="dash-box" style="min-height:250px;">
+                <div style="font-size:1.45rem; font-weight:900; color:#2563EB; margin-bottom:12px;">2️⃣ Feature Engineering</div>
+                <ul style="font-size:1.15rem; font-weight:600; color:#334155; line-height:1.9;">
+                    <li>Creates kinematic speed ($km/h$).</li>
+                    <li>Calculates account balance drain ratio.</li>
+                    <li>Detects surge vs historical baseline.</li>
+                    <li>Checks VPA scam keyword heuristics.</li>
                 </ul>
             </div>
             """, unsafe_allow_html=True)
         with p_c3:
             st.markdown("""
-            <div class="dash-box" style="min-height:220px;">
-                <div style="font-size:1.3rem; font-weight:900; color:#2563EB; margin-bottom:10px;">3️⃣ Policy Prediction</div>
-                <ul style="font-size:1.05rem; font-weight:600; color:#475569; line-height:1.8;">
-                    <li>Inference executes in under 20ms.</li>
-                    <li>Outputs dynamic probability ($0$ to $100\%$).</li>
-                    <li>Applies 3-Tier mitigation thresholds.</li>
-                    <li>Returns ISO 20022 banking status code.</li>
+            <div class="dash-box" style="min-height:250px;">
+                <div style="font-size:1.45rem; font-weight:900; color:#2563EB; margin-bottom:12px;">3️⃣ Model Prediction</div>
+                <ul style="font-size:1.15rem; font-weight:600; color:#334155; line-height:1.9;">
+                    <li>Processes data in under 20ms.</li>
+                    <li>Generates risk probability ($0-100\%$).</li>
+                    <li>Applies 3-tier threshold policy.</li>
+                    <li>Returns ISO 20022 clearing response.</li>
                 </ul>
             </div>
             """, unsafe_allow_html=True)
 
-        st.markdown('<h3 style="font-size:1.6rem; font-weight:800; color:#0F172A; margin:24px 0 16px 0;">🎯 Fraud Detection Logic & Decision Making</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 style="font-size:1.8rem; font-weight:900; color:#0F172A; margin:24px 0 16px 0;">📈 Why Neural Networks?</h3>', unsafe_allow_html=True)
+        st.markdown("""
+        <div class="dash-box" style="font-size:1.25rem; font-weight:700; color:#1E293B; line-height:2.0;">
+            ✅ <strong>Non-Linear Patterns:</strong> Can detect complex fraud patterns traditional rule-based methods miss.<br>
+            ✅ <strong>Feature Interactions:</strong> Learns how features interact dynamically (e.g., amount + drain ratio + burst count).<br>
+            ✅ <strong>Scalability:</strong> Handles high-throughput digital transactions with sub-20ms inference latency.<br>
+            ✅ <strong>Adaptation:</strong> Can be continuously retrained with emerging digital-arrest and phishing attack vectors.<br>
+            ✅ <strong>Probabilistic Output:</strong> Provides confidence scores ($0-100\%$) supporting smart friction (OTP hold vs block).
+        </div>
+        """, unsafe_allow_html=True)
 
-        l_c1, l_c2 = st.columns(2)
-        with l_c1:
-            st.markdown("""
-            <div class="dash-box">
-                <div style="font-size:1.35rem; font-weight:800; color:#0F172A; margin-bottom:12px;">Key Fraud Indicators:</div>
-                <div style="font-size:1.1rem; line-height:1.9; font-weight:600; color:#334155;">
-                    1. <strong>Kinematic Velocity:</strong> Physical displacement $> 300\text{ km/h}$ on token.<br>
-                    2. <strong>Account Depletion:</strong> Draining $> 65\%$ balance in a single transaction.<br>
-                    3. <strong>Spending Spikes:</strong> Outlier transfers exceeding $3.5\times$ daily average.<br>
-                    4. <strong>Hardware Mismatch:</strong> Unrecognized phone token or carrier subnet.<br>
-                    5. <strong>VPA Hygiene:</strong> Fraudulent keywords (refund, lottery, KYC, helpline).
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+        st.markdown('<h3 style="font-size:1.8rem; font-weight:900; color:#0F172A; margin:24px 0 16px 0;">⚙️ Preprocessing Pipeline</h3>', unsafe_allow_html=True)
+        st.markdown("""
+        <div class="dash-box" style="font-size:1.25rem; font-weight:700; color:#334155; line-height:2.0;">
+            Before the neural network processes data:<br>
+            1. <strong>Categorical Encoding:</strong> Payment archetypes (N_P2P, N_RETAIL, N_FESTIVAL) converted to numeric format.<br>
+            2. <strong>Feature Engineering:</strong> Kinematic transit speed and account drain differences calculated.<br>
+            3. <strong>Feature Scaling:</strong> All features normalized using <code>StandardScaler</code> for numerical stability.<br>
+            4. <strong>Pipeline Caching:</strong> Preprocessor serialized in memory for instantaneous switch execution.<br>
+            <em>This ensures the model receives properly formatted, scaled telemetry data every single millisecond.</em>
+        </div>
+        """, unsafe_allow_html=True)
 
-        with l_c2:
-            st.markdown("""
-            <div class="dash-box">
-                <div style="font-size:1.35rem; font-weight:800; color:#0F172A; margin-bottom:12px;">AI Decision Making Engine:</div>
-                <div style="font-size:1.1rem; line-height:1.9; font-weight:600; color:#334155;">
-                    1. <strong>Ensemble Voting:</strong> 100 decision trees evaluate non-linear patterns.<br>
-                    2. <strong>Class Weighting:</strong> Penalizes false negatives on 0.14% imbalanced data.<br>
-                    3. <strong>Adaptive Mitigation:</strong> Freezes suspicious funds with OTP holds.<br>
-                    4. <strong>Sub-20ms Latency:</strong> Zero customer friction inside NPCI limits.<br>
-                    5. <strong>Statutory Remediation:</strong> Immediate automated RBI legal reports.
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+        st.markdown('<h3 style="font-size:1.8rem; font-weight:900; color:#0F172A; margin:24px 0 16px 0;">📋 Dataset Statistics Used</h3>', unsafe_allow_html=True)
+        st.markdown("""
+        <div class="dash-box" style="font-size:1.25rem; font-weight:800; color:#0F172A; line-height:2.0;">
+            • <strong>Total Transactions:</strong> 127,252<br>
+            • <strong>Fraudulent:</strong> 173 (0.14%)<br>
+            • <strong>Legitimate:</strong> 127,079<br>
+            • <strong>Transaction Types:</strong> 5 (N_P2P, N_RETAIL, N_FESTIVAL, N_BUSINESS, N_FRAUD)<br>
+            • <strong>Avg Amount:</strong> ₹1,803.00<br>
+            • <strong>Max Amount:</strong> ₹1,00,000.00
+        </div>
+        """, unsafe_allow_html=True)
 
 # ==============================================================================
 # 7. VIEW 3: FRAUD DETECTION GATEWAY
