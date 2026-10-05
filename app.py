@@ -6,7 +6,7 @@ import os
 import time
 import re
 from datetime import datetime
-import plotly.graph_objects as go
+import altair as alt
 
 st.set_page_config(
     page_title="UPI Shield — Real-Time Inline Fraud Mitigation Switch",
@@ -255,7 +255,7 @@ PROFESSIONS = {
 }
 
 def render_dynamic_donut(risk_score, tier):
-    """Generates an enterprise-grade color-shifting Plotly donut chart."""
+    """Generates an ultra-fast, native color-shifting Donut Gauge without heavy dependencies."""
     if tier == "TIER_1_PASS":
         fill_color = "#10B981"  # Emerald Green
         status_label = "CLEARED"
@@ -269,38 +269,31 @@ def render_dynamic_donut(risk_score, tier):
     safe_pct = max(0.0, round((1.0 - risk_score) * 100, 1))
     fraud_pct = max(0.0, round(risk_score * 100, 1))
 
-    fig = go.Figure(data=[go.Pie(
-        labels=["Fraud Risk", "Safe Margin"],
-        values=[fraud_pct, safe_pct],
-        hole=0.74,
-        marker=dict(colors=[fill_color, "#E2E8F0"]),
-        hoverinfo="label+percent",
-        textinfo="none",
-        sort=False
-    )])
+    source = pd.DataFrame({
+        "Category": ["Fraud Risk", "Safe Margin"],
+        "Value": [fraud_pct, safe_pct]
+    })
 
-    fig.update_layout(
-        showlegend=False,
-        margin=dict(t=10, b=10, l=10, r=10),
-        height=220,
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        annotations=[
-            dict(
-                text=f"<b>{fraud_pct}%</b>",
-                x=0.5, y=0.58,
-                font=dict(size=30, color=fill_color, family="Plus Jakarta Sans"),
-                showarrow=False
+    donut_chart = alt.Chart(source).mark_arc(innerRadius=60, outerRadius=85).encode(
+        theta=alt.Theta(field="Value", type="quantitative"),
+        color=alt.Color(
+            field="Category",
+            type="nominal",
+            scale=alt.Scale(
+                domain=["Fraud Risk", "Safe Margin"],
+                range=[fill_color, "#E2E8F0"]
             ),
-            dict(
-                text=f"<b>{status_label}</b>",
-                x=0.5, y=0.36,
-                font=dict(size=14, color="#475569", family="Plus Jakarta Sans"),
-                showarrow=False
-            )
-        ]
+            legend=None
+        ),
+        tooltip=["Category", "Value"]
+    ).properties(
+        width=190,
+        height=190
+    ).configure_view(
+        strokeWidth=0
     )
-    return fig
+
+    return donut_chart, fraud_pct, fill_color, status_label
 
 def execute_inline_investigation(
     amount, balance, avg_spend, hour_24, tx_count, 
@@ -416,7 +409,7 @@ def execute_inline_investigation(
         reason = f"Payment Terminated: Multi-vector anomalies detected ({', '.join(flags)}). Transaction dropped at switch to prevent account drain."
     elif score >= 0.35 or len(flags) >= 1:
         tier = "TIER_2_CHALLENGE"
-        status = "SUSPICIOUS PAYMENT, FROZEN ⏸️ (ISO: U16)"
+        status = "SUSPICIOUS PAYMENT, FROZEN ⏸️️ (ISO: U16)"
         reason = f"Security Hold Engaged: Triggered by {', '.join(flags)}. Payment held on security freeze pending step-up OTP authentication."
     else:
         tier = "TIER_1_PASS"
@@ -439,7 +432,7 @@ def execute_inline_investigation(
 with st.sidebar:
     st.markdown("""
     <div style="font-size:1.45rem; font-weight:900; color:#0F172A; display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-        <span>🛡️️ UPI Shield</span>
+        <span>🛡️ UPI Shield</span>
     </div>
     """, unsafe_allow_html=True)
     
@@ -847,28 +840,33 @@ else:
             </div>
             """, unsafe_allow_html=True)
 
-            # DYNAMIC PLOTLY DONUT RISK GAUGE
+            # DYNAMIC ULTRA-FAST NATIVE DONUT RISK GAUGE
             st.markdown("""
             <div class="bento-card">
                 <div class="bento-card-title">🍩 Live Behavioral Risk Gauge</div>
             """, unsafe_allow_html=True)
             
-            donut_fig = render_dynamic_donut(res['score'], res['tier'])
-            st.plotly_chart(donut_fig, use_container_width=True)
+            d_chart, d_pct, d_color, d_status = render_dynamic_donut(res['score'], res['tier'])
+            
+            donut_c1, donut_c2 = st.columns([1.2, 1])
+            with donut_c1:
+                st.altair_chart(d_chart, use_container_width=True)
+            with donut_c2:
+                st.markdown(f"""
+                <div style="padding-top: 26px;">
+                    <div style="font-size: 2.6rem; font-weight: 900; color: {d_color}; line-height: 1;">
+                        {d_pct}%
+                    </div>
+                    <div style="font-size: 1.1rem; font-weight: 800; color: #475569; margin-top: 6px;">
+                        VERDICT: <span style="color: {d_color};">{d_status}</span>
+                    </div>
+                    <div style="font-size: 0.95rem; font-weight: 600; color: #64748B; margin-top: 10px;">
+                        Safe Margin: <strong>{round(100 - d_pct, 1)}%</strong>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
 
-            st.markdown(f"""
-            <div style="display: flex; justify-content: space-around; text-align: center; margin-top: -6px;">
-                <div>
-                    <div style="font-size: 0.85rem; font-weight: 700; color: #64748B;">FRAUD PROBABILITY</div>
-                    <div style="font-size: 1.3rem; font-weight: 900; color: {'#EF4444' if score>=0.35 else '#10B981'};">{score*100:.1f}%</div>
-                </div>
-                <div>
-                    <div style="font-size: 0.85rem; font-weight: 700; color: #64748B;">SAFETY MARGIN</div>
-                    <div style="font-size: 1.3rem; font-weight: 900; color: #166534;">{(1-score)*100:.1f}%</div>
-                </div>
-            </div>
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
         with col_right:
             st.markdown("""
@@ -984,7 +982,7 @@ Statutory Reference: Limiting Customer Liability in Unauthorized Electronic Tran
             proceed_permitted = True
 
             if is_threat:
-                st.error("⚠️ **CRITICAL PRE-PAYMENT WARNING (Scam Threat Engaged)**")
+                st.error("⚠️️ **CRITICAL PRE-PAYMENT WARNING (Scam Threat Engaged)**")
                 st.markdown(
                     "> **CAUTION:** Active call or external link detected. "
                     "Police, TRAI, and Bank managers **NEVER** ask for UPI transfers over calls."
@@ -1053,7 +1051,7 @@ Statutory Reference: Limiting Customer Liability in Unauthorized Electronic Tran
             if b_res['tier'] == "TIER_1_PASS":
                 st.success(f"✅ **Payment Cleared (ISO: 00)!** ₹{sim_dt['amount']:,.2f} sent to `{sim_dt['payee']}`. UTR: 429184{int(time.time())%1000000:06d}")
             elif b_res['tier'] == "TIER_2_CHALLENGE":
-                st.warning(f"⚠️ **Pre-Debit Hold Engaged (ISO: U16):** Unusual telemetry detected. An OTP challenge has been dispatched to authenticate authorization.")
+                st.warning(f"⚠️️ **Pre-Debit Hold Engaged (ISO: U16):** Unusual telemetry detected. An OTP challenge has been dispatched to authenticate authorization.")
                 st.info(f"**Reason:** {b_res['reason']}")
                 
                 s_otp_col1, s_otp_col2 = st.columns([1.5, 1])
