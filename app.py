@@ -191,7 +191,7 @@ st.markdown("""
         border-radius: 10px;
     }
 
-    /* EXPANDER STYLING (CLEAN & SPACIOUS) */
+    /* EXPANDER */
     div[data-testid="stExpander"] {
         background: #FFFFFF;
         border: 2px solid #E2E8F0;
@@ -377,7 +377,7 @@ def render_native_svg_donut(risk_score, tier):
     dash_val = round(pct * 2.83, 1)
 
     return f"""
-    <div style="display:flex; align-items:center; justify-content:center; gap:36px; padding:16px 0;">
+    <div style="display:flex; align-items:center; justify-content:center; gap:26px; padding:12px 0;">
         <div style="position:relative; width:220px; height:220px;">
             <svg viewBox="0 0 100 100" style="width:220px; height:220px; transform:rotate(-90deg);">
                 <circle cx="50" cy="50" r="45" fill="none" stroke="#E2E8F0" stroke-width="10"/>
@@ -693,7 +693,7 @@ elif st.session_state["active_nav"] == "Dashboard":
             })
             st.bar_chart(df_types.set_index("Type Category"))
 
-    # SUB-TAB 2: EDA VISUALIZATIONS (4 DISTINCT GRAPHS WITH FIXED DUAL COLORS)
+    # SUB-TAB 2: EDA VISUALIZATIONS (2 EXPLICIT SEPARATE COLUMNS FOR GRAPH 4)
     with tab_eda:
         st.markdown('<h2 style="font-size:2.4rem; font-weight:900; color:#0F172A; margin:16px 0 24px 0;">Exploratory Data Analysis</h2>', unsafe_allow_html=True)
         
@@ -734,15 +734,26 @@ elif st.session_state["active_nav"] == "Dashboard":
 
         with e_c4:
             st.markdown('<div class="dash-box">', unsafe_allow_html=True)
-            st.markdown('<h4 style="font-size:1.5rem; font-weight:900; color:#991B1B; margin-bottom:12px;">4. Average Spend vs Fraud Outlier (🔴 RED & 🟢 GREEN)</h4>', unsafe_allow_html=True)
-            # Grouped columns format correctly forces distinct Green & Red colors
-            df_dual = pd.DataFrame({
-                "Category": ["Transaction Amount Comparison"],
-                "Legitimate Spend (₹) [GREEN]": [1450.0],
-                "Fraudulent Outlier (₹) [RED]": [48500.0]
-            })
-            st.bar_chart(df_dual.set_index("Category"), color=["#16A34A", "#DC2626"])
-            st.caption("Green represents baseline spend (₹1,450), Red highlights malicious outlier (₹48,500).")
+            st.markdown('<h4 style="font-size:1.5rem; font-weight:900; color:#0F172A; margin-bottom:12px;">4. Average Spend vs Fraud Outlier (🔴 RED & 🟢 GREEN)</h4>', unsafe_allow_html=True)
+            
+            # Two distinct side-by-side columns: Green and Red
+            g4_col_green, g4_col_red = st.columns(2)
+            with g4_col_green:
+                df_legit = pd.DataFrame({
+                    "Legitimate Spend": ["Legitimate Mean (₹)"],
+                    "Amount (₹)": [1450.0]
+                })
+                st.bar_chart(df_legit.set_index("Legitimate Spend"), color=["#16A34A"])
+                st.markdown("<p style='text-align:center; font-weight:800; color:#166534;'>🟢 Baseline: ₹1,450</p>", unsafe_allow_html=True)
+            with g4_col_red:
+                df_fraud = pd.DataFrame({
+                    "Fraud Outlier": ["Fraud Outlier (₹)"],
+                    "Amount (₹)": [48500.0]
+                })
+                st.bar_chart(df_fraud.set_index("Fraud Outlier"), color=["#DC2626"])
+                st.markdown("<p style='text-align:center; font-weight:800; color:#DC2626;'>🔴 Outlier: ₹48,500</p>", unsafe_allow_html=True)
+                
+            st.caption("Column 1 (Green) shows standard consumer spend; Column 2 (Red) shows severe 33x fraud surge.")
             st.markdown('</div>', unsafe_allow_html=True)
 
     # SUB-TAB 3: MODEL ARCHITECTURE
@@ -990,7 +1001,9 @@ else:
 
         btn_trigger = st.button("⚡ Run Inline Switch Verification Pipeline 🚀", type="primary", key="v_run_pipeline_btn")
 
-        if btn_trigger or 'res_data' not in st.session_state:
+        # 1. COMPLETELY BLANK UNTIL THE BUTTON IS CLICKED
+        if btn_trigger:
+            st.session_state['has_run_pipeline'] = True
             st.session_state['res_data'] = execute_inline_investigation(
                 in_amount, in_balance, in_avg, calc_hour_24, in_tx_count, 
                 in_device, in_payee_new, in_dist, calc_gap_sec,
@@ -1001,189 +1014,213 @@ else:
                 "sender": in_sender_vpa, "delegated": in_delegated
             }
 
-        res = st.session_state['res_data']
-        tier = res['tier']
-        score = res['score']
+        # ONLY DISPLAY RESULTS IF USER HAS CLICKED THE BUTTON
+        if st.session_state.get('has_run_pipeline', False) and 'res_data' in st.session_state:
+            res = st.session_state['res_data']
+            tier = res['tier']
+            score = res['score']
 
-        if tier == "TIER_1_PASS":
-            box_bg = "#ECFDF5"
-            box_border = "#10B981"
-            txt_color = "#047857"
-            right_badge_txt = "● Low Risk (Passed) ✅"
-            right_badge_bg = "#D1FAE5"
-        elif tier == "TIER_2_CHALLENGE":
-            box_bg = "#FFFBEB"
-            box_border = "#F59E0B"
-            txt_color = "#B45309"
-            right_badge_txt = "● Medium Risk (Hold / OTP) ⏸️"
-            right_badge_bg = "#FDE68A"
-        else:
-            box_bg = "#FEF2F2"
-            box_border = "#EF4444"
-            txt_color = "#B91C1C"
-            right_badge_txt = "● High Risk (Blocked) 🚫"
-            right_badge_bg = "#FECACA"
+            if tier == "TIER_1_PASS":
+                box_bg = "#ECFDF5"
+                box_border = "#10B981"
+                txt_color = "#047857"
+                right_badge_txt = "● Low Risk (Passed) ✅"
+                right_badge_bg = "#D1FAE5"
+            elif tier == "TIER_2_CHALLENGE":
+                box_bg = "#FFFBEB"
+                box_border = "#F59E0B"
+                txt_color = "#B45309"
+                right_badge_txt = "● Medium Risk (Hold / OTP) ⏸️"
+                right_badge_bg = "#FDE68A"
+            else:
+                box_bg = "#FEF2F2"
+                box_border = "#EF4444"
+                txt_color = "#B91C1C"
+                right_badge_txt = "● High Risk (Blocked) 🚫"
+                right_badge_bg = "#FECACA"
 
-        # 1. TOP STATUS BAR
-        st.markdown(f"""
-        <div style="background:{box_bg}; border:2px solid {box_border}; border-radius:18px; padding:20px 28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <div>
-                <div style="font-weight:900; font-size:1.4rem; color:{txt_color}; line-height:1.2;">
-                    STATUS: {res['status']}
-                </div>
-                <div style="font-size:0.95rem; font-weight:700; color:{txt_color}; margin-top:4px;">
-                    Session: {in_delegated} &nbsp;|&nbsp; Payee: {in_receiver_vpa}
-                </div>
-            </div>
-            <div style="display:flex; gap:14px; align-items:center;">
-                <span style="background:#FFFFFF; border:2px solid {box_border}; color:{txt_color}; font-weight:900; font-size:1.05rem; padding:8px 18px; border-radius:22px;">
-                    ⚡ Switch Latency: {res['latency_ms']} ms
-                </span>
-                <span style="background:#FFFFFF; border:2px solid {box_border}; color:{txt_color}; font-weight:900; font-size:1.05rem; padding:8px 18px; border-radius:22px;">
-                    📊 Model Risk: {score*100:.1f}%
-                </span>
-                <span style="background:{right_badge_bg}; color:{txt_color}; font-weight:900; font-size:1.05rem; padding:8px 18px; border-radius:22px;">
-                    {right_badge_txt}
-                </span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # 2. LIVE BEHAVIORAL RISK GAUGE (RELOCATED DIRECTLY BELOW STATUS & ENLARGED)
-        st.markdown("""
-        <div class="bento-card" style="margin-bottom:22px;">
-            <div class="bento-card-title">🍩 Live Behavioral Risk Gauge</div>
-        """, unsafe_allow_html=True)
-        st.markdown(render_native_svg_donut(res['score'], res['tier']), unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        # 3. PRE-DEBIT SECURITY FREEZE / DECISION CARD & FORENSIC TILES
-        if tier == "TIER_1_PASS":
-            st.markdown("""
-            <div class="bento-card" style="border:2px solid #10B981; background:#F0FDF4;">
-                <div style="font-size:1.35rem; font-weight:900; color:#166534; display:flex; align-items:center; gap:10px;">
-                    ✅ Transaction Cleared for Settlement
-                </div>
-                <div style="font-size:1.05rem; font-weight:700; color:#15803D; margin-top:8px;">
-                    ISO 20022 Code 00: Verified liquidity, known token, and normal velocity. Cleared without step-up challenge.
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        elif tier == "TIER_2_CHALLENGE":
-            st.markdown("""
-            <div class="bento-card" style="border:2px solid #F59E0B; background:#FFFBEB;">
-                <div style="font-size:1.35rem; font-weight:900; color:#DC2626; display:flex; align-items:center; gap:10px;">
-                    ⏸️ Pre-Debit Security Freeze (ISO: U16)
-                </div>
-                <div style="font-size:1.05rem; font-weight:700; color:#000000; margin-top:6px;">
-                    Held for safety. Enter the 4-digit SMS OTP dispatched to registered SIM to authorize debit.
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
-            otp_c1, otp_c2 = st.columns([1.8, 1])
-            with otp_c1:
-                st.markdown("**🔐 Enter 4-Digit Security OTP (Mock: 4921):**")
-                user_otp = st.text_input("Enter 4-digit Security OTP", max_chars=4, label_visibility="collapsed", placeholder="Enter OTP here", key="v_otp_val_in")
-            with otp_c2:
-                st.write("")
-                st.write("")
-                if st.button("🔓 Verify & Release Debit", key="v_otp_release_btn"):
-                    if user_otp == "4921":
-                        st.success("✅ OTP Verified! ISO 20022 response Code 00 dispatched. Funds cleared.")
-                    else:
-                        st.error("❌ Invalid OTP. Hold maintained under bank FRM guidelines.")
-
+            # 1. TOP STATUS BAR
             st.markdown(f"""
-            <div class="bento-card" style="border:2px solid #F59E0B; margin-top:14px;">
-                <div style="font-size:1.25rem; font-weight:900; color:#B45309; margin-bottom:8px;">⚠️️ Decision Reason & Anomaly Triggers</div>
-                <div style="font-size:1.05rem; font-weight:700; color:#000000; line-height:1.5;">
-                    {res['reason']}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        else:
-            st.markdown(f"""
-            <div class="bento-card" style="border:2px solid #EF4444; background:#FEF2F2;">
-                <div style="font-size:1.35rem; font-weight:900; color:#DC2626; margin-bottom:8px;">🚫 Transaction Terminated at Switch (ISO: U28)</div>
-                <div style="font-size:1.05rem; font-weight:700; color:#991B1B; line-height:1.5;">
-                    {res['reason']}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
-        # Forensic Metrics Bento Grid
-        st.markdown(f"""
-        <div class="bento-card" style="margin-top:14px;">
-            <div class="bento-card-title">📊 Key Forensic Metrics</div>
-            <div class="metric-grid">
-                <div class="metric-tile tile-drain">
-                    <div class="tile-lbl" style="color:#7E22CE;">Account Drain</div>
-                    <div class="tile-val" style="color:#581C87;">{res['drain_ratio']*100:.1f}%</div>
-                </div>
-                <div class="metric-tile tile-spike">
-                    <div class="tile-lbl" style="color:#1D4ED8;">Spike Multiplier</div>
-                    <div class="tile-val" style="color:#1E40AF;">{res['amount_to_avg']:.1f}x</div>
-                </div>
-                <div class="metric-tile tile-speed">
-                    <div class="tile-lbl" style="color:#15803D;">Transit Speed</div>
-                    <div class="tile-val" style="color:#166534;">{res['speed_kmh']:,.0f} <span style="font-size:0.95rem;">km/h</span></div>
-                </div>
-                <div class="metric-tile tile-risk">
-                    <div class="tile-lbl" style="color:#B45309;">ML Risk Score</div>
-                    <div class="tile-val" style="color:#92400E;">{score*100:.1f}%</div>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # 4. EXPLAINABLE AI (XAI) CHECKLIST - COLLAPSED BY DEFAULT IN ST.EXPANDER
-        with st.expander("🔍 Explainable AI (XAI) Audit Checklist (Click to Expand)", expanded=False):
-            st.markdown("<div style='padding: 10px 0;'>", unsafe_allow_html=True)
-            for name, detail, state in res['log']:
-                pill_class = "pill-ok" if state == "OK" else "pill-alert"
-                symbol_badge = "✓" if state == "OK" else "⚠️"
-                st.markdown(f"""
-                <div class="step-item">
-                    <div>
-                        <div class="step-title">{name}</div>
-                        <div class="step-sub">{detail}</div>
+            <div style="background:{box_bg}; border:2px solid {box_border}; border-radius:18px; padding:20px 28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div>
+                    <div style="font-weight:900; font-size:1.4rem; color:{txt_color}; line-height:1.2;">
+                        STATUS: {res['status']}
                     </div>
-                    <span class="{pill_class}">{symbol_badge} {state}</span>
+                    <div style="font-size:0.95rem; font-weight:700; color:{txt_color}; margin-top:4px;">
+                        Session: {in_delegated} &nbsp;|&nbsp; Payee: {in_receiver_vpa}
+                    </div>
+                </div>
+                <div style="display:flex; gap:14px; align-items:center;">
+                    <span style="background:#FFFFFF; border:2px solid {box_border}; color:{txt_color}; font-weight:900; font-size:1.05rem; padding:8px 18px; border-radius:22px;">
+                        ⚡ Switch Latency: {res['latency_ms']} ms
+                    </span>
+                    <span style="background:#FFFFFF; border:2px solid {box_border}; color:{txt_color}; font-weight:900; font-size:1.05rem; padding:8px 18px; border-radius:22px;">
+                        📊 Model Risk: {score*100:.1f}%
+                    </span>
+                    <span style="background:{right_badge_bg}; color:{txt_color}; font-weight:900; font-size:1.05rem; padding:8px 18px; border-radius:22px;">
+                        {right_badge_txt}
+                    </span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # 2. ROW: LEFT COLUMN (DONUT) & RIGHT COLUMN (OTP CHALLENGE CARD)
+            gauge_col, otp_col = st.columns([1.1, 1])
+
+            with gauge_col:
+                st.markdown("""
+                <div class="bento-card" style="min-height: 330px;">
+                    <div class="bento-card-title">🍩 Live Behavioral Risk Gauge</div>
+                """, unsafe_allow_html=True)
+                st.markdown(render_native_svg_donut(res['score'], res['tier']), unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
+
+            with otp_col:
+                st.markdown("""
+                <div class="bento-card" style="min-height: 330px;">
+                    <div class="bento-card-title">🔐 OTP Challenge Verification</div>
+                """, unsafe_allow_html=True)
+
+                if tier == "TIER_2_CHALLENGE":
+                    st.markdown("""
+                    <div style="font-size:1.1rem; font-weight:700; color:#DC2626; margin-bottom:12px;">
+                        ⏸️ Pre-Debit Security Freeze Engaged (ISO: U16)
+                    </div>
+                    <div style="font-size:1.0rem; font-weight:600; color:#475569; margin-bottom:14px;">
+                        Enter the 4-digit SMS OTP dispatched to the registered SIM card to authorize settlement.
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    user_otp = st.text_input("Enter 4-digit Security OTP (Mock: 4921):", max_chars=4, placeholder="4921", key="v_otp_val_in")
+                    if st.button("🔓 Verify & Release Debit", key="v_otp_release_btn"):
+                        if user_otp == "4921":
+                            st.success("✅ OTP Verified! ISO 20022 response Code 00 dispatched. Funds cleared.")
+                        else:
+                            st.error("❌ Invalid OTP. Hold maintained under bank FRM guidelines.")
+                elif tier == "TIER_1_PASS":
+                    st.markdown("""
+                    <div style="padding-top:35px; text-align:center;">
+                        <div style="font-size:2.8rem; margin-bottom:8px;">✅</div>
+                        <div style="font-size:1.4rem; font-weight:900; color:#166534;">No Step-Up Challenge Required</div>
+                        <div style="font-size:1.05rem; font-weight:600; color:#475569; margin-top:8px;">
+                            Transaction cleared through Tier-1 friction-free pipeline.
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown("""
+                    <div style="padding-top:35px; text-align:center;">
+                        <div style="font-size:2.8rem; margin-bottom:8px;">🚫</div>
+                        <div style="font-size:1.4rem; font-weight:900; color:#991B1B;">Terminal Block Activated</div>
+                        <div style="font-size:1.05rem; font-weight:600; color:#475569; margin-top:8px;">
+                            High-risk anomaly terminated. OTP override not permitted under FRM policy.
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                st.markdown("</div>", unsafe_allow_html=True)
+
+            # 3. DECISION REASON CARD
+            if tier == "TIER_1_PASS":
+                st.markdown("""
+                <div class="bento-card" style="border:2px solid #10B981; background:#F0FDF4;">
+                    <div style="font-size:1.35rem; font-weight:900; color:#166534; display:flex; align-items:center; gap:10px;">
+                        ✅ Transaction Cleared for Settlement
+                    </div>
+                    <div style="font-size:1.05rem; font-weight:700; color:#15803D; margin-top:8px;">
+                        ISO 20022 Code 00: Verified liquidity, known token, and normal velocity. Cleared without step-up challenge.
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+            elif tier == "TIER_2_CHALLENGE":
+                st.markdown(f"""
+                <div class="bento-card" style="border:2px solid #F59E0B; margin-top:14px;">
+                    <div style="font-size:1.25rem; font-weight:900; color:#B45309; margin-bottom:8px;">⚠️ Decision Reason & Anomaly Triggers</div>
+                    <div style="font-size:1.05rem; font-weight:700; color:#000000; line-height:1.5;">
+                        {res['reason']}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div class="bento-card" style="border:2px solid #EF4444; background:#FEF2F2;">
+                    <div style="font-size:1.35rem; font-weight:900; color:#DC2626; margin-bottom:8px;">🚫 Transaction Terminated at Switch (ISO: U28)</div>
+                    <div style="font-size:1.05rem; font-weight:700; color:#991B1B; line-height:1.5;">
+                        {res['reason']}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
 
-        # 5. REGULATORY EMERGENCY ACTIONS
-        st.markdown("""
-        <div class="bento-card" style="margin-top:10px;">
-            <div class="bento-card-title" style="color:#B91C1C;">
-                <span>🚨 Regulatory Emergency Remediation Suite (RBI Zero-Liability)</span>
+            # 4. FORENSIC METRICS BENTO GRID
+            st.markdown(f"""
+            <div class="bento-card" style="margin-top:14px;">
+                <div class="bento-card-title">📊 Key Forensic Metrics</div>
+                <div class="metric-grid">
+                    <div class="metric-tile tile-drain">
+                        <div class="tile-lbl" style="color:#7E22CE;">Account Drain</div>
+                        <div class="tile-val" style="color:#581C87;">{res['drain_ratio']*100:.1f}%</div>
+                    </div>
+                    <div class="metric-tile tile-spike">
+                        <div class="tile-lbl" style="color:#1D4ED8;">Spike Multiplier</div>
+                        <div class="tile-val" style="color:#1E40AF;">{res['amount_to_avg']:.1f}x</div>
+                    </div>
+                    <div class="metric-tile tile-speed">
+                        <div class="tile-lbl" style="color:#15803D;">Transit Speed</div>
+                        <div class="tile-val" style="color:#166534;">{res['speed_kmh']:,.0f} <span style="font-size:0.95rem;">km/h</span></div>
+                    </div>
+                    <div class="metric-tile tile-risk">
+                        <div class="tile-lbl" style="color:#B45309;">ML Risk Score</div>
+                        <div class="tile-val" style="color:#92400E;">{score*100:.1f}%</div>
+                    </div>
+                </div>
             </div>
-            <div style="font-size:1.05rem; font-weight:700; color:#475569; margin-bottom:16px;">
-                Instant post-fraud action suite supporting legal escalation, inter-bank lien instructions, and dispute generation.
-            </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
-        e_c1, e_c2, e_c3 = st.columns(3)
-        with e_c1:
-            st.markdown("**1. 📞 National Cyber Crime Helpline**")
-            st.markdown("Immediate escalation: Dial **1930**")
-            st.link_button("🌐 Open cybercrime.gov.in", "https://cybercrime.gov.in")
+            # 5. EXPLAINABLE AI (XAI) CHECKLIST - COLLAPSED BY DEFAULT
+            with st.expander("🔍 Explainable AI (XAI) Audit Checklist (Click to Expand)", expanded=False):
+                st.markdown("<div style='padding: 10px 0;'>", unsafe_allow_html=True)
+                for name, detail, state in res['log']:
+                    pill_class = "pill-ok" if state == "OK" else "pill-alert"
+                    symbol_badge = "✓" if state == "OK" else "⚠️"
+                    st.markdown(f"""
+                    <div class="step-item">
+                        <div>
+                            <div class="step-title">{name}</div>
+                            <div class="step-sub">{detail}</div>
+                        </div>
+                        <span class="{pill_class}">{symbol_badge} {state}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
 
-        with e_c2:
-            st.markdown("**2. 🔒 Inter-Bank Beneficiary Lien**")
-            st.markdown("Dispatch freezing signal to receiver switch.")
-            if st.button("🔒 Dispatch Beneficiary Lien", key="v_freeze_lien_btn"):
-                st.success(f"✅ Lien request transmitted to switch for payee VPA: {in_receiver_vpa}")
+            # 6. REGULATORY EMERGENCY ACTIONS
+            st.markdown("""
+            <div class="bento-card" style="margin-top:10px;">
+                <div class="bento-card-title" style="color:#B91C1C;">
+                    <span>🚨 Regulatory Emergency Remediation Suite (RBI Zero-Liability)</span>
+                </div>
+                <div style="font-size:1.05rem; font-weight:700; color:#475569; margin-bottom:16px;">
+                    Instant post-fraud action suite supporting legal escalation, inter-bank lien instructions, and dispute generation.
+                </div>
+            """, unsafe_allow_html=True)
 
-        with e_c3:
-            st.markdown("**3. 📄 Official Bank Dispute Dossier**")
-            st.markdown("Downloadable statutory dispute document.")
-            v_in = st.session_state['v_inputs']
-            report_txt = f"""OFFICIAL ELECTRONIC FRAUD DISPUTE DOSSIER
+            e_c1, e_c2, e_c3 = st.columns(3)
+            with e_c1:
+                st.markdown("**1. 📞 National Cyber Crime Helpline**")
+                st.markdown("Immediate escalation: Dial **1930**")
+                st.link_button("🌐 Open cybercrime.gov.in", "https://cybercrime.gov.in")
+
+            with e_c2:
+                st.markdown("**2. 🔒 Inter-Bank Beneficiary Lien**")
+                st.markdown("Dispatch freezing signal to receiver switch.")
+                if st.button("🔒 Dispatch Beneficiary Lien", key="v_freeze_lien_btn"):
+                    st.success(f"✅ Lien request transmitted to switch for payee VPA: {in_receiver_vpa}")
+
+            with e_c3:
+                st.markdown("**3. 📄 Official Bank Dispute Dossier**")
+                st.markdown("Downloadable statutory dispute document.")
+                v_in = st.session_state['v_inputs']
+                report_txt = f"""OFFICIAL ELECTRONIC FRAUD DISPUTE DOSSIER
 Generated At: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 UTR Reference: 429184{int(time.time())%1000000:06d}
 Sender VPA: {v_in['sender']}
@@ -1195,14 +1232,14 @@ Switch Verdict: {res['status']}
 Model Probability: {score*100:.1f}%
 Execution Latency: {res['latency_ms']} ms
 Statutory Reference: Limiting Customer Liability in Unauthorized Electronic Transactions (RBI Circular Ref: DBR.No.Leg.BC.78/09.07.005/2017-18)."""
-            st.download_button(
-                label="📥 Download Legal Dossier (.txt)",
-                data=report_txt,
-                file_name=f"Dispute_Report_{int(time.time())}.txt",
-                key="v_download_report_btn"
-            )
+                st.download_button(
+                    label="📥 Download Legal Dossier (.txt)",
+                    data=report_txt,
+                    file_name=f"Dispute_Report_{int(time.time())}.txt",
+                    key="v_download_report_btn"
+                )
 
-        st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
     with tab_prod:
         st.markdown("""
@@ -1315,7 +1352,7 @@ Statutory Reference: Limiting Customer Liability in Unauthorized Electronic Tran
             if b_res['tier'] == "TIER_1_PASS":
                 st.success(f"✅ **Payment Cleared (ISO: 00)!** ₹{sim_dt['amount']:,.2f} sent to `{sim_dt['payee']}`. UTR: 429184{int(time.time())%1000000:06d}")
             elif b_res['tier'] == "TIER_2_CHALLENGE":
-                st.warning(f"⚠️ **Pre-Debit Hold Engaged (ISO: U16):** Unusual telemetry detected. An OTP challenge has been dispatched to authenticate authorization.")
+                st.warning(f"⚠️️ **Pre-Debit Hold Engaged (ISO: U16):** Unusual telemetry detected. An OTP challenge has been dispatched to authenticate authorization.")
                 st.info(f"**Reason:** {b_res['reason']}")
                 
                 s_otp_col1, s_otp_col2 = st.columns([1.5, 1])
