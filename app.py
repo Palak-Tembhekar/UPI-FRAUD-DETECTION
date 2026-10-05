@@ -191,6 +191,20 @@ st.markdown("""
         border-radius: 10px;
     }
 
+    /* EXPANDER STYLING (CLEAN & SPACIOUS) */
+    div[data-testid="stExpander"] {
+        background: #FFFFFF;
+        border: 2px solid #E2E8F0;
+        border-radius: 20px !important;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.03);
+        margin-bottom: 22px;
+    }
+    div[data-testid="stExpander"] details summary span {
+        font-size: 1.4rem !important;
+        font-weight: 900 !important;
+        color: #0F172A !important;
+    }
+
     /* TERMINAL */
     .terminal-container {
         border: 2px solid #334155;
@@ -347,6 +361,7 @@ PROFESSIONS = {
     "🌐 Custom Profile": {"balance": 25000.0, "avg_spend": 1500.0}
 }
 
+# ENLARGED NATIVE SVG DONUT (DIAMETER: 220PX)
 def render_native_svg_donut(risk_score, tier):
     if tier == "TIER_1_PASS":
         fill_color = "#10B981"
@@ -362,26 +377,27 @@ def render_native_svg_donut(risk_score, tier):
     dash_val = round(pct * 2.83, 1)
 
     return f"""
-    <div style="display:flex; align-items:center; justify-content:center; gap:26px; padding:10px 0;">
-        <div style="position:relative; width:170px; height:170px;">
-            <svg viewBox="0 0 100 100" style="width:170px; height:170px; transform:rotate(-90deg);">
+    <div style="display:flex; align-items:center; justify-content:center; gap:36px; padding:16px 0;">
+        <div style="position:relative; width:220px; height:220px;">
+            <svg viewBox="0 0 100 100" style="width:220px; height:220px; transform:rotate(-90deg);">
                 <circle cx="50" cy="50" r="45" fill="none" stroke="#E2E8F0" stroke-width="10"/>
                 <circle cx="50" cy="50" r="45" fill="none" stroke="{fill_color}" stroke-width="10"
                         stroke-dasharray="283" stroke-dashoffset="{283 - dash_val}" stroke-linecap="round"/>
             </svg>
             <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center;">
-                <div style="font-size:2rem; font-weight:900; color:{fill_color}; line-height:1;">{pct}%</div>
-                <div style="font-size:0.75rem; font-weight:800; color:#475569; margin-top:2px;">{status_label}</div>
+                <div style="font-size:2.6rem; font-weight:900; color:{fill_color}; line-height:1;">{pct}%</div>
+                <div style="font-size:1.0rem; font-weight:800; color:#475569; margin-top:4px;">{status_label}</div>
             </div>
         </div>
         <div>
-            <div style="font-size:0.85rem; font-weight:800; color:#64748B; text-transform:uppercase;">Model Verdict</div>
-            <div style="font-size:1.6rem; font-weight:900; color:{fill_color}; margin-bottom:6px;">{status_label}</div>
-            <div style="font-size:0.95rem; font-weight:700; color:#1E293B;">Safe Margin: <strong>{round(100 - pct, 1)}%</strong></div>
+            <div style="font-size:1.05rem; font-weight:800; color:#64748B; text-transform:uppercase;">Model Verdict</div>
+            <div style="font-size:2.2rem; font-weight:900; color:{fill_color}; margin-bottom:8px;">{status_label}</div>
+            <div style="font-size:1.25rem; font-weight:800; color:#1E293B;">Safe Margin: <strong>{round(100 - pct, 1)}%</strong></div>
         </div>
     </div>
     """
 
+# Investigation Engine
 def execute_inline_investigation(
     amount, balance, avg_spend, hour_24, tx_count, 
     is_new_device, is_new_payee, dist_km, gap_sec,
@@ -615,7 +631,7 @@ if st.session_state["active_nav"] == "Home":
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 6. VIEW 2: DASHBOARD & ANALYTICS (EXACT 4 SUB-TABS, 100% TAILORED DATA)
+# 6. VIEW 2: DASHBOARD & ANALYTICS
 # ==============================================================================
 elif st.session_state["active_nav"] == "Dashboard":
     st.markdown("""
@@ -637,9 +653,7 @@ elif st.session_state["active_nav"] == "Dashboard":
         "How It Works"
     ])
 
-    # -------------------------------------------------------------
-    # SUB-TAB 1: DATASET OVERVIEW (100% YOUR DATASET NUMBERS)
-    # -------------------------------------------------------------
+    # SUB-TAB 1: DATASET OVERVIEW
     with tab_overview:
         st.markdown('<h2 style="font-size:2.4rem; font-weight:900; color:#0F172A; margin:16px 0 24px 0;">Dataset Overview</h2>', unsafe_allow_html=True)
         
@@ -679,9 +693,7 @@ elif st.session_state["active_nav"] == "Dashboard":
             })
             st.bar_chart(df_types.set_index("Type Category"))
 
-    # -------------------------------------------------------------
-    # SUB-TAB 2: EDA VISUALIZATIONS (4 GRAPHS IN RED, GREEN, BLUE)
-    # -------------------------------------------------------------
+    # SUB-TAB 2: EDA VISUALIZATIONS (4 DISTINCT GRAPHS WITH FIXED DUAL COLORS)
     with tab_eda:
         st.markdown('<h2 style="font-size:2.4rem; font-weight:900; color:#0F172A; margin:16px 0 24px 0;">Exploratory Data Analysis</h2>', unsafe_allow_html=True)
         
@@ -723,17 +735,17 @@ elif st.session_state["active_nav"] == "Dashboard":
         with e_c4:
             st.markdown('<div class="dash-box">', unsafe_allow_html=True)
             st.markdown('<h4 style="font-size:1.5rem; font-weight:900; color:#991B1B; margin-bottom:12px;">4. Average Spend vs Fraud Outlier (🔴 RED & 🟢 GREEN)</h4>', unsafe_allow_html=True)
-            df_compare = pd.DataFrame({
-                "Payment Status": ["Legitimate Spend (₹)", "Fraudulent Outlier (₹)"],
-                "Mean Amount (₹)": [1450.0, 48500.0]
+            # Grouped columns format correctly forces distinct Green & Red colors
+            df_dual = pd.DataFrame({
+                "Category": ["Transaction Amount Comparison"],
+                "Legitimate Spend (₹) [GREEN]": [1450.0],
+                "Fraudulent Outlier (₹) [RED]": [48500.0]
             })
-            st.bar_chart(df_compare.set_index("Payment Status"), color=["#DC2626"])
-            st.caption("Notice extreme 33x spike multiplier on fraudulent drain attempts.")
+            st.bar_chart(df_dual.set_index("Category"), color=["#16A34A", "#DC2626"])
+            st.caption("Green represents baseline spend (₹1,450), Red highlights malicious outlier (₹48,500).")
             st.markdown('</div>', unsafe_allow_html=True)
 
-    # -------------------------------------------------------------
-    # SUB-TAB 3: MODEL ARCHITECTURE (YOUR EXACT DEEP NET SPEC)
-    # -------------------------------------------------------------
+    # SUB-TAB 3: MODEL ARCHITECTURE
     with tab_arch:
         st.markdown('<h2 style="font-size:2.4rem; font-weight:900; color:#0F172A; margin:16px 0 12px 0;">Model Architecture & Details</h2>', unsafe_allow_html=True)
         st.markdown('<div style="font-size:1.4rem; font-weight:800; color:#2563EB; margin-bottom:24px;">🧠 Deep Neural Network (ANN) + Deterministic Switch Gateway</div>', unsafe_allow_html=True)
@@ -794,9 +806,7 @@ elif st.session_state["active_nav"] == "Dashboard":
         </div>
         """, unsafe_allow_html=True)
 
-    # -------------------------------------------------------------
-    # SUB-TAB 4: HOW IT WORKS (WHY NEURAL NETS + PIPELINE + STATS)
-    # -------------------------------------------------------------
+    # SUB-TAB 4: HOW IT WORKS
     with tab_works:
         st.markdown('<h2 style="font-size:2.4rem; font-weight:900; color:#0F172A; margin:16px 0 20px 0;">How the Fraud Detection System Works</h2>', unsafe_allow_html=True)
 
@@ -1014,8 +1024,9 @@ else:
             right_badge_txt = "● High Risk (Blocked) 🚫"
             right_badge_bg = "#FECACA"
 
+        # 1. TOP STATUS BAR
         st.markdown(f"""
-        <div style="background:{box_bg}; border:2px solid {box_border}; border-radius:18px; padding:20px 28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <div style="background:{box_bg}; border:2px solid {box_border}; border-radius:18px; padding:20px 28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <div>
                 <div style="font-weight:900; font-size:1.4rem; color:{txt_color}; line-height:1.2;">
                     STATUS: {res['status']}
@@ -1038,103 +1049,99 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-        col_left, col_right = st.columns([1.15, 1])
+        # 2. LIVE BEHAVIORAL RISK GAUGE (RELOCATED DIRECTLY BELOW STATUS & ENLARGED)
+        st.markdown("""
+        <div class="bento-card" style="margin-bottom:22px;">
+            <div class="bento-card-title">🍩 Live Behavioral Risk Gauge</div>
+        """, unsafe_allow_html=True)
+        st.markdown(render_native_svg_donut(res['score'], res['tier']), unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        with col_left:
-            if tier == "TIER_1_PASS":
-                st.markdown("""
-                <div class="bento-card" style="border:2px solid #10B981; background:#F0FDF4;">
-                    <div style="font-size:1.35rem; font-weight:900; color:#166534; display:flex; align-items:center; gap:10px;">
-                        ✅ Transaction Cleared for Settlement
-                    </div>
-                    <div style="font-size:1.05rem; font-weight:700; color:#15803D; margin-top:8px;">
-                        ISO 20022 Code 00: Verified liquidity, known token, and normal velocity. Cleared without step-up challenge.
-                    </div>
+        # 3. PRE-DEBIT SECURITY FREEZE / DECISION CARD & FORENSIC TILES
+        if tier == "TIER_1_PASS":
+            st.markdown("""
+            <div class="bento-card" style="border:2px solid #10B981; background:#F0FDF4;">
+                <div style="font-size:1.35rem; font-weight:900; color:#166534; display:flex; align-items:center; gap:10px;">
+                    ✅ Transaction Cleared for Settlement
                 </div>
-                """, unsafe_allow_html=True)
-            
-            elif tier == "TIER_2_CHALLENGE":
-                st.markdown("""
-                <div class="bento-card" style="border:2px solid #F59E0B; background:#FFFBEB;">
-                    <div style="font-size:1.35rem; font-weight:900; color:#DC2626; display:flex; align-items:center; gap:10px;">
-                        ⏸️ Pre-Debit Security Freeze (ISO: U16)
-                    </div>
-                    <div style="font-size:1.05rem; font-weight:700; color:#000000; margin-top:6px;">
-                        Held for safety. Enter the 4-digit SMS OTP dispatched to registered SIM to authorize debit.
-                    </div>
+                <div style="font-size:1.05rem; font-weight:700; color:#15803D; margin-top:8px;">
+                    ISO 20022 Code 00: Verified liquidity, known token, and normal velocity. Cleared without step-up challenge.
                 </div>
-                """, unsafe_allow_html=True)
-
-                otp_c1, otp_c2 = st.columns([1.8, 1])
-                with otp_c1:
-                    st.markdown("**🔐 Enter 4-Digit Security OTP (Mock: 4921):**")
-                    user_otp = st.text_input("Enter 4-digit Security OTP", max_chars=4, label_visibility="collapsed", placeholder="Enter OTP here", key="v_otp_val_in")
-                with otp_c2:
-                    st.write("")
-                    st.write("")
-                    if st.button("🔓 Verify & Release Debit", key="v_otp_release_btn"):
-                        if user_otp == "4921":
-                            st.success("✅ OTP Verified! ISO 20022 response Code 00 dispatched. Funds cleared.")
-                        else:
-                            st.error("❌ Invalid OTP. Hold maintained under bank FRM guidelines.")
-
-                st.markdown(f"""
-                <div class="bento-card" style="border:2px solid #F59E0B; margin-top:14px;">
-                    <div style="font-size:1.25rem; font-weight:900; color:#B45309; margin-bottom:8px;">⚠️ Decision Reason & Anomaly Triggers</div>
-                    <div style="font-size:1.05rem; font-weight:700; color:#000000; line-height:1.5;">
-                        {res['reason']}
-                    </div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        elif tier == "TIER_2_CHALLENGE":
+            st.markdown("""
+            <div class="bento-card" style="border:2px solid #F59E0B; background:#FFFBEB;">
+                <div style="font-size:1.35rem; font-weight:900; color:#DC2626; display:flex; align-items:center; gap:10px;">
+                    ⏸️ Pre-Debit Security Freeze (ISO: U16)
                 </div>
-                """, unsafe_allow_html=True)
-                
-            else:
-                st.markdown(f"""
-                <div class="bento-card" style="border:2px solid #EF4444; background:#FEF2F2;">
-                    <div style="font-size:1.35rem; font-weight:900; color:#DC2626; margin-bottom:8px;">🚫 Transaction Terminated at Switch (ISO: U28)</div>
-                    <div style="font-size:1.05rem; font-weight:700; color:#991B1B; line-height:1.5;">
-                        {res['reason']}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            st.markdown(f"""
-            <div class="bento-card" style="margin-top:14px;">
-                <div class="bento-card-title">📊 Key Forensic Metrics</div>
-                <div class="metric-grid">
-                    <div class="metric-tile tile-drain">
-                        <div class="tile-lbl" style="color:#7E22CE;">Account Drain</div>
-                        <div class="tile-val" style="color:#581C87;">{res['drain_ratio']*100:.1f}%</div>
-                    </div>
-                    <div class="metric-tile tile-spike">
-                        <div class="tile-lbl" style="color:#1D4ED8;">Spike Multiplier</div>
-                        <div class="tile-val" style="color:#1E40AF;">{res['amount_to_avg']:.1f}x</div>
-                    </div>
-                    <div class="metric-tile tile-speed">
-                        <div class="tile-lbl" style="color:#15803D;">Transit Speed</div>
-                        <div class="tile-val" style="color:#166534;">{res['speed_kmh']:,.0f} <span style="font-size:0.95rem;">km/h</span></div>
-                    </div>
-                    <div class="metric-tile tile-risk">
-                        <div class="tile-lbl" style="color:#B45309;">ML Risk Score</div>
-                        <div class="tile-val" style="color:#92400E;">{score*100:.1f}%</div>
-                    </div>
+                <div style="font-size:1.05rem; font-weight:700; color:#000000; margin-top:6px;">
+                    Held for safety. Enter the 4-digit SMS OTP dispatched to registered SIM to authorize debit.
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
-            st.markdown("""
-            <div class="bento-card">
-                <div class="bento-card-title">🍩 Live Behavioral Risk Gauge</div>
+            otp_c1, otp_c2 = st.columns([1.8, 1])
+            with otp_c1:
+                st.markdown("**🔐 Enter 4-Digit Security OTP (Mock: 4921):**")
+                user_otp = st.text_input("Enter 4-digit Security OTP", max_chars=4, label_visibility="collapsed", placeholder="Enter OTP here", key="v_otp_val_in")
+            with otp_c2:
+                st.write("")
+                st.write("")
+                if st.button("🔓 Verify & Release Debit", key="v_otp_release_btn"):
+                    if user_otp == "4921":
+                        st.success("✅ OTP Verified! ISO 20022 response Code 00 dispatched. Funds cleared.")
+                    else:
+                        st.error("❌ Invalid OTP. Hold maintained under bank FRM guidelines.")
+
+            st.markdown(f"""
+            <div class="bento-card" style="border:2px solid #F59E0B; margin-top:14px;">
+                <div style="font-size:1.25rem; font-weight:900; color:#B45309; margin-bottom:8px;">⚠️️ Decision Reason & Anomaly Triggers</div>
+                <div style="font-size:1.05rem; font-weight:700; color:#000000; line-height:1.5;">
+                    {res['reason']}
+                </div>
+            </div>
             """, unsafe_allow_html=True)
             
-            st.markdown(render_native_svg_donut(res['score'], res['tier']), unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        with col_right:
-            st.markdown("""
-            <div class="bento-card">
-                <div class="bento-card-title">🔍 Explainable AI (XAI) Audit Checklist</div>
+        else:
+            st.markdown(f"""
+            <div class="bento-card" style="border:2px solid #EF4444; background:#FEF2F2;">
+                <div style="font-size:1.35rem; font-weight:900; color:#DC2626; margin-bottom:8px;">🚫 Transaction Terminated at Switch (ISO: U28)</div>
+                <div style="font-size:1.05rem; font-weight:700; color:#991B1B; line-height:1.5;">
+                    {res['reason']}
+                </div>
+            </div>
             """, unsafe_allow_html=True)
 
+        # Forensic Metrics Bento Grid
+        st.markdown(f"""
+        <div class="bento-card" style="margin-top:14px;">
+            <div class="bento-card-title">📊 Key Forensic Metrics</div>
+            <div class="metric-grid">
+                <div class="metric-tile tile-drain">
+                    <div class="tile-lbl" style="color:#7E22CE;">Account Drain</div>
+                    <div class="tile-val" style="color:#581C87;">{res['drain_ratio']*100:.1f}%</div>
+                </div>
+                <div class="metric-tile tile-spike">
+                    <div class="tile-lbl" style="color:#1D4ED8;">Spike Multiplier</div>
+                    <div class="tile-val" style="color:#1E40AF;">{res['amount_to_avg']:.1f}x</div>
+                </div>
+                <div class="metric-tile tile-speed">
+                    <div class="tile-lbl" style="color:#15803D;">Transit Speed</div>
+                    <div class="tile-val" style="color:#166534;">{res['speed_kmh']:,.0f} <span style="font-size:0.95rem;">km/h</span></div>
+                </div>
+                <div class="metric-tile tile-risk">
+                    <div class="tile-lbl" style="color:#B45309;">ML Risk Score</div>
+                    <div class="tile-val" style="color:#92400E;">{score*100:.1f}%</div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # 4. EXPLAINABLE AI (XAI) CHECKLIST - COLLAPSED BY DEFAULT IN ST.EXPANDER
+        with st.expander("🔍 Explainable AI (XAI) Audit Checklist (Click to Expand)", expanded=False):
+            st.markdown("<div style='padding: 10px 0;'>", unsafe_allow_html=True)
             for name, detail, state in res['log']:
                 pill_class = "pill-ok" if state == "OK" else "pill-alert"
                 symbol_badge = "✓" if state == "OK" else "⚠️"
@@ -1147,10 +1154,9 @@ else:
                     <span class="{pill_class}">{symbol_badge} {state}</span>
                 </div>
                 """, unsafe_allow_html=True)
-
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # Regulatory Emergency Actions
+        # 5. REGULATORY EMERGENCY ACTIONS
         st.markdown("""
         <div class="bento-card" style="margin-top:10px;">
             <div class="bento-card-title" style="color:#B91C1C;">
