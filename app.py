@@ -15,45 +15,31 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 1. CLEAN TYPOGRAPHY & ENLARGED SIDEBAR STYLING
+# 1. NAVIGATION STATE (radio is the single source of truth)
 # ==============================================================================
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
-    
-    html, body, [class*="css"] {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-    
-    .stApp {
-        background-color: #FFFFFF;
-    }
+PAGES = ["Home", "Dashboard", "Fraud Detection"]
 
-    /* ENLARGED, HIGH-READABILITY SIDEBAR */
-    section[data-testid="stSidebar"] {
-        background-color: #F8FAFC;
-        border-right: 1px solid #E2E8F0;
-        padding-top: 1.5rem;
-    }
-    section[data-testid="stSidebar"] .stMarkdown p {
-        font-size: 1.15rem !important;
-        font-weight: 800 !important;
-        color: #0F172A !important;
-    }
-    section[data-testid="stSidebar"] div[role="radiogroup"] label {
-        padding: 8px 12px !important;
-        border-radius: 10px !important;
-        margin-bottom: 6px !important;
-    }
-    section[data-testid="stSidebar"] div[role="radiogroup"] label p {
-        font-size: 1.2rem !important;
-        font-weight: 700 !important;
-        color: #1E293B !important;
-    }
-    section[data-testid="stSidebar"] div[role="radiogroup"] label[data-checked="true"] p {
-        color: #EF4444 !important;
-        font-weight: 900 !important;
-    }
+if "nav" not in st.session_state:
+    st.session_state["nav"] = "Home"
+
+def go_to_fraud_detection():
+    st.session_state["nav"] = "Fraud Detection"
+
+# ==============================================================================
+# 2. SIDEBAR (default Streamlit look)
+# ==============================================================================
+with st.sidebar:
+    st.header("Navigation")
+    st.radio("Go to", PAGES, key="nav")
+
+active_nav = st.session_state["nav"]
+
+# ==============================================================================
+# 3. STYLING
+# ==============================================================================
+base_css = """
+<style>
+    .stApp { background-color: #FFFFFF; }
 
     /* INPUTS & SELECTS */
     div[data-baseweb="select"] > div,
@@ -65,30 +51,6 @@ st.markdown("""
         background-color: #FFFFFF !important;
         border-radius: 12px !important;
         border: 1px solid #CBD5E1 !important;
-    }
-
-    /* HOME HERO HEADINGS */
-    .home-brand-title {
-        font-size: 2.8rem;
-        font-weight: 900;
-        color: #1E293B;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        margin-bottom: 12px;
-    }
-    .home-sub-title {
-        font-size: 1.85rem;
-        font-weight: 800;
-        color: #0F172A;
-        margin-bottom: 16px;
-    }
-    .home-desc-text {
-        font-size: 1.15rem;
-        font-weight: 500;
-        color: #475569;
-        line-height: 1.65;
-        margin-bottom: 24px;
     }
 
     /* BENTO CARDS (INTERNAL PAGES) */
@@ -126,7 +88,7 @@ st.markdown("""
     .tile-spike { background: #EFF6FF; border-color: #93C5FD; }
     .tile-speed { background: #F0FDF4; border-color: #86EFAC; }
     .tile-risk  { background: #FFFBEB; border-color: #FDE68A; }
-    
+
     .tile-lbl {
         font-size: 0.85rem;
         font-weight: 800;
@@ -138,8 +100,9 @@ st.markdown("""
         font-weight: 900;
     }
 
-    /* ACTION BUTTON */
-    div.stButton > button[kind="primary"] {
+    /* ACTION BUTTONS (only the two pipeline buttons) */
+    .st-key-v_run_pipeline_btn button,
+    .st-key-sim_checkout_btn button {
         background: linear-gradient(90deg, #E11D48 0%, #BE123C 100%) !important;
         color: #FFFFFF !important;
         font-size: 1.25rem !important;
@@ -214,45 +177,18 @@ st.markdown("""
         margin-bottom: 14px !important;
     }
 </style>
-""", unsafe_allow_html=True)
+"""
+st.markdown(base_css, unsafe_allow_html=True)
 
-# ==============================================================================
-# 2. SESSION NAVIGATION STATE
-# ==============================================================================
-if "active_nav" not in st.session_state:
-    st.session_state["active_nav"] = "Home"
-
-def navigate_to(page_name):
-    st.session_state["active_nav"] = page_name
-
-# ==============================================================================
-# 3. SIDEBAR NAVIGATION
-# ==============================================================================
-with st.sidebar:
-    st.markdown('<div style="font-size:1.6rem; font-weight:900; color:#0F172A; margin-bottom:12px;">Navigation</div>', unsafe_allow_html=True)
-    st.caption("**Go to**")
-    
-    pages = ["Home", "Dashboard", "Fraud Detection"]
-    curr_idx = pages.index(st.session_state["active_nav"]) if st.session_state["active_nav"] in pages else 0
-    
-    selected_page = st.radio(
-        "Navigation",
-        pages,
-        index=curr_idx,
-        label_visibility="collapsed",
-        key="sidebar_radio_selection"
-    )
-    if selected_page != st.session_state["active_nav"]:
-        st.session_state["active_nav"] = selected_page
-        st.rerun()
-        
-    st.markdown("---")
+# Custom font only on internal pages (Home uses Streamlit's default font)
+if active_nav != "Home":
     st.markdown("""
-    <div style="font-size:0.95rem; color:#475569; font-weight:700; line-height: 1.8;">
-        ⚡ Team: <strong>Spark Squad</strong><br>
-        🏛️ Bank Switch: <strong>Online 🟢</strong><br>
-        ⏱️ Protocol: <strong>ISO 20022</strong>
-    </div>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+        html, body, [class*="css"] {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
     """, unsafe_allow_html=True)
 
 # ==============================================================================
@@ -443,84 +379,96 @@ def execute_inline_investigation(
     }
 
 # ==============================================================================
-# 5. VIEW 1: CLEAN HOME PAGE
+# 5. VIEW 1: HOME PAGE (matches the reference design)
 # ==============================================================================
-if st.session_state["active_nav"] == "Home":
-    
-    col_text, col_art = st.columns([1.3, 1])
-    
+if active_nav == "Home":
+
+    col_text, col_art = st.columns([2.2, 1])
+
     with col_text:
-        st.markdown("""
-        <div class="home-brand-title">
-            <span style="font-size:3.2rem;">🛡️</span>
-            <span>UPI Shield</span>
-        </div>
-        <div class="home-sub-title">
-            Secure Your Digital Transactions
-        </div>
-        <div class="home-desc-text">
-            Welcome to <strong>UPI Shield</strong>, an advanced AI-powered system designed to detect and prevent fraudulent UPI transactions in real-time. Operating directly as an inline switch interceptor, we analyze transaction kinematics, device tokens, and behavioral liquidity to ensure your digital payments remain secure.
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if st.button("Get Started →", key="btn_get_started"):
-            navigate_to("Fraud Detection")
-            st.rerun()
+        st.title("🛡️ UPI Shield")
+        st.header("Secure Your Digital Transactions")
+        st.markdown(
+            "Welcome to **UPI Shield**, an advanced AI-powered system designed to detect and "
+            "prevent fraudulent UPI transactions in real-time. Operating directly as an inline "
+            "switch interceptor, we analyze transaction kinematics, device tokens, and behavioral "
+            "liquidity to ensure your digital payments remain secure."
+        )
+        st.button("Get Started →", type="primary", key="btn_get_started", on_click=go_to_fraud_detection)
 
     with col_art:
         st.markdown("""
-        <div style="display:flex; justify-content:center; align-items:center; height:100%; min-height:300px;">
-            <svg width="280" height="230" viewBox="0 0 280 230" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <ellipse cx="140" cy="185" rx="120" ry="25" fill="#E2E8F0"/>
-                <path d="M70 145 C60 145 50 155 55 168 C60 178 75 180 85 178 Z" fill="#E2E8F0"/>
-                <rect x="75" y="55" width="130" height="110" rx="16" fill="#3B82F6" stroke="#1E293B" stroke-width="4"/>
-                <circle cx="140" cy="110" r="34" fill="#F8FAFC" stroke="#1E293B" stroke-width="4"/>
-                <circle cx="140" cy="110" r="18" fill="#F59E0B" stroke="#1E293B" stroke-width="3"/>
-                <circle cx="215" cy="155" r="18" fill="#FBBF24" stroke="#1E293B" stroke-width="3"/>
-                <text x="210" y="162" font-family="Arial" font-size="20" font-weight="900" fill="#1E293B">₹</text>
-                <circle cx="230" cy="130" r="15" fill="#FBBF24" stroke="#1E293B" stroke-width="3"/>
-                <text x="226" y="136" font-family="Arial" font-size="16" font-weight="900" fill="#1E293B">₹</text>
-            </svg>
+        <div style="display:flex; justify-content:center; align-items:center; padding-top:40px;">
+        <svg width="330" height="300" viewBox="0 0 330 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- teal cloud background -->
+            <g fill="#C8EFE6">
+                <circle cx="165" cy="95" r="70"/>
+                <circle cx="95" cy="150" r="55"/>
+                <circle cx="235" cy="150" r="60"/>
+                <circle cx="165" cy="200" r="80"/>
+                <circle cx="110" cy="215" r="45"/>
+                <circle cx="225" cy="225" r="50"/>
+            </g>
+            <!-- speed lines -->
+            <g stroke="#FFFFFF" stroke-width="4" stroke-linecap="round">
+                <line x1="40" y1="140" x2="75" y2="140"/>
+                <line x1="30" y1="153" x2="60" y2="153"/>
+                <line x1="105" y1="40" x2="140" y2="40"/>
+                <line x1="115" y1="52" x2="150" y2="52"/>
+            </g>
+            <!-- bottom-left cloud -->
+            <path d="M52 238 C40 238 38 218 56 216 C58 200 84 200 90 214 C106 212 112 232 100 238 Z" fill="#FFFBF2" stroke="#3B2A2A" stroke-width="4" stroke-linejoin="round"/>
+            <!-- safe -->
+            <rect x="88" y="82" width="170" height="150" rx="10" fill="#7A7FC8" stroke="#3B2A2A" stroke-width="5"/>
+            <rect x="100" y="94" width="146" height="126" rx="6" fill="#8E93D6" stroke="#3B2A2A" stroke-width="4"/>
+            <rect x="108" y="232" width="18" height="10" fill="#3B2A2A"/>
+            <rect x="220" y="232" width="18" height="10" fill="#3B2A2A"/>
+            <circle cx="112" cy="106" r="4" fill="none" stroke="#3B2A2A" stroke-width="2.5"/>
+            <rect x="96" y="120" width="6" height="14" rx="2" fill="#3B2A2A"/>
+            <rect x="96" y="176" width="6" height="14" rx="2" fill="#3B2A2A"/>
+            <!-- dial -->
+            <circle cx="170" cy="157" r="38" fill="#F5B800" stroke="#3B2A2A" stroke-width="4"/>
+            <circle cx="170" cy="157" r="26" fill="#F28C28" stroke="#3B2A2A" stroke-width="3"/>
+            <g stroke="#3B2A2A" stroke-width="3" stroke-linecap="round">
+                <line x1="170" y1="119" x2="170" y2="131"/>
+                <line x1="170" y1="183" x2="170" y2="195"/>
+                <line x1="132" y1="157" x2="144" y2="157"/>
+                <line x1="196" y1="157" x2="208" y2="157"/>
+            </g>
+            <circle cx="170" cy="157" r="8" fill="#F5B800" stroke="#3B2A2A" stroke-width="3"/>
+            <!-- top-right cloud on safe -->
+            <path d="M200 92 C190 92 188 76 202 74 C204 60 226 60 231 72 C246 70 252 88 242 92 Z" fill="#FFFBF2" stroke="#3B2A2A" stroke-width="4" stroke-linejoin="round"/>
+            <!-- coins -->
+            <circle cx="250" cy="198" r="22" fill="#F5B800" stroke="#3B2A2A" stroke-width="4"/>
+            <circle cx="250" cy="198" r="15" fill="none" stroke="#3B2A2A" stroke-width="2"/>
+            <text x="250" y="206" text-anchor="middle" font-family="Arial" font-size="22" font-weight="900" fill="#3B2A2A">$</text>
+            <circle cx="215" cy="228" r="22" fill="#F5B800" stroke="#3B2A2A" stroke-width="4"/>
+            <circle cx="215" cy="228" r="15" fill="none" stroke="#3B2A2A" stroke-width="2"/>
+            <text x="215" y="236" text-anchor="middle" font-family="Arial" font-size="22" font-weight="900" fill="#3B2A2A">$</text>
+            <!-- bottom cloud ground -->
+            <path d="M120 250 C108 250 106 234 122 232 L200 232 C214 234 214 250 200 250 Z" fill="#FFFBF2" stroke="#3B2A2A" stroke-width="4" stroke-linejoin="round"/>
+        </svg>
         </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("<hr style='border:none; border-top:1px solid #E2E8F0; margin:40px 0;'>", unsafe_allow_html=True)
-
-    st.markdown('<div style="font-size:1.85rem; font-weight:800; color:#0F172A; margin-bottom:28px;">Why Choose UPI Shield?</div>', unsafe_allow_html=True)
+    st.markdown("---")
+    st.header("Why Choose UPI Shield?")
 
     f1, f2, f3 = st.columns(3)
     with f1:
-        st.markdown("""
-        <div style="font-size:1.3rem; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-            <span>⚡</span> Real-Time Protection
-        </div>
-        <div style="font-size:1.05rem; font-weight:500; color:#64748B;">
-            Instant analysis of transactions as they happen in ~16ms without payment delays.
-        </div>
-        """, unsafe_allow_html=True)
+        st.subheader("⚡ Real-Time Protection")
+        st.write("Instant analysis of transactions as they happen in ~16ms without payment delays.")
     with f2:
-        st.markdown("""
-        <div style="font-size:1.3rem; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-            <span>🧠</span> AI Intelligence
-        </div>
-        <div style="font-size:1.05rem; font-weight:500; color:#64748B;">
-            Powered by a kinematic Random Forest classifier and deterministic sanity checks.
-        </div>
-        """, unsafe_allow_html=True)
+        st.subheader("🧠 AI Intelligence")
+        st.write("Powered by a kinematic Random Forest classifier and deterministic sanity checks.")
     with f3:
-        st.markdown("""
-        <div style="font-size:1.3rem; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-            <span>📊</span> Smart Analytics
-        </div>
-        <div style="font-size:1.05rem; font-weight:500; color:#64748B;">
-            Deep insights into transaction risks, account drain, and automated RBI disputes.
-        </div>
-        """, unsafe_allow_html=True)
+        st.subheader("📊 Smart Analytics")
+        st.write("Deep insights into transaction risks, account drain, and automated RBI disputes.")
 
 # ==============================================================================
 # 6. VIEW 2: DASHBOARD & ANALYTICS
 # ==============================================================================
-elif st.session_state["active_nav"] == "Dashboard":
+elif active_nav == "Dashboard":
     st.markdown("""
     <div style="margin-bottom:24px;">
         <div style="font-size:2.4rem; font-weight:900; color:#0F172A; display:flex; align-items:center; gap:12px;">
@@ -542,500 +490,4 @@ elif st.session_state["active_nav"] == "Dashboard":
             </div>
             <div class="metric-tile tile-drain">
                 <div class="tile-lbl" style="color:#7E22CE;">Fraudulent Records</div>
-                <div class="tile-val" style="color:#581C87;">173</div>
-            </div>
-            <div class="metric-tile tile-risk">
-                <div class="tile-lbl" style="color:#B45309;">Base Fraud Rate</div>
-                <div class="tile-val" style="color:#92400E;">0.14%</div>
-            </div>
-            <div class="metric-tile tile-speed">
-                <div class="tile-lbl" style="color:#15803D;">Legitimate Transfers</div>
-                <div class="tile-val" style="color:#166534;">127,079</div>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    d_col1, d_col2 = st.columns([1.2, 1])
-    with d_col1:
-        st.markdown("""
-        <div class="bento-card">
-            <div class="bento-card-title">🔍 Feature Engineering & Pipeline Architecture</div>
-            <p style="font-size:1.05rem; font-weight:500; color:#334155; line-height:1.6;">
-                Financial fraud datasets exhibit extreme class imbalance (99.86% legitimate vs 0.14% fraud). Standard classifiers fail by predicting the majority class. Our pipeline resolves this via:
-            </p>
-            <ul style="font-size:1.05rem; font-weight:600; color:#0F172A; line-height:1.8;">
-                <li><strong>Class-Weighted Random Forest:</strong> Penalizes false negatives to capture anomalous outliers.</li>
-                <li><strong>Kinematic Speed Transform:</strong> Spatial distance divided by elapsed session hours.</li>
-                <li><strong>Liquidity Drain Ratio:</strong> Normalizes transaction value by available balance.</li>
-                <li><strong>Device Token Fingerprinting:</strong> Validates carrier subnet and hardware signatures.</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with d_col2:
-        st.markdown("""
-        <div class="bento-card">
-            <div class="bento-card-title">🍩 Training Class Distribution</div>
-        """, unsafe_allow_html=True)
-        
-        df_dist = pd.DataFrame({
-            "Category": ["Legitimate (99.86%)", "Fraudulent (0.14%)"],
-            "Count": [127079, 173]
-        })
-        st.bar_chart(df_dist.set_index("Category"))
-        st.caption("Demonstrating real-world extreme imbalance typical of high-throughput payment networks.")
-        st.markdown("</div>", unsafe_allow_html=True)
-
-# ==============================================================================
-# 7. VIEW 3: FRAUD DETECTION GATEWAY
-# ==============================================================================
-else:
-    st.markdown("""
-    <div style="margin-bottom:24px; display:flex; justify-content:space-between; align-items:center;">
-        <div>
-            <div style="font-size:2.4rem; font-weight:900; color:#0F172A;">
-                🛡️ Fraud Detection Gateway
-            </div>
-            <div style="font-size:1.15rem; font-weight:600; color:#64748B; margin-top:4px;">
-                ⚡ Deterministic Firewall + Behavioral Random Forest + Inline Switch Interceptor
-            </div>
-        </div>
-        <div style="text-align:right;">
-            <div style="font-size:1.1rem; font-weight:900; color:#16A34A;">Bank Switch: Online 🟢</div>
-            <div style="font-size:0.85rem; font-weight:700; color:#64748B;">Protocol: ISO 20022</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    tab_manual, tab_prod = st.tabs([
-        "📋 Viva Telemetry Verification Panel", 
-        "⚡ Synchronous Virtual Gateway & Persona Switch"
-    ])
-
-    with tab_manual:
-        st.markdown("""
-        <div class="bento-card">
-            <div class="bento-card-title">
-                <span>📋 Manual Telemetry Simulation & Parameter Stress-Testing</span>
-            </div>
-        """, unsafe_allow_html=True)
-
-        c_in1, c_in2 = st.columns(2)
-
-        with c_in1:
-            st.markdown("**1. 👤 Account Baseline & Persona Profile**")
-            sel_prof = st.selectbox("Select Account Profile:", list(PROFESSIONS.keys()), label_visibility="collapsed", key="v_sel_prof")
-            prof = PROFESSIONS[sel_prof]
-
-            st.markdown("**2. 💳 Payment & VPA Identifiers**")
-            st.markdown("**💵 Transaction Amount (₹)**")
-            in_amount = st.number_input("Transaction Amount", min_value=1.0, value=10000.0, step=500.0, label_visibility="collapsed", key="v_in_amt")
-            
-            st.markdown("**🏦 Account Available Balance (₹)**")
-            in_balance = st.number_input("Account Balance", min_value=1.0, value=float(prof['balance']), step=1000.0, label_visibility="collapsed", key="v_in_bal")
-            
-            st.markdown("**📊 Historical Daily Spend Baseline (₹)**")
-            in_avg = st.number_input("Usual Average Spend", min_value=1.0, value=float(prof['avg_spend']), step=100.0, label_visibility="collapsed", key="v_in_avg")
-            
-            vpa_c1, vpa_c2 = st.columns(2)
-            with vpa_c1:
-                st.markdown("**Sender UPI ID**")
-                in_sender_vpa = st.text_input("Sender VPA", "user@oksbi", label_visibility="collapsed", key="v_s_vpa")
-            with vpa_c2:
-                st.markdown("**Recipient UPI ID**")
-                in_receiver_vpa = st.text_input("Receiver VPA", "chai_point@upi", label_visibility="collapsed", key="v_r_vpa")
-
-            st.markdown("**👥 Recipient Contact Trust Level**")
-            in_payee_new = st.selectbox("Payee History", ["⭐ Known / Frequently Paid Contact", "🆕 New / First-Time Payee"], index=0, label_visibility="collapsed", key="v_is_new_p") == "🆕 New / First-Time Payee"
-
-        with c_in2:
-            st.markdown("**3. 📍 Spatial, Hardware & Network Context**")
-            st.markdown("**📍 Displacement from Last Transaction (km)**")
-            in_dist = st.number_input("Distance from Last Transaction (km)", min_value=0.0, value=50.0, step=5.0, label_visibility="collapsed", key="v_dist_km")
-
-            st.markdown("**⏱️ Elapsed Time Since Previous Activity**")
-            g_val_col, g_unit_col = st.columns([1, 1])
-            with g_val_col:
-                in_gap_val = st.number_input("Value", min_value=0.1, value=30.0, step=1.0, label_visibility="collapsed", key="v_gap_val")
-            with g_unit_col:
-                in_gap_unit = st.selectbox("Unit", ["Minutes ⏳", "Seconds ⏱️", "Hours ⌛"], index=0, label_visibility="collapsed", key="v_gap_unit")
-
-            st.markdown("**🔢 Velocity: Number of Rapid Transactions (Last 10 Mins)**")
-            in_tx_count = st.number_input("Payments in 10 Mins", min_value=0, max_value=15, value=1, label_visibility="collapsed", key="v_tx_burst")
-
-            st.markdown("**📱 Hardware Fingerprint & Subnet Match**")
-            in_device = st.selectbox("Device State", ["🔒 Trusted Handset & Known Carrier Subnet", "⚠️ Unrecognized Handset / Foreign Gateway"], index=0, label_visibility="collapsed", key="v_dev_state") == "⚠️ Unrecognized Handset / Foreign Gateway"
-
-            st.markdown("**👥 Delegation Mode (UPI Circle)**")
-            in_delegated = st.selectbox("Authorized User Session", ["Primary Account Holder", "UPI Circle Secondary User (Family Member)"], index=0, key="v_delegated")
-
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("**4. 🕒 Transaction Timestamp (12-Hour Format)**")
-        t_c1, t_c2, t_c3, t_c4 = st.columns([1, 1, 1.2, 2.5])
-        with t_c1:
-            st.caption("**Hour 🕐**")
-            h_12 = st.selectbox("Hour", list(range(1, 13)), index=11, label_visibility="collapsed", key="v_h12")
-        with t_c2:
-            st.caption("**Minute ⏱️**")
-            m_val = st.selectbox("Minute", ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"], index=6, label_visibility="collapsed", key="v_mval")
-        with t_c3:
-            st.caption("**AM / PM ☀️️🌙**")
-            ampm = st.radio("AM/PM", ["AM", "PM"], horizontal=True, index=0, label_visibility="collapsed", key="v_ampm")
-        with t_c4:
-            st.write("")
-            st.markdown(f"**Calculated Window:** `{h_12}:{m_val} {ampm}`")
-
-        calc_gap_sec = in_gap_val * 60.0 if "Minutes" in in_gap_unit else (in_gap_val * 3600.0 if "Hours" in in_gap_unit else in_gap_val)
-        calc_hour_24 = (0 if h_12 == 12 else h_12) if ampm == "AM" else (12 if h_12 == 12 else h_12 + 12)
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        btn_trigger = st.button("⚡ Run Inline Switch Verification Pipeline 🚀", type="primary", key="v_run_pipeline_btn")
-
-        if btn_trigger or 'res_data' not in st.session_state:
-            st.session_state['res_data'] = execute_inline_investigation(
-                in_amount, in_balance, in_avg, calc_hour_24, in_tx_count, 
-                in_device, in_payee_new, in_dist, calc_gap_sec,
-                in_sender_vpa, in_receiver_vpa, in_delegated
-            )
-            st.session_state['v_inputs'] = {
-                "amount": in_amount, "prof": sel_prof, "payee": in_receiver_vpa,
-                "sender": in_sender_vpa, "delegated": in_delegated
-            }
-
-        res = st.session_state['res_data']
-        tier = res['tier']
-        score = res['score']
-
-        if tier == "TIER_1_PASS":
-            box_bg = "#ECFDF5"
-            box_border = "#10B981"
-            txt_color = "#047857"
-            right_badge_txt = "● Low Risk (Passed) ✅"
-            right_badge_bg = "#D1FAE5"
-        elif tier == "TIER_2_CHALLENGE":
-            box_bg = "#FFFBEB"
-            box_border = "#F59E0B"
-            txt_color = "#B45309"
-            right_badge_txt = "● Medium Risk (Hold / OTP) ⏸️"
-            right_badge_bg = "#FDE68A"
-        else:
-            box_bg = "#FEF2F2"
-            box_border = "#EF4444"
-            txt_color = "#B91C1C"
-            right_badge_txt = "● High Risk (Blocked) 🚫"
-            right_badge_bg = "#FECACA"
-
-        st.markdown(f"""
-        <div style="background:{box_bg}; border:2px solid {box_border}; border-radius:18px; padding:20px 28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-            <div>
-                <div style="font-weight:900; font-size:1.4rem; color:{txt_color}; line-height:1.2;">
-                    STATUS: {res['status']}
-                </div>
-                <div style="font-size:0.95rem; font-weight:700; color:{txt_color}; margin-top:4px;">
-                    Session: {in_delegated} &nbsp;|&nbsp; Payee: {in_receiver_vpa}
-                </div>
-            </div>
-            <div style="display:flex; gap:14px; align-items:center;">
-                <span style="background:#FFFFFF; border:2px solid {box_border}; color:{txt_color}; font-weight:900; font-size:1.05rem; padding:8px 18px; border-radius:22px;">
-                    ⚡ Switch Latency: {res['latency_ms']} ms
-                </span>
-                <span style="background:#FFFFFF; border:2px solid {box_border}; color:{txt_color}; font-weight:900; font-size:1.05rem; padding:8px 18px; border-radius:22px;">
-                    📊 Model Risk: {score*100:.1f}%
-                </span>
-                <span style="background:{right_badge_bg}; color:{txt_color}; font-weight:900; font-size:1.05rem; padding:8px 18px; border-radius:22px;">
-                    {right_badge_txt}
-                </span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        col_left, col_right = st.columns([1.15, 1])
-
-        with col_left:
-            if tier == "TIER_1_PASS":
-                st.markdown("""
-                <div class="bento-card" style="border:2px solid #10B981; background:#F0FDF4;">
-                    <div style="font-size:1.35rem; font-weight:900; color:#166534; display:flex; align-items:center; gap:10px;">
-                        ✅ Transaction Cleared for Settlement
-                    </div>
-                    <div style="font-size:1.05rem; font-weight:700; color:#15803D; margin-top:8px;">
-                        ISO 20022 Code 00: Verified liquidity, known token, and normal velocity. Cleared without step-up challenge.
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            elif tier == "TIER_2_CHALLENGE":
-                st.markdown("""
-                <div class="bento-card" style="border:2px solid #F59E0B; background:#FFFBEB;">
-                    <div style="font-size:1.35rem; font-weight:900; color:#DC2626; display:flex; align-items:center; gap:10px;">
-                        ⏸️ Pre-Debit Security Freeze (ISO: U16)
-                    </div>
-                    <div style="font-size:1.05rem; font-weight:700; color:#000000; margin-top:6px;">
-                        Held for safety. Enter the 4-digit SMS OTP dispatched to registered SIM to authorize debit.
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-                otp_c1, otp_c2 = st.columns([1.8, 1])
-                with otp_c1:
-                    st.markdown("**🔐 Enter 4-Digit Security OTP (Mock: 4921):**")
-                    user_otp = st.text_input("Enter 4-digit Security OTP", max_chars=4, label_visibility="collapsed", placeholder="Enter OTP here", key="v_otp_val_in")
-                with otp_c2:
-                    st.write("")
-                    st.write("")
-                    if st.button("🔓 Verify & Release Debit", key="v_otp_release_btn"):
-                        if user_otp == "4921":
-                            st.success("✅ OTP Verified! ISO 20022 response Code 00 dispatched. Funds cleared.")
-                        else:
-                            st.error("❌ Invalid OTP. Hold maintained under bank FRM guidelines.")
-
-                st.markdown(f"""
-                <div class="bento-card" style="border:2px solid #F59E0B; margin-top:14px;">
-                    <div style="font-size:1.25rem; font-weight:900; color:#B45309; margin-bottom:8px;">⚠️ Decision Reason & Anomaly Triggers</div>
-                    <div style="font-size:1.05rem; font-weight:700; color:#000000; line-height:1.5;">
-                        {res['reason']}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-            else:
-                st.markdown(f"""
-                <div class="bento-card" style="border:2px solid #EF4444; background:#FEF2F2;">
-                    <div style="font-size:1.35rem; font-weight:900; color:#DC2626; margin-bottom:8px;">🚫 Transaction Terminated at Switch (ISO: U28)</div>
-                    <div style="font-size:1.05rem; font-weight:700; color:#991B1B; line-height:1.5;">
-                        {res['reason']}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            st.markdown(f"""
-            <div class="bento-card" style="margin-top:14px;">
-                <div class="bento-card-title">📊 Key Forensic Metrics</div>
-                <div class="metric-grid">
-                    <div class="metric-tile tile-drain">
-                        <div class="tile-lbl" style="color:#7E22CE;">Account Drain</div>
-                        <div class="tile-val" style="color:#581C87;">{res['drain_ratio']*100:.1f}%</div>
-                    </div>
-                    <div class="metric-tile tile-spike">
-                        <div class="tile-lbl" style="color:#1D4ED8;">Spike Multiplier</div>
-                        <div class="tile-val" style="color:#1E40AF;">{res['amount_to_avg']:.1f}x</div>
-                    </div>
-                    <div class="metric-tile tile-speed">
-                        <div class="tile-lbl" style="color:#15803D;">Transit Speed</div>
-                        <div class="tile-val" style="color:#166534;">{res['speed_kmh']:,.0f} <span style="font-size:0.95rem;">km/h</span></div>
-                    </div>
-                    <div class="metric-tile tile-risk">
-                        <div class="tile-lbl" style="color:#B45309;">ML Risk Score</div>
-                        <div class="tile-val" style="color:#92400E;">{score*100:.1f}%</div>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
-            st.markdown("""
-            <div class="bento-card">
-                <div class="bento-card-title">🍩 Live Behavioral Risk Gauge</div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown(render_native_svg_donut(res['score'], res['tier']), unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        with col_right:
-            st.markdown("""
-            <div class="bento-card">
-                <div class="bento-card-title">🔍 Explainable AI (XAI) Audit Checklist</div>
-            """, unsafe_allow_html=True)
-
-            for name, detail, state in res['log']:
-                pill_class = "pill-ok" if state == "OK" else "pill-alert"
-                symbol_badge = "✓" if state == "OK" else "⚠️"
-                st.markdown(f"""
-                <div class="step-item">
-                    <div>
-                        <div class="step-title">{name}</div>
-                        <div class="step-sub">{detail}</div>
-                    </div>
-                    <span class="{pill_class}">{symbol_badge} {state}</span>
-                </div>
-                """, unsafe_allow_html=True)
-
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        # Regulatory Emergency Actions
-        st.markdown("""
-        <div class="bento-card" style="margin-top:10px;">
-            <div class="bento-card-title" style="color:#B91C1C;">
-                <span>🚨 Regulatory Emergency Remediation Suite (RBI Zero-Liability)</span>
-            </div>
-            <div style="font-size:1.05rem; font-weight:700; color:#475569; margin-bottom:16px;">
-                Instant post-fraud action suite supporting legal escalation, inter-bank lien instructions, and dispute generation.
-            </div>
-        """, unsafe_allow_html=True)
-
-        e_c1, e_c2, e_c3 = st.columns(3)
-        with e_c1:
-            st.markdown("**1. 📞 National Cyber Crime Helpline**")
-            st.markdown("Immediate escalation: Dial **1930**")
-            st.link_button("🌐 Open cybercrime.gov.in", "https://cybercrime.gov.in")
-
-        with e_c2:
-            st.markdown("**2. 🔒 Inter-Bank Beneficiary Lien**")
-            st.markdown("Dispatch freezing signal to receiver switch.")
-            if st.button("🔒 Dispatch Beneficiary Lien", key="v_freeze_lien_btn"):
-                st.success(f"✅ Lien request transmitted to switch for payee VPA: {in_receiver_vpa}")
-
-        with e_c3:
-            st.markdown("**3. 📄 Official Bank Dispute Dossier**")
-            st.markdown("Downloadable statutory dispute document.")
-            v_in = st.session_state['v_inputs']
-            report_txt = f"""OFFICIAL ELECTRONIC FRAUD DISPUTE DOSSIER
-Generated At: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-UTR Reference: 429184{int(time.time())%1000000:06d}
-Sender VPA: {v_in['sender']}
-Beneficiary VPA: {v_in['payee']}
-Evaluated Amount: INR {v_in['amount']:,.2f}
-Account Profile: {v_in['prof']}
-Delegated Session: {v_in['delegated']}
-Switch Verdict: {res['status']}
-Model Probability: {score*100:.1f}%
-Execution Latency: {res['latency_ms']} ms
-Statutory Reference: Limiting Customer Liability in Unauthorized Electronic Transactions (RBI Circular Ref: DBR.No.Leg.BC.78/09.07.005/2017-18)."""
-            st.download_button(
-                label="📥 Download Legal Dossier (.txt)",
-                data=report_txt,
-                file_name=f"Dispute_Report_{int(time.time())}.txt",
-                key="v_download_report_btn"
-            )
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with tab_prod:
-        st.markdown("""
-        <div class="bento-card">
-            <div class="bento-card-title">
-                <span>⚡ Synchronous Virtual Gateway & Inline Switch Interceptor</span>
-            </div>
-            <div style="font-size:1.05rem; font-weight:700; color:#64748B; margin-bottom:16px;">
-                Dual synchronous view: Client checkout handshake (Left) processed in real-time by Bank Switch Telemetry (Right).
-            </div>
-        """, unsafe_allow_html=True)
-
-        sim_user_col, sim_env_col = st.columns([1, 1])
-        with sim_user_col:
-            s_prof_name = st.selectbox("Active Bank Account Persona:", list(PROFESSIONS.keys()), key="sim_user_prof_sel")
-            s_user = PROFESSIONS[s_prof_name]
-            st.markdown(f"**🏦 Balance:** `₹{s_user['balance']:,.2f}` &nbsp;|&nbsp; **📊 Typical Daily Spend:** `₹{s_user['avg_spend']:,.2f}`")
-
-        with sim_env_col:
-            st.markdown("**⚠️ Environmental Sensor & Scam Threat Vector**")
-            sim_call = st.checkbox("📞 Active Unknown Call Detected (Potential Digital Arrest)", key="s_call_flag")
-            sim_link = st.checkbox("🔗 Transaction Triggered from External SMS/WhatsApp Link", key="s_link_flag")
-
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        mobile_col, backend_col = st.columns([1.15, 1])
-        
-        with mobile_col:
-            st.markdown("""
-            <div class="bento-card" style="border: 2px solid #3B82F6;">
-                <div class="bento-card-title" style="color:#1D4ED8;">
-                    <span>📱 UPI Consumer Payment App (Client View)</span>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            sim_vpa = st.text_input("Beneficiary UPI ID (VPA):", "claim-refund@fakebank", key="sim_vpa_box")
-            sim_pay_amount = st.number_input("Enter Amount to Transfer (₹):", min_value=1.0, value=8500.0, step=100.0, key="sim_pay_val")
-            sim_payee_new = st.selectbox("Recipient History:", ["⭐ Known / Saved Contact", "🆕 New / Unverified Payee"], index=1, key="sim_payee_state") == "🆕 New / Unverified Payee"
-
-            is_threat = sim_call or sim_link
-            proceed_permitted = True
-
-            if is_threat:
-                st.error("⚠️ **CRITICAL PRE-PAYMENT WARNING (Scam Threat Engaged)**")
-                st.markdown(
-                    "> **CAUTION:** Active call or external link detected. "
-                    "Police, TRAI, and Bank managers **NEVER** ask for UPI transfers over calls."
-                )
-                confirm_override = st.checkbox("I verify this recipient and authorize under my own discretion.", key="sim_override_flag")
-                proceed_permitted = confirm_override
-
-            pay_clicked = st.button("🚀 Pay & Initiate Switch Handshake", type="primary", disabled=not proceed_permitted, key="sim_checkout_btn")
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        with backend_col:
-            st.markdown("""
-            <div class="terminal-container">
-                <div class="terminal-title">
-                    <span>⚙️ Bank Switch Server (Backend Telemetry)</span>
-                </div>
-                <div class="terminal-sub">
-                    Live packet inspection log executed on the switch level (invisible to consumer).
-                </div>
-            """, unsafe_allow_html=True)
-            
-            backend_status_box = st.empty()
-            backend_status_box.markdown(
-                '<div style="color:#38BDF8 !important; font-weight:700; font-size:1rem; padding:12px; background:#1E293B; border-radius:10px; border:1px solid #334155;">⏳ Awaiting ISO 20022 debit message from client PSP...</div>', 
-                unsafe_allow_html=True
-            )
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        if pay_clicked:
-            with backend_status_box.container():
-                st.markdown('<div style="color:#FFFFFF !important; font-weight:700; font-size:1rem; margin-bottom:6px;">1. 📥 Packet received: ISO 20022 / UPI CL 3.0 auth payload.</div>', unsafe_allow_html=True)
-                st.markdown(f'<div style="color:#FFFFFF !important; font-weight:700; font-size:1rem; margin-bottom:6px;">2. 🔍 VPA Resolved: {sim_vpa} | Carrier Subnet: SHA256_VERIFIED.</div>', unsafe_allow_html=True)
-                
-                dist_val = 600.0 if sim_pay_amount > 20000 else 2.5
-                gap_val = 1200.0 if sim_pay_amount > 20000 else 3600.0
-                burst_val = 5 if sim_pay_amount > 20000 else 1
-                new_dev_flag = True if sim_pay_amount > 20000 else False
-
-                b_res = execute_inline_investigation(
-                    amount=sim_pay_amount,
-                    balance=s_user['balance'],
-                    avg_spend=s_user['avg_spend'],
-                    hour_24=datetime.now().hour,
-                    tx_count=burst_val,
-                    is_new_device=new_dev_flag,
-                    is_new_payee=sim_payee_new,
-                    dist_km=dist_val,
-                    gap_sec=gap_val,
-                    sender_vpa="primary.user@oksbi",
-                    receiver_vpa=sim_vpa
-                )
-
-                st.session_state['sim_res'] = b_res
-                st.session_state['sim_tx_details'] = {"amount": sim_pay_amount, "payee": sim_vpa, "prof": s_prof_name}
-
-                st.markdown(f'<div style="color:#38BDF8 !important; font-weight:900; font-size:1.15rem; margin:10px 0;">3. ⚡ Switch Verdict: {b_res["tier"]} | Latency: {b_res["latency_ms"]} ms | Risk: {b_res["score"]*100:.1f}%</div>', unsafe_allow_html=True)
-                with st.expander("Switch Telemetry Audit Log", expanded=True):
-                    for l_name, l_detail, l_st in b_res.get('log', []):
-                        st.markdown(f'<span style="color:#FFFFFF !important; font-weight:700;">- {l_name}:</span> <span style="color:#CBD5E1 !important;">{l_detail}</span> <strong style="color:#38BDF8 !important;">({l_st})</strong>', unsafe_allow_html=True)
-
-        if 'sim_res' in st.session_state:
-            b_res = st.session_state['sim_res']
-            sim_dt = st.session_state['sim_tx_details']
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            if b_res['tier'] == "TIER_1_PASS":
-                st.success(f"✅ **Payment Cleared (ISO: 00)!** ₹{sim_dt['amount']:,.2f} sent to `{sim_dt['payee']}`. UTR: 429184{int(time.time())%1000000:06d}")
-            elif b_res['tier'] == "TIER_2_CHALLENGE":
-                st.warning(f"⚠️ **Pre-Debit Hold Engaged (ISO: U16):** Unusual telemetry detected. An OTP challenge has been dispatched to authenticate authorization.")
-                st.info(f"**Reason:** {b_res['reason']}")
-                
-                s_otp_col1, s_otp_col2 = st.columns([1.5, 1])
-                with s_otp_col1:
-                    s_entered_otp = st.text_input("Enter 4-digit Security OTP (Mock: 4921):", max_chars=4, key="sim_otp_release_val")
-                with s_otp_col2:
-                    st.write("")
-                    st.write("")
-                    if st.button("🔓 Submit OTP & Complete Settlement", key="sim_otp_settle_btn"):
-                        if s_entered_otp == "4921":
-                            st.success(f"✅ OTP Verified! Hold released. ₹{sim_dt['amount']:,.2f} transferred to {sim_dt['payee']}.")
-                        else:
-                            st.error("❌ Invalid OTP. Payment remains frozen.")
-            else:
-                st.error(f"🚫 **Transaction Blocked by Bank Security (ISO: U28):** {b_res['reason']}")
-                st.info(f"🔔 **Regulatory Lien Activated:** Beneficiary VPA `{sim_dt['payee']}` flagged across NPCI FRM network.")
+                <div
