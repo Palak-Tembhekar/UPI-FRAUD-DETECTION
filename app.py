@@ -6,7 +6,6 @@ import os
 import time
 import re
 from datetime import datetime
-import altair as alt
 
 st.set_page_config(
     page_title="UPI Shield — Real-Time Inline Fraud Mitigation Switch",
@@ -31,7 +30,7 @@ st.markdown("""
         background-color: #F8FAFC;
     }
 
-    /* Input & Dropdown Styling (Natural weight, high contrast, clean visibility) */
+    /* Target Inputs & Dropdowns: Natural Weight, High Contrast */
     div[data-baseweb="select"] > div,
     div[data-baseweb="input"] > div,
     input, 
@@ -49,20 +48,20 @@ st.markdown("""
         color: #0F172A !important;
     }
 
-    /* GIANT MAIN HEADLINE */
+    /* COMMAND-ATTENTION MAIN HEADLINE */
     .top-header-container {
         background: #FFFFFF;
-        padding: 30px 42px;
+        padding: 28px 40px;
         border-radius: 22px;
         border: 2px solid #E2E8F0;
-        margin-bottom: 26px;
+        margin-bottom: 24px;
         box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
     .hero-title-giant {
-        font-size: 3.0rem !important;
+        font-size: 2.85rem !important;
         font-weight: 900 !important;
         color: #0F172A !important;
         letter-spacing: -1.2px;
@@ -73,14 +72,13 @@ st.markdown("""
         line-height: 1.1;
     }
     .hero-badge-v2 {
-        font-size: 1.1rem !important;
+        font-size: 1.05rem !important;
         background: linear-gradient(135deg, #2563EB, #1D4ED8);
         color: #FFFFFF !important;
-        padding: 6px 18px;
+        padding: 5px 16px;
         border-radius: 12px;
         font-weight: 900;
         vertical-align: middle;
-        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
     }
     .team-pill-box {
         display: flex;
@@ -91,7 +89,7 @@ st.markdown("""
         padding: 10px 22px;
         border-radius: 28px;
         font-weight: 900;
-        font-size: 1.25rem !important;
+        font-size: 1.2rem !important;
         color: #0F172A;
     }
 
@@ -226,7 +224,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 2. LOAD ARTIFACTS & INLINE INVESTIGATION LOGIC
+# 2. LOAD ARTIFACTS
 # ==============================================================================
 @st.cache_resource
 def load_artifacts():
@@ -254,47 +252,49 @@ PROFESSIONS = {
     "🌐 Custom Profile": {"balance": 25000.0, "avg_spend": 1500.0}
 }
 
-def render_dynamic_donut(risk_score, tier):
-    """Generates an ultra-fast, native color-shifting Donut Gauge without heavy dependencies."""
+# ==============================================================================
+# 3. PURE SVG ULTRA-FAST DONUT (NEVER HANGS / ZERO DEPENDENCY)
+# ==============================================================================
+def render_native_svg_donut(risk_score, tier):
+    """Renders a 100% native SVG gauge in pure HTML that loads in 0ms."""
     if tier == "TIER_1_PASS":
-        fill_color = "#10B981"  # Emerald Green
+        fill_color = "#10B981"
         status_label = "CLEARED"
     elif tier == "TIER_2_CHALLENGE":
-        fill_color = "#F59E0B"  # Amber Orange
+        fill_color = "#F59E0B"
         status_label = "FROZEN"
     else:
-        fill_color = "#EF4444"  # Crimson Red
+        fill_color = "#EF4444"
         status_label = "BLOCKED"
 
-    safe_pct = max(0.0, round((1.0 - risk_score) * 100, 1))
-    fraud_pct = max(0.0, round(risk_score * 100, 1))
+    pct = max(0.0, min(100.0, round(risk_score * 100, 1)))
+    dash_val = round(pct * 2.83, 1) # Circumference of radius 45 is ~283
 
-    source = pd.DataFrame({
-        "Category": ["Fraud Risk", "Safe Margin"],
-        "Value": [fraud_pct, safe_pct]
-    })
+    svg_html = f"""
+    <div style="display:flex; align-items:center; justify-content:center; gap:26px; padding:10px 0;">
+        <div style="position:relative; width:170px; height:170px;">
+            <svg viewBox="0 0 100 100" style="width:170px; height:170px; transform:rotate(-90deg);">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="#E2E8F0" stroke-width="10"/>
+                <circle cx="50" cy="50" r="45" fill="none" stroke="{fill_color}" stroke-width="10"
+                        stroke-dasharray="283" stroke-dashoffset="{283 - dash_val}" stroke-linecap="round"/>
+            </svg>
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); text-align:center;">
+                <div style="font-size:2rem; font-weight:900; color:{fill_color}; line-height:1;">{pct}%</div>
+                <div style="font-size:0.75rem; font-weight:800; color:#475569; margin-top:2px;">{status_label}</div>
+            </div>
+        </div>
+        <div>
+            <div style="font-size:0.85rem; font-weight:800; color:#64748B; text-transform:uppercase;">Model Verdict</div>
+            <div style="font-size:1.6rem; font-weight:900; color:{fill_color}; margin-bottom:6px;">{status_label}</div>
+            <div style="font-size:0.95rem; font-weight:700; color:#1E293B;">Safe Margin: <strong>{round(100 - pct, 1)}%</strong></div>
+        </div>
+    </div>
+    """
+    return svg_html
 
-    donut_chart = alt.Chart(source).mark_arc(innerRadius=60, outerRadius=85).encode(
-        theta=alt.Theta(field="Value", type="quantitative"),
-        color=alt.Color(
-            field="Category",
-            type="nominal",
-            scale=alt.Scale(
-                domain=["Fraud Risk", "Safe Margin"],
-                range=[fill_color, "#E2E8F0"]
-            ),
-            legend=None
-        ),
-        tooltip=["Category", "Value"]
-    ).properties(
-        width=190,
-        height=190
-    ).configure_view(
-        strokeWidth=0
-    )
-
-    return donut_chart, fraud_pct, fill_color, status_label
-
+# ==============================================================================
+# 4. INLINE SWITCH INVESTIGATION ENGINE
+# ==============================================================================
 def execute_inline_investigation(
     amount, balance, avg_spend, hour_24, tx_count, 
     is_new_device, is_new_payee, dist_km, gap_sec,
@@ -409,7 +409,7 @@ def execute_inline_investigation(
         reason = f"Payment Terminated: Multi-vector anomalies detected ({', '.join(flags)}). Transaction dropped at switch to prevent account drain."
     elif score >= 0.35 or len(flags) >= 1:
         tier = "TIER_2_CHALLENGE"
-        status = "SUSPICIOUS PAYMENT, FROZEN ⏸️️ (ISO: U16)"
+        status = "SUSPICIOUS PAYMENT, FROZEN ⏸️ (ISO: U16)"
         reason = f"Security Hold Engaged: Triggered by {', '.join(flags)}. Payment held on security freeze pending step-up OTP authentication."
     else:
         tier = "TIER_1_PASS"
@@ -427,7 +427,7 @@ def execute_inline_investigation(
     }
 
 # ==============================================================================
-# 3. SIDEBAR NAVIGATION CONTROLLER
+# 5. SIDEBAR NAVIGATION
 # ==============================================================================
 with st.sidebar:
     st.markdown("""
@@ -441,7 +441,8 @@ with st.sidebar:
         "Go to",
         ["Home", "Dashboard", "Fraud Detection"],
         index=2, # Opens directly to testing gateway
-        label_visibility="collapsed"
+        label_visibility="collapsed",
+        key="nav_selection_radio"
     )
     
     st.markdown("---")
@@ -449,13 +450,13 @@ with st.sidebar:
     <div style="font-size:0.9rem; color:#475569; font-weight:700; line-height: 1.8;">
         ⚡ Team: <strong>Spark Squad</strong><br>
         🏛️ Bank Switch: <strong>Online 🟢</strong><br>
-        ⏱️ Switch Protocol: <strong>ISO 20022</strong><br>
-        🔒 Policy Mode: <strong>Automated FRM</strong>
+        ⏱️ Protocol: <strong>ISO 20022</strong><br>
+        🔒 Engine: <strong>Inline FRM</strong>
     </div>
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 4. VIEW 1: HOME PAGE
+# 6. VIEW 1: HOME PAGE
 # ==============================================================================
 if nav_page == "Home":
     st.markdown("""
@@ -505,7 +506,7 @@ if nav_page == "Home":
         """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. VIEW 2: DASHBOARD & ANALYTICS (DATASET & EDA)
+# 7. VIEW 2: DASHBOARD & ANALYTICS (DATASET & EDA)
 # ==============================================================================
 elif nav_page == "Dashboard":
     st.markdown("""
@@ -581,7 +582,7 @@ elif nav_page == "Dashboard":
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ==============================================================================
-# 6. VIEW 3: FRAUD DETECTION GATEWAY (VIVA PANEL + AUTOMATED SWITCH)
+# 8. VIEW 3: FRAUD DETECTION GATEWAY (CORE ENGINE)
 # ==============================================================================
 else:
     st.markdown("""
@@ -630,63 +631,63 @@ else:
 
         with c_in1:
             st.markdown("**1. 👤 Account Baseline & Persona Profile**")
-            sel_prof = st.selectbox("Select Account Profile:", list(PROFESSIONS.keys()), label_visibility="collapsed")
+            sel_prof = st.selectbox("Select Account Profile:", list(PROFESSIONS.keys()), label_visibility="collapsed", key="v_sel_prof")
             prof = PROFESSIONS[sel_prof]
 
             st.markdown("**2. 💳 Payment & VPA Identifiers**")
             st.markdown("**💵 Transaction Amount (₹)**")
-            in_amount = st.number_input("Transaction Amount", min_value=1.0, value=10000.0, step=500.0, label_visibility="collapsed")
+            in_amount = st.number_input("Transaction Amount", min_value=1.0, value=10000.0, step=500.0, label_visibility="collapsed", key="v_in_amt")
             
             st.markdown("**🏦 Account Available Balance (₹)**")
-            in_balance = st.number_input("Account Balance", min_value=1.0, value=float(prof['balance']), step=1000.0, label_visibility="collapsed")
+            in_balance = st.number_input("Account Balance", min_value=1.0, value=float(prof['balance']), step=1000.0, label_visibility="collapsed", key="v_in_bal")
             
             st.markdown("**📊 Historical Daily Spend Baseline (₹)**")
-            in_avg = st.number_input("Usual Average Spend", min_value=1.0, value=float(prof['avg_spend']), step=100.0, label_visibility="collapsed")
+            in_avg = st.number_input("Usual Average Spend", min_value=1.0, value=float(prof['avg_spend']), step=100.0, label_visibility="collapsed", key="v_in_avg")
             
             vpa_c1, vpa_c2 = st.columns(2)
             with vpa_c1:
                 st.markdown("**Sender UPI ID**")
-                in_sender_vpa = st.text_input("Sender VPA", "user@oksbi", label_visibility="collapsed")
+                in_sender_vpa = st.text_input("Sender VPA", "user@oksbi", label_visibility="collapsed", key="v_s_vpa")
             with vpa_c2:
                 st.markdown("**Recipient UPI ID**")
-                in_receiver_vpa = st.text_input("Receiver VPA", "chai_point@upi", label_visibility="collapsed")
+                in_receiver_vpa = st.text_input("Receiver VPA", "chai_point@upi", label_visibility="collapsed", key="v_r_vpa")
 
             st.markdown("**👥 Recipient Contact Trust Level**")
-            in_payee_new = st.selectbox("Payee History", ["⭐ Known / Frequently Paid Contact", "🆕 New / First-Time Payee"], index=0, label_visibility="collapsed") == "🆕 New / First-Time Payee"
+            in_payee_new = st.selectbox("Payee History", ["⭐ Known / Frequently Paid Contact", "🆕 New / First-Time Payee"], index=0, label_visibility="collapsed", key="v_is_new_p") == "🆕 New / First-Time Payee"
 
         with c_in2:
             st.markdown("**3. 📍 Spatial, Hardware & Network Context**")
             st.markdown("**📍 Displacement from Last Transaction (km)**")
-            in_dist = st.number_input("Distance from Last Transaction (km)", min_value=0.0, value=50.0, step=5.0, label_visibility="collapsed")
+            in_dist = st.number_input("Distance from Last Transaction (km)", min_value=0.0, value=50.0, step=5.0, label_visibility="collapsed", key="v_dist_km")
 
             st.markdown("**⏱️ Elapsed Time Since Previous Activity**")
             g_val_col, g_unit_col = st.columns([1, 1])
             with g_val_col:
-                in_gap_val = st.number_input("Value", min_value=0.1, value=30.0, step=1.0, label_visibility="collapsed")
+                in_gap_val = st.number_input("Value", min_value=0.1, value=30.0, step=1.0, label_visibility="collapsed", key="v_gap_val")
             with g_unit_col:
-                in_gap_unit = st.selectbox("Unit", ["Minutes ⏳", "Seconds ⏱️", "Hours ⌛"], index=0, label_visibility="collapsed")
+                in_gap_unit = st.selectbox("Unit", ["Minutes ⏳", "Seconds ⏱️", "Hours ⌛"], index=0, label_visibility="collapsed", key="v_gap_unit")
 
             st.markdown("**🔢 Velocity: Number of Rapid Transactions (Last 10 Mins)**")
-            in_tx_count = st.number_input("Payments in 10 Mins", min_value=0, max_value=15, value=1, label_visibility="collapsed")
+            in_tx_count = st.number_input("Payments in 10 Mins", min_value=0, max_value=15, value=1, label_visibility="collapsed", key="v_tx_burst")
 
             st.markdown("**📱 Hardware Fingerprint & Subnet Match**")
-            in_device = st.selectbox("Device State", ["🔒 Trusted Handset & Known Carrier Subnet", "⚠️ Unrecognized Handset / Foreign Gateway"], index=0, label_visibility="collapsed") == "⚠️ Unrecognized Handset / Foreign Gateway"
+            in_device = st.selectbox("Device State", ["🔒 Trusted Handset & Known Carrier Subnet", "⚠️️ Unrecognized Handset / Foreign Gateway"], index=0, label_visibility="collapsed", key="v_dev_state") == "⚠️ Unrecognized Handset / Foreign Gateway"
 
             st.markdown("**👥 Delegation Mode (UPI Circle)**")
-            in_delegated = st.selectbox("Authorized User Session", ["Primary Account Holder", "UPI Circle Secondary User (Family Member)"], index=0)
+            in_delegated = st.selectbox("Authorized User Session", ["Primary Account Holder", "UPI Circle Secondary User (Family Member)"], index=0, key="v_delegated")
 
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("**4. 🕒 Transaction Timestamp (12-Hour Format)**")
         t_c1, t_c2, t_c3, t_c4 = st.columns([1, 1, 1.2, 2.5])
         with t_c1:
             st.caption("**Hour 🕐**")
-            h_12 = st.selectbox("Hour", list(range(1, 13)), index=11, label_visibility="collapsed")
+            h_12 = st.selectbox("Hour", list(range(1, 13)), index=11, label_visibility="collapsed", key="v_h12")
         with t_c2:
-            st.caption("**Minute ⏱**")
-            m_val = st.selectbox("Minute", ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"], index=6, label_visibility="collapsed")
+            st.caption("**Minute ⏱️**")
+            m_val = st.selectbox("Minute", ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"], index=6, label_visibility="collapsed", key="v_mval")
         with t_c3:
             st.caption("**AM / PM ☀️🌙**")
-            ampm = st.radio("AM/PM", ["AM", "PM"], horizontal=True, index=0, label_visibility="collapsed")
+            ampm = st.radio("AM/PM", ["AM", "PM"], horizontal=True, index=0, label_visibility="collapsed", key="v_ampm")
         with t_c4:
             st.write("")
             st.markdown(f"**Calculated Window:** `{h_12}:{m_val} {ampm}`")
@@ -696,7 +697,7 @@ else:
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-        btn_trigger = st.button("⚡ Run Inline Switch Verification Pipeline 🚀", type="primary")
+        btn_trigger = st.button("⚡ Run Inline Switch Verification Pipeline 🚀", type="primary", key="v_run_pipeline_btn")
 
         if btn_trigger or 'res_data' not in st.session_state:
             st.session_state['res_data'] = execute_inline_investigation(
@@ -786,11 +787,11 @@ else:
                 otp_c1, otp_c2 = st.columns([1.8, 1])
                 with otp_c1:
                     st.markdown("**🔐 Enter 4-Digit Security OTP (Mock: 4921):**")
-                    user_otp = st.text_input("Enter 4-digit Security OTP", max_chars=4, label_visibility="collapsed", placeholder="Enter OTP here")
+                    user_otp = st.text_input("Enter 4-digit Security OTP", max_chars=4, label_visibility="collapsed", placeholder="Enter OTP here", key="v_otp_val_in")
                 with otp_c2:
                     st.write("")
                     st.write("")
-                    if st.button("🔓 Verify & Release Debit", key="v_otp_btn"):
+                    if st.button("🔓 Verify & Release Debit", key="v_otp_release_btn"):
                         if user_otp == "4921":
                             st.success("✅ OTP Verified! ISO 20022 response Code 00 dispatched. Funds cleared.")
                         else:
@@ -840,32 +841,13 @@ else:
             </div>
             """, unsafe_allow_html=True)
 
-            # DYNAMIC ULTRA-FAST NATIVE DONUT RISK GAUGE
+            # DYNAMIC ZERO-CRASH SVG DONUT
             st.markdown("""
             <div class="bento-card">
                 <div class="bento-card-title">🍩 Live Behavioral Risk Gauge</div>
             """, unsafe_allow_html=True)
             
-            d_chart, d_pct, d_color, d_status = render_dynamic_donut(res['score'], res['tier'])
-            
-            donut_c1, donut_c2 = st.columns([1.2, 1])
-            with donut_c1:
-                st.altair_chart(d_chart, use_container_width=True)
-            with donut_c2:
-                st.markdown(f"""
-                <div style="padding-top: 26px;">
-                    <div style="font-size: 2.6rem; font-weight: 900; color: {d_color}; line-height: 1;">
-                        {d_pct}%
-                    </div>
-                    <div style="font-size: 1.1rem; font-weight: 800; color: #475569; margin-top: 6px;">
-                        VERDICT: <span style="color: {d_color};">{d_status}</span>
-                    </div>
-                    <div style="font-size: 0.95rem; font-weight: 600; color: #64748B; margin-top: 10px;">
-                        Safe Margin: <strong>{round(100 - d_pct, 1)}%</strong>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
+            st.markdown(render_native_svg_donut(res['score'], res['tier']), unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
         with col_right:
@@ -909,7 +891,7 @@ else:
         with e_c2:
             st.markdown("**2. 🔒 Inter-Bank Beneficiary Lien**")
             st.markdown("Dispatch freezing signal to receiver switch.")
-            if st.button("🔒 Dispatch Beneficiary Lien", key="v_freeze_btn"):
+            if st.button("🔒 Dispatch Beneficiary Lien", key="v_freeze_lien_btn"):
                 st.success(f"✅ Lien request transmitted to switch for payee VPA: {in_receiver_vpa}")
 
         with e_c3:
@@ -932,7 +914,7 @@ Statutory Reference: Limiting Customer Liability in Unauthorized Electronic Tran
                 label="📥 Download Legal Dossier (.txt)",
                 data=report_txt,
                 file_name=f"Dispute_Report_{int(time.time())}.txt",
-                key="v_download_btn"
+                key="v_download_report_btn"
             )
 
         st.markdown("</div>", unsafe_allow_html=True)
@@ -953,14 +935,14 @@ Statutory Reference: Limiting Customer Liability in Unauthorized Electronic Tran
 
         sim_user_col, sim_env_col = st.columns([1, 1])
         with sim_user_col:
-            s_prof_name = st.selectbox("Active Bank Account Persona:", list(PROFESSIONS.keys()), key="sim_user_prof")
+            s_prof_name = st.selectbox("Active Bank Account Persona:", list(PROFESSIONS.keys()), key="sim_user_prof_sel")
             s_user = PROFESSIONS[s_prof_name]
             st.markdown(f"**🏦 Balance:** `₹{s_user['balance']:,.2f}` &nbsp;|&nbsp; **📊 Typical Daily Spend:** `₹{s_user['avg_spend']:,.2f}`")
 
         with sim_env_col:
             st.markdown("**⚠️ Environmental Sensor & Scam Threat Vector**")
-            sim_call = st.checkbox("📞 Active Unknown Call Detected (Potential Digital Arrest)", key="s_call")
-            sim_link = st.checkbox("🔗 Transaction Triggered from External SMS/WhatsApp Link", key="s_link")
+            sim_call = st.checkbox("📞 Active Unknown Call Detected (Potential Digital Arrest)", key="s_call_flag")
+            sim_link = st.checkbox("🔗 Transaction Triggered from External SMS/WhatsApp Link", key="s_link_flag")
 
         st.markdown("</div>", unsafe_allow_html=True)
         
@@ -974,23 +956,23 @@ Statutory Reference: Limiting Customer Liability in Unauthorized Electronic Tran
                 </div>
             """, unsafe_allow_html=True)
             
-            sim_vpa = st.text_input("Beneficiary UPI ID (VPA):", "claim-refund@fakebank", key="sim_vpa_input")
-            sim_pay_amount = st.number_input("Enter Amount to Transfer (₹):", min_value=1.0, value=8500.0, step=100.0, key="sim_pay_amt")
-            sim_payee_new = st.selectbox("Recipient History:", ["⭐ Known / Saved Contact", "🆕 New / Unverified Payee"], index=1, key="sim_payee_type") == "🆕 New / Unverified Payee"
+            sim_vpa = st.text_input("Beneficiary UPI ID (VPA):", "claim-refund@fakebank", key="sim_vpa_box")
+            sim_pay_amount = st.number_input("Enter Amount to Transfer (₹):", min_value=1.0, value=8500.0, step=100.0, key="sim_pay_val")
+            sim_payee_new = st.selectbox("Recipient History:", ["⭐ Known / Saved Contact", "🆕 New / Unverified Payee"], index=1, key="sim_payee_state") == "🆕 New / Unverified Payee"
 
             is_threat = sim_call or sim_link
             proceed_permitted = True
 
             if is_threat:
-                st.error("⚠️️ **CRITICAL PRE-PAYMENT WARNING (Scam Threat Engaged)**")
+                st.error("⚠️ **CRITICAL PRE-PAYMENT WARNING (Scam Threat Engaged)**")
                 st.markdown(
                     "> **CAUTION:** Active call or external link detected. "
                     "Police, TRAI, and Bank managers **NEVER** ask for UPI transfers over calls."
                 )
-                confirm_override = st.checkbox("I verify this recipient and authorize under my own discretion.", key="sim_override")
+                confirm_override = st.checkbox("I verify this recipient and authorize under my own discretion.", key="sim_override_flag")
                 proceed_permitted = confirm_override
 
-            pay_clicked = st.button("🚀 Pay & Initiate Switch Handshake", type="primary", disabled=not proceed_permitted, key="sim_pay_btn")
+            pay_clicked = st.button("🚀 Pay & Initiate Switch Handshake", type="primary", disabled=not proceed_permitted, key="sim_checkout_btn")
             st.markdown("</div>", unsafe_allow_html=True)
 
         with backend_col:
@@ -1051,16 +1033,16 @@ Statutory Reference: Limiting Customer Liability in Unauthorized Electronic Tran
             if b_res['tier'] == "TIER_1_PASS":
                 st.success(f"✅ **Payment Cleared (ISO: 00)!** ₹{sim_dt['amount']:,.2f} sent to `{sim_dt['payee']}`. UTR: 429184{int(time.time())%1000000:06d}")
             elif b_res['tier'] == "TIER_2_CHALLENGE":
-                st.warning(f"⚠️️ **Pre-Debit Hold Engaged (ISO: U16):** Unusual telemetry detected. An OTP challenge has been dispatched to authenticate authorization.")
+                st.warning(f"⚠️ **Pre-Debit Hold Engaged (ISO: U16):** Unusual telemetry detected. An OTP challenge has been dispatched to authenticate authorization.")
                 st.info(f"**Reason:** {b_res['reason']}")
                 
                 s_otp_col1, s_otp_col2 = st.columns([1.5, 1])
                 with s_otp_col1:
-                    s_entered_otp = st.text_input("Enter 4-digit Security OTP (Mock: 4921):", max_chars=4, key="sim_otp_input")
+                    s_entered_otp = st.text_input("Enter 4-digit Security OTP (Mock: 4921):", max_chars=4, key="sim_otp_release_val")
                 with s_otp_col2:
                     st.write("")
                     st.write("")
-                    if st.button("🔓 Submit OTP & Complete Settlement", key="sim_sub_otp"):
+                    if st.button("🔓 Submit OTP & Complete Settlement", key="sim_otp_settle_btn"):
                         if s_entered_otp == "4921":
                             st.success(f"✅ OTP Verified! Hold released. ₹{sim_dt['amount']:,.2f} transferred to {sim_dt['payee']}.")
                         else:
