@@ -69,26 +69,28 @@ st.markdown("""
 
     /* HOME HERO HEADINGS */
     .home-brand-title {
-        font-size: 2.8rem;
-        font-weight: 900;
-        color: #1E293B;
+        font-size: 3.6rem !important;
+        font-weight: 900 !important;
+        color: #1E293B !important;
         display: flex;
         align-items: center;
-        gap: 14px;
-        margin-bottom: 12px;
+        gap: 18px;
+        margin-bottom: 16px;
+        letter-spacing: -1.2px;
     }
     .home-sub-title {
-        font-size: 1.85rem;
-        font-weight: 800;
-        color: #0F172A;
-        margin-bottom: 16px;
+        font-size: 2.4rem !important;
+        font-weight: 800 !important;
+        color: #0F172A !important;
+        margin-bottom: 20px;
+        line-height: 1.2;
     }
     .home-desc-text {
-        font-size: 1.15rem;
-        font-weight: 500;
-        color: #475569;
-        line-height: 1.65;
-        margin-bottom: 24px;
+        font-size: 1.3rem !important;
+        font-weight: 500 !important;
+        color: #475569 !important;
+        line-height: 1.75;
+        margin-bottom: 32px;
     }
 
     /* BENTO CARDS (INTERNAL PAGES) */
@@ -224,74 +226,42 @@ if "active_nav" not in st.session_state:
 
 def navigate_to(page_name):
     st.session_state["active_nav"] = page_name
-    # keep the sidebar radio in sync so the redirect sticks
     st.session_state["sidebar_radio_selection"] = page_name
 
 # ==============================================================================
-# 2B. HOME-PAGE-ONLY STYLE OVERRIDES (default Streamlit look, red button)
+# 2B. HOME-PAGE-ONLY STYLE OVERRIDES (BIGGER FONTS & BIGGER RED BUTTON)
 # ==============================================================================
 if st.session_state["active_nav"] == "Home":
     st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700;800;900&display=swap');
 
     html, body, [class*="css"], .stApp, .stMarkdown, .stMarkdown p, .stMarkdown li,
     h1, h2, h3, label, label p, button, button p {
         font-family: "Source Sans Pro", "Source Sans 3", "Source Sans", sans-serif !important;
     }
 
-    /* Sidebar -> default Streamlit look */
-    section[data-testid="stSidebar"] {
-        background-color: #F0F2F6 !important;
-        border-right: none !important;
-        padding-top: 0 !important;
-    }
-    section[data-testid="stSidebar"] .stMarkdown p {
-        font-size: 1rem !important;
-        font-weight: 400 !important;
-        color: #31333F !important;
-    }
-    section[data-testid="stSidebar"] [data-testid="stCaptionContainer"],
-    section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
-        font-size: 0.875rem !important;
-        font-weight: 400 !important;
-        color: rgba(49, 51, 63, 0.6) !important;
-    }
-    section[data-testid="stSidebar"] div[role="radiogroup"] label {
-        padding: 0 !important;
-        margin-bottom: 0 !important;
-        border-radius: 0.5rem !important;
-    }
-    section[data-testid="stSidebar"] div[role="radiogroup"] label p {
-        font-size: 1rem !important;
-        font-weight: 400 !important;
-        color: #31333F !important;
-    }
-    section[data-testid="stSidebar"] div[role="radiogroup"] label[data-checked="true"] p {
-        color: #31333F !important;
-        font-weight: 400 !important;
-    }
-
-    /* Red "Get Started" button (default Streamlit primary) */
+    /* Red "Get Started" button (Slightly larger, prominent look) */
     div.stButton > button[kind="primary"],
     div.stButton > button[data-testid="stBaseButton-primary"] {
         background: #FF4B4B !important;
         background-image: none !important;
         color: #FFFFFF !important;
-        font-size: 1rem !important;
-        font-weight: 400 !important;
-        border-radius: 0.5rem !important;
-        padding: 0.25rem 0.75rem !important;
-        min-height: 2.5rem !important;
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
+        border-radius: 0.6rem !important;
+        padding: 0.65rem 1.8rem !important;
+        min-height: 3.2rem !important;
         border: 1px solid #FF4B4B !important;
         width: auto !important;
-        margin-top: 0 !important;
+        margin-top: 10px !important;
+        box-shadow: 0 4px 14px rgba(255, 75, 75, 0.3) !important;
     }
     div.stButton > button[kind="primary"] p,
     div.stButton > button[data-testid="stBaseButton-primary"] p {
         color: #FFFFFF !important;
-        font-size: 1rem !important;
-        font-weight: 400 !important;
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
     }
     div.stButton > button[kind="primary"]:hover,
     div.stButton > button[data-testid="stBaseButton-primary"]:hover {
@@ -305,12 +275,8 @@ if st.session_state["active_nav"] == "Home":
 # 3. SIDEBAR NAVIGATION
 # ==============================================================================
 with st.sidebar:
-    if st.session_state["active_nav"] == "Home":
-        st.markdown('<div style="font-size:1.75rem; font-weight:600; color:#31333F; margin-bottom:12px;">Navigation</div>', unsafe_allow_html=True)
-        st.caption("Go to")
-    else:
-        st.markdown('<div style="font-size:1.6rem; font-weight:900; color:#0F172A; margin-bottom:12px;">Navigation</div>', unsafe_allow_html=True)
-        st.caption("**Go to**")
+    st.markdown('<div style="font-size:1.75rem; font-weight:800; color:#1E293B; margin-bottom:12px;">Navigation</div>', unsafe_allow_html=True)
+    st.caption("**Go to**")
     
     pages = ["Home", "Dashboard", "Fraud Detection"]
     curr_idx = pages.index(st.session_state["active_nav"]) if st.session_state["active_nav"] in pages else 0
@@ -326,15 +292,14 @@ with st.sidebar:
         st.session_state["active_nav"] = selected_page
         st.rerun()
         
-    if st.session_state["active_nav"] != "Home":
-        st.markdown("---")
-        st.markdown("""
-        <div style="font-size:0.95rem; color:#475569; font-weight:700; line-height: 1.8;">
-            ⚡ Team: <strong>Spark Squad</strong><br>
-            🏛️ Bank Switch: <strong>Online 🟢</strong><br>
-            ⏱️ Protocol: <strong>ISO 20022</strong>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown("---")
+    st.markdown("""
+    <div style="font-size:1.05rem; color:#475569; font-weight:800; line-height: 1.9;">
+        ⚡ Team: <strong>Spark Squad</strong><br>
+        🏛️ Bank Switch: <strong>Online 🟢</strong><br>
+        ⏱️ Protocol: <strong>ISO 20022</strong>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ==============================================================================
 # 4. LOAD ARTIFACTS
@@ -524,21 +489,29 @@ def execute_inline_investigation(
     }
 
 # ==============================================================================
-# 5. VIEW 1: HOME PAGE (matches "UPI Fraud Guard" reference design)
+# 5. VIEW 1: HOME PAGE (ENLARGED HIGH-IMPACT DESIGN)
 # ==============================================================================
 if st.session_state["active_nav"] == "Home":
 
-    col_text, col_art = st.columns([2, 1])
+    col_text, col_art = st.columns([1.6, 1])
 
     with col_text:
-        st.title("🛡️ UPI Fraud Guard")
-        st.header("Secure Your Digital Transactions")
-        st.markdown(
-            "Welcome to **UPI Fraud Guard**, an advanced AI-powered system designed to detect "
-            "and prevent fraudulent UPI transactions in real-time. Using state-of-the-art "
-            "machine learning algorithms, we analyze transaction patterns to ensure your "
-            "digital payments remain secure."
-        )
+        st.markdown("""
+        <div class="home-brand-title">
+            <span style="font-size:3.8rem;">🛡️</span>
+            <span>UPI Fraud Guard</span>
+        </div>
+        <div class="home-sub-title">
+            Secure Your Digital Transactions
+        </div>
+        <div class="home-desc-text">
+            Welcome to <strong>UPI Fraud Guard</strong>, an advanced AI-powered system designed to detect 
+            and prevent fraudulent UPI transactions in real-time. Using state-of-the-art 
+            machine learning algorithms, we analyze transaction patterns to ensure your 
+            digital payments remain secure.
+        </div>
+        """, unsafe_allow_html=True)
+        
         st.button(
             "Get Started →",
             key="btn_get_started",
@@ -549,8 +522,8 @@ if st.session_state["active_nav"] == "Home":
 
     with col_art:
         st.markdown("""
-<div style="display:flex; justify-content:center; align-items:center; padding-top:30px;">
-<svg width="330" height="300" viewBox="0 0 330 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+<div style="display:flex; justify-content:center; align-items:center; padding-top:20px;">
+<svg width="370" height="340" viewBox="0 0 330 300" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g fill="#C6F0E6">
 <circle cx="165" cy="95" r="70"/>
 <circle cx="105" cy="150" r="58"/>
@@ -593,20 +566,38 @@ if st.session_state["active_nav"] == "Home":
 </div>
 """, unsafe_allow_html=True)
 
-    st.markdown("---")
+    st.markdown("<hr style='border:none; border-top:1px solid #E2E8F0; margin:46px 0 36px 0;'>", unsafe_allow_html=True)
 
-    st.header("Why Choose UPI Fraud Guard?")
+    st.markdown('<div style="font-size:2.3rem; font-weight:900; color:#0F172A; margin-bottom:28px;">Why Choose UPI Fraud Guard?</div>', unsafe_allow_html=True)
 
     f1, f2, f3 = st.columns(3)
     with f1:
-        st.markdown("### ⚡ Real-Time Protection")
-        st.write("Instant analysis of transactions as they happen.")
+        st.markdown("""
+        <div style="font-size:1.55rem; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:1.8rem;">⚡</span> Real-Time Protection
+        </div>
+        <div style="font-size:1.15rem; font-weight:500; color:#64748B; line-height:1.6;">
+            Instant analysis of transactions as they happen in ~16ms.
+        </div>
+        """, unsafe_allow_html=True)
     with f2:
-        st.markdown("### 🧠 AI Intelligence")
-        st.write("Powered by an Artificial Neural Network (ANN) for accurate fraud detection.")
+        st.markdown("""
+        <div style="font-size:1.55rem; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:1.8rem;">🧠</span> AI Intelligence
+        </div>
+        <div style="font-size:1.15rem; font-weight:500; color:#64748B; line-height:1.6;">
+            Powered by an Artificial Neural Network (ANN) model for accurate detection.
+        </div>
+        """, unsafe_allow_html=True)
     with f3:
-        st.markdown("### 📊 Smart Analytics")
-        st.write("Deep insights into transaction risks and patterns.")
+        st.markdown("""
+        <div style="font-size:1.55rem; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:1.8rem;">📊</span> Smart Analytics
+        </div>
+        <div style="font-size:1.15rem; font-weight:500; color:#64748B; line-height:1.6;">
+            Deep insights into transaction risks and behavioral patterns.
+        </div>
+        """, unsafe_allow_html=True)
 
 # ==============================================================================
 # 6. VIEW 2: DASHBOARD & ANALYTICS
@@ -745,7 +736,7 @@ else:
             st.markdown("**📍 Displacement from Last Transaction (km)**")
             in_dist = st.number_input("Distance from Last Transaction (km)", min_value=0.0, value=50.0, step=5.0, label_visibility="collapsed", key="v_dist_km")
 
-            st.markdown("**⏱️ Elapsed Time Since Previous Activity**")
+            st.markdown("**⏱️️ Elapsed Time Since Previous Activity**")
             g_val_col, g_unit_col = st.columns([1, 1])
             with g_val_col:
                 in_gap_val = st.number_input("Value", min_value=0.1, value=30.0, step=1.0, label_visibility="collapsed", key="v_gap_val")
@@ -771,7 +762,7 @@ else:
             st.caption("**Minute ⏱️**")
             m_val = st.selectbox("Minute", ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"], index=6, label_visibility="collapsed", key="v_mval")
         with t_c3:
-            st.caption("**AM / PM ☀️️🌙**")
+            st.caption("**AM / PM ☀️🌙**")
             ampm = st.radio("AM/PM", ["AM", "PM"], horizontal=True, index=0, label_visibility="collapsed", key="v_ampm")
         with t_c4:
             st.write("")
