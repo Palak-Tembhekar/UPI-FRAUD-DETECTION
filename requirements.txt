@@ -1,5 +1,5 @@
 streamlit
-scikit_learn
-xgboost
+pandas
 numpy
-joblib
+scikit-learn
+plotly
