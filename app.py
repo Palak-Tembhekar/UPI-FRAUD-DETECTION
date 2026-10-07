@@ -1,6 +1,6 @@
 """
 UPI Shield: inline fraud mitigation for UPI payments.
-Run: streamlit run app.py
+Run:  streamlit run app.py
 """
 import os
 import html
@@ -13,12 +13,8 @@ import streamlit as st
 
 import engine
 
-st.set_page_config(
-    page_title="UPI Shield", 
-    page_icon="🛡️", 
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+st.set_page_config(page_title="UPI Shield", page_icon="🛡️", layout="wide",
+                   initial_sidebar_state="expanded")
 
 PAGES = ["Home", "Dashboard", "Fraud Detection", "Settings"]
 
@@ -26,22 +22,18 @@ PAGES = ["Home", "Dashboard", "Fraud Detection", "Settings"]
 # THEME (real light / dark switching through CSS variables)
 # =============================================================================
 PALETTE = {
-    "light": dict(
-        bg="#FFFFFF", surface="#F8FAFC", card="#FFFFFF", border="#E2E8F0", text="#0F172A",
-        muted="#64748B", accent="#E11D48", link="#2563EB", shadow="rgba(15,23,42,.06)",
-        ok_bg="#ECFDF5", ok_bd="#10B981", ok_tx="#047857",
-        warn_bg="#FFFBEB", warn_bd="#F59E0B", warn_tx="#B45309",
-        bad_bg="#FEF2F2", bad_bd="#EF4444", bad_tx="#B91C1C",
-        info_bg="#EFF6FF", info_bd="#93C5FD", info_tx="#1E3A8A"
-    ),
-    "dark": dict(
-        bg="#0B1220", surface="#111A2E", card="#0F1729", border="#27344F", text="#E6EDF7",
-        muted="#9AA9C2", accent="#F43F5E", link="#60A5FA", shadow="rgba(0,0,0,.45)",
-        ok_bg="#062A1E", ok_bd="#10B981", ok_tx="#6EE7B7",
-        warn_bg="#2B2008", warn_bd="#F59E0B", warn_tx="#FCD34D",
-        bad_bg="#2D0F14", bad_bd="#EF4444", bad_tx="#FCA5A5",
-        info_bg="#0E1E3D", info_bd="#3B82F6", info_tx="#BFDBFE"
-    ),
+    "light": dict(bg="#FFFFFF", surface="#F8FAFC", card="#FFFFFF", border="#E2E8F0", text="#0F172A",
+                  muted="#64748B", accent="#E11D48", link="#2563EB", shadow="rgba(15,23,42,.06)",
+                  ok_bg="#ECFDF5", ok_bd="#10B981", ok_tx="#047857",
+                  warn_bg="#FFFBEB", warn_bd="#F59E0B", warn_tx="#B45309",
+                  bad_bg="#FEF2F2", bad_bd="#EF4444", bad_tx="#B91C1C",
+                  info_bg="#EFF6FF", info_bd="#93C5FD", info_tx="#1E3A8A"),
+    "dark": dict(bg="#0B1220", surface="#111A2E", card="#0F1729", border="#27344F", text="#E6EDF7",
+                 muted="#9AA9C2", accent="#F43F5E", link="#60A5FA", shadow="rgba(0,0,0,.45)",
+                 ok_bg="#062A1E", ok_bd="#10B981", ok_tx="#6EE7B7",
+                 warn_bg="#2B2008", warn_bd="#F59E0B", warn_tx="#FCD34D",
+                 bad_bg="#2D0F14", bad_bd="#EF4444", bad_tx="#FCA5A5",
+                 info_bg="#0E1E3D", info_bd="#3B82F6", info_tx="#BFDBFE"),
 }
 
 STATIC_CSS = """
@@ -160,63 +152,38 @@ def tiles(items):
     md(f'<div class="tiles">{cells}</div>')
 
 
-def card(title, inner):
-    return f'<div class="card"><div class="card-title">{title}</div>{inner}</div>'
-
-
-def bar_html(items, color="--accent", fmt="{:,.0f}"):
+def bar_chart(items, color="--accent", fmt="{:,.0f}"):
     if not items:
-        return '<div class="muted">No data yet.</div>'
+        st.caption("No data yet.")
+        return
     top = max(v for _, v in items) or 1
-    return "".join(
+    rows = "".join(
         f'<div class="brow"><div class="bl" title="{esc(l)}">{esc(l)}</div>'
         f'<div class="bt"><div class="bf" style="width:{max(v / top * 100, 1.5):.1f}%;background:var({color})"></div></div>'
         f'<div class="bv">{fmt.format(v)}</div></div>' for l, v in items)
-
-
-def table_html(rows, columns):
-    head = "".join(f"<th>{esc(h)}</th>" for _, h in columns)
-    body = ""
-    for r in rows:
-        cells = ""
-        for k, _ in columns:
-            v = r.get(k, "")
-            cells += f"<td>{v if isinstance(v, Raw) else esc(v)}</td>"
-        body += f"<tr>{cells}</tr>"
-    if not rows:
-        body = f'<tr><td colspan="{len(columns)}" class="muted">No rows.</td></tr>'
-    return f'<div class="tblwrap"><table class="tbl"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>'
+    md(rows)
 
 
 def html_table(rows, columns):
-    md(table_html(rows, columns))
+    head = "".join(f"<th>{esc(h)}</th>" for _, h in columns)
+    body = ""
+    for r in rows:
+        body += "<tr>" + "".join(
+            f"<td>{v if isinstance(v := r.get(k, ''), Raw) else esc(v)}</td>" for k, _ in columns) + "</tr>"
+    if not rows:
+        body = f'<tr><td colspan="{len(columns)}" class="muted">No rows.</td></tr>'
+    md(f'<div class="tblwrap"><table class="tbl"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>')
 
 
-STATUS_META = {
-    "SUCCESS": ("ok", "Success"), 
-    "PENDING_OTP": ("warn", "OTP hold"), 
-    "EXPIRED": ("warn", "Expired"),
-    "BLOCKED": ("bad", "Blocked"), 
-    "DECLINED": ("bad", "Declined")
-}
-BANNER = {
-    "SUCCESS": "✅ Payment successful", 
-    "PENDING_OTP": "⏸️ Payment held: OTP required",
-    "BLOCKED": "🚫 Payment blocked before debit", 
-    "DECLINED": "❌ Payment declined",
-    "EXPIRED": "⌛ Hold expired: nothing was debited"
-}
-SIM_BANNER = {
-    "TIER_1_PASS": ("ok", "✅ Would be approved"), 
-    "TIER_2_CHALLENGE": ("warn", "⏸️ Would be held for OTP"),
-    "TIER_3_COOLING": ("bad", "🚫 Would be blocked"), 
-    "REJECTED": ("bad", "❌ Would be declined")
-}
-TIER_KIND = {
-    "TIER_1_PASS": ("ok", "CLEARED"), 
-    "TIER_2_CHALLENGE": ("warn", "OTP HOLD"),
-    "TIER_3_COOLING": ("bad", "BLOCKED")
-}
+STATUS_META = {"SUCCESS": ("ok", "Success"), "PENDING_OTP": ("warn", "OTP hold"), "EXPIRED": ("warn", "Expired"),
+               "BLOCKED": ("bad", "Blocked"), "DECLINED": ("bad", "Declined")}
+BANNER = {"SUCCESS": "✅ Payment successful", "PENDING_OTP": "⏸️ Payment held: OTP required",
+          "BLOCKED": "🚫 Payment blocked before debit", "DECLINED": "❌ Payment declined",
+          "EXPIRED": "⌛ Hold expired: nothing was debited"}
+SIM_BANNER = {"TIER_1_PASS": ("ok", "✅ Would be approved"), "TIER_2_CHALLENGE": ("warn", "⏸️ Would be held for OTP"),
+              "TIER_3_COOLING": ("bad", "🚫 Would be blocked"), "REJECTED": ("bad", "❌ Would be declined")}
+TIER_KIND = {"TIER_1_PASS": ("ok", "CLEARED"), "TIER_2_CHALLENGE": ("warn", "OTP HOLD"),
+             "TIER_3_COOLING": ("bad", "BLOCKED")}
 
 
 def pill(status):
@@ -289,17 +256,11 @@ MODEL, SCALER, MODEL_ERR = boot()
 st.session_state.setdefault("nav", "Home")
 st.session_state.setdefault("co_nonce", 0)
 st.session_state.setdefault("ma_reset", 0)
-
-# Safety checks on Query Params for backwards compatibility
-current_params = st.query_params.to_dict()
 if "dark_toggle" not in st.session_state:
-    st.session_state["dark_toggle"] = current_params.get("theme") == "dark"
-
-if "did" not in current_params:
-    DEVICE_ID = "dev-" + secrets.token_hex(3)
-    st.query_params["did"] = DEVICE_ID
-else:
-    DEVICE_ID = current_params["did"]
+    st.session_state["dark_toggle"] = st.query_params.get("theme") == "dark"
+if "did" not in st.query_params:
+    st.query_params["did"] = "dev-" + secrets.token_hex(3)
+DEVICE_ID = st.query_params["did"]
 
 
 def go(page):
@@ -312,7 +273,6 @@ with st.sidebar:
     st.radio("Navigate", PAGES, key="nav", label_visibility="collapsed")
     dark = st.toggle("🌙 Dark mode", key="dark_toggle")
     THEME = "dark" if dark else "light"
-    
     if st.query_params.get("theme") != THEME:
         st.query_params["theme"] = THEME
     st.markdown("---")
@@ -396,9 +356,13 @@ def page_dashboard():
                    ("p95 engine latency", f'{s["p95_latency"]:.1f} ms', "info")])
             c1, c2 = st.columns(2)
             with c1:
-                md(card("Decisions", bar_html(sorted(b.items(), key=lambda x: -x[1]), "--accent")))
+                md('<div class="card"><div class="card-title">Decisions</div>')
+                bar_chart(sorted(b.items(), key=lambda x: -x[1]), "--accent")
+                md("</div>")
             with c2:
-                md(card("Most frequent risk signals", bar_html(sorted(s["flags"].items(), key=lambda x: -x[1])[:8], "--warn-bd")))
+                md('<div class="card"><div class="card-title">Most frequent risk signals</div>')
+                bar_chart(sorted(s["flags"].items(), key=lambda x: -x[1])[:8], "--warn-bd")
+                md("</div>")
             md('<div class="card-title">Recent decisions</div>')
             rows = [{"time": t["ts"][5:19].replace("T", " "), "payer": t["sender"], "payee": t["receiver"],
                      "amount": f'₹{t["amount"]:,.0f}', "status": pill(t["status"]), "risk": f'{t["score"] * 100:.0f}%'}
@@ -417,11 +381,16 @@ def page_dashboard():
             st.caption("Values above are read from the loaded model file, not typed in.")
             c1, c2 = st.columns(2)
             with c1:
-                md(card("Model parameters", table_html([{"k": k, "v": str(v)} for k, v in p.items()], [("k", "Parameter"), ("v", "Value")])))
+                md('<div class="card"><div class="card-title">Model parameters</div>')
+                html_table([{"k": k, "v": str(v)} for k, v in p.items()], [("k", "Parameter"), ("v", "Value")])
+                md("</div>")
             with c2:
-                imp_html = (bar_html(sorted(info["importances"].items(), key=lambda x: -x[1]), "--accent", "{:.3f}")
-                            if info["importances"] else '<div class="muted">This model does not expose feature importances.</div>')
-                md(card("Feature importance", imp_html))
+                md('<div class="card"><div class="card-title">Feature importance</div>')
+                if info["importances"]:
+                    bar_chart(sorted(info["importances"].items(), key=lambda x: -x[1]), "--accent", "{:.3f}")
+                else:
+                    st.caption("This model does not expose feature importances.")
+                md("</div>")
 
     with t_data:
         up = st.file_uploader("Upload your training dataset (CSV)", type=["csv"], key="ds_up")
@@ -447,13 +416,19 @@ def page_dashboard():
             tiles(items)
             c1, c2 = st.columns(2)
             with c1:
-                md(card("Feature statistics", table_html(a["numeric"].astype(str).to_dict("records"),
-                        [("feature", "Feature"), ("mean", "Mean"), ("min", "Min"), ("max", "Max")])))
+                md('<div class="card"><div class="card-title">Feature statistics</div>')
+                html_table(a["numeric"].astype(str).to_dict("records"),
+                           [("feature", "Feature"), ("mean", "Mean"), ("min", "Min"), ("max", "Max")])
+                md("</div>")
             with c2:
                 if "amount_buckets" in a:
-                    md(card("Transaction amount distribution", bar_html(a["amount_buckets"], "--link")))
+                    md('<div class="card"><div class="card-title">Transaction amount distribution</div>')
+                    bar_chart(a["amount_buckets"], "--link")
+                    md("</div>")
                 if "amount_by_class" in a:
-                    md(card("Mean amount by class", bar_html([(f"class {k}", v) for k, v in a["amount_by_class"].items()], "--bad-bd", "₹{:,.0f}")))
+                    md('<div class="card"><div class="card-title">Mean amount by class</div>')
+                    bar_chart([(f"class {k}", v) for k, v in a["amount_by_class"].items()], "--bad-bd", "₹{:,.0f}")
+                    md("</div>")
 
     with t_how:
         md("""<div class="card"><div class="card-title">The pipeline for every payment</div>
@@ -503,12 +478,9 @@ def render_txn_panel(txn_id, scope):
             st.rerun()
     elif t["status"] == "SUCCESS":
         a = engine.get_account(t["sender"])
-        # Multi-line layout fallback
-        md(f'<div class="card"><div class="card-title">🧾 Receipt</div>'
-           f'<div class="codebox">UTR            : {esc(t["utr"])}<br>'
-           f'Transaction ID : {esc(t["id"])}<br>Paid to        : {esc(t["receiver"])}<br>'
-           f'Amount         : ₹{t["amount"]:,.2f}<br>Time           : {esc(t["ts"])}<br>'
-           f'Payer balance  : ₹{a["balance"]:,.2f}</div></div>')
+        md(f'<div class="card"><div class="card-title">🧾 Receipt</div><div class="codebox">UTR            : {esc(t["utr"])}\n'
+           f'Transaction ID : {esc(t["id"])}\nPaid to        : {esc(t["receiver"])}\nAmount         : ₹{t["amount"]:,.2f}\n'
+           f'Time           : {esc(t["ts"])}\nPayer balance  : ₹{a["balance"]:,.2f}</div></div>'.replace("\n", "&#10;"))
 
     with st.expander("🚨 Report, lien and dispute tools", expanded=t["status"] in ("BLOCKED", "PENDING_OTP")):
         c1, c2, c3 = st.columns(3)
@@ -550,4 +522,275 @@ def apply_scan(text, source):
         return
     st.session_state["co_prefill"] = p
     st.session_state["co_nonce"] += 1
-    amt = f"
+    amt = f" for ₹{p['amount']:,.2f}" if p["amount"] else ""
+    st.session_state["co_scan_msg"] = ("ok", f"{source}: read payee <strong>{esc(p['vpa'])}</strong>{amt}. Details are filled in below.")
+    st.rerun()
+
+
+def tab_checkout():
+    users = engine.list_accounts("user")
+    labels = {u["vpa"]: f'{u["name"]} · {u["vpa"]}' for u in users}
+    payer = st.selectbox("Pay from account", list(labels), format_func=labels.get, key="co_payer")
+    acct = engine.get_account(payer)
+    avail = engine.available_balance(payer)
+    devs = engine.list_devices(payer)
+    trusted = engine.device_known(payer, DEVICE_ID)
+    tiles([("Balance", f'₹{acct["balance"]:,.2f}', None), ("Available (after holds)", f'₹{avail:,.2f}', "ok"),
+           ("Usual spend", f'₹{acct["avg_spend"]:,.0f}', "info"), ("Trusted devices", len(devs), "info")])
+    if not devs:
+        st.info("First use of this account: this browser will be enrolled as the trusted device on the first payment.")
+    elif not trusted:
+        notice("warn", "This browser is not a trusted device for this account",
+               "Payments from here are flagged <strong>NEW_DEVICE</strong>. That is the account-takeover signal.")
+        if st.button("Trust this device", key="co_trust"):
+            engine.register_device(payer, DEVICE_ID)
+            st.rerun()
+
+    nonce = st.session_state["co_nonce"]
+    pre = st.session_state.get("co_prefill", {})
+    left, right = st.columns([1.2, 1])
+
+    with left:
+        st.markdown("#### 1 · Payment method")
+        method = st.radio("Method", ["UPI ID", "Scan QR", "UPI link"], horizontal=True,
+                          key="co_method", label_visibility="collapsed")
+
+        if method == "Scan QR":
+            up = st.file_uploader("Upload a photo or screenshot of a UPI QR", type=["png", "jpg", "jpeg", "webp"],
+                                  key=f"co_qr_up_{nonce}")
+            if st.checkbox("Use camera instead", key="co_use_cam"):
+                cam = st.camera_input("Point the camera at a UPI QR", key=f"co_cam_{nonce}")
+                up = up or cam
+            if up is not None:
+                data = up.getvalue()
+                sig = hashlib.md5(data).hexdigest()
+                if st.session_state.get("co_qr_sig") != sig:
+                    st.session_state["co_qr_sig"] = sig
+                    text = engine.decode_qr(data)
+                    if text is None:
+                        st.session_state["co_scan_msg"] = ("bad", "No QR code found in that image. Try a sharper, closer photo.")
+                    else:
+                        apply_scan(text, "QR scan")
+            with st.expander("Create a payee QR code (what a merchant or a scammer would show you)"):
+                g_vpa = st.text_input("Payee UPI ID", value="chai_point@upi", key="gen_vpa")
+                g_name = st.text_input("Display name", value="Chai Point", key="gen_name")
+                g_amt = st.number_input("Amount (₹, 0 = payer enters it)", min_value=0.0, value=0.0, step=50.0, key="gen_amt")
+                if st.button("Generate QR", key="gen_btn"):
+                    try:
+                        link = engine.build_upi_link(g_vpa, g_name, g_amt or None)
+                        st.session_state["gen_qr"] = (link, engine.make_qr_png(link))
+                    except ImportError:
+                        st.error("The 'qrcode' package is missing. Run: pip install qrcode[pil]")
+                if "gen_qr" in st.session_state:
+                    link, png = st.session_state["gen_qr"]
+                    st.image(png, width=220)
+                    st.code(link, language=None)
+                    d1, d2 = st.columns(2)
+                    d1.download_button("📥 Download PNG", png, file_name="upi_qr.png", key="gen_dl")
+                    if d2.button("📷 Scan this QR", key="gen_scan"):
+                        text = engine.decode_qr(png)
+                        apply_scan(text or "", "QR scan")
+        elif method == "UPI link":
+            link_in = st.text_input("Paste a upi://pay link", placeholder="upi://pay?pa=merchant@upi&pn=Shop&am=250", key=f"co_link_{nonce}")
+            if st.button("Read link", key="co_link_btn"):
+                apply_scan(link_in, "UPI link")
+
+        msg = st.session_state.get("co_scan_msg")
+        if msg:
+            notice("ok" if msg[0] == "ok" else "bad", "QR / link result", msg[1] if msg[0] == "ok" else esc(msg[1]))
+
+        st.markdown("#### 2 · Payee and amount")
+        payee = st.text_input("Payee UPI ID", value=pre.get("vpa", ""), placeholder="merchant@upi", key=f"co_vpa_{nonce}")
+        amount = st.number_input("Amount (₹)", min_value=0.0, value=float(pre.get("amount") or 0.0), step=100.0, key=f"co_amt_{nonce}")
+        note = st.text_input("Note (optional)", value=pre.get("note", ""), key=f"co_note_{nonce}")
+        pv = payee.strip().lower()
+        known = engine.get_account(pv) if pv else None
+        if known and known["kind"] == "merchant":
+            st.success(f"Registered merchant: {known['name']}")
+        elif pv:
+            if not engine.VPA_RE.match(pv):
+                st.error("That is not a valid UPI ID (expected name@bank).")
+            else:
+                st.caption("Unregistered payee. The shield treats this as an unverified beneficiary.")
+
+    with right:
+        st.markdown("#### 3 · Payer context")
+        cities = list(engine.CITIES)
+        city = st.selectbox("Your current city", cities, index=cities.index(acct["home_city"]),
+                            key=f"co_city_{payer}")
+        st.caption("Distance since your last settled payment and the time elapsed give the travel speed. Try a far city right after a payment.")
+        active_call = st.checkbox("📞 I am on a call with someone I do not know", key="co_call")
+        ext_link = st.checkbox("🔗 I opened this payment from an SMS / WhatsApp link", key="co_link_flag")
+        override = True
+        if active_call or ext_link:
+            notice("bad", "Scam warning",
+                   "Police, banks and government offices never ask for UPI payments over a call or a link. Stop and verify through an official number.")
+            override = st.checkbox("I have verified the payee myself and want to continue", key="co_override")
+
+    can_pay = amount > 0 and bool(pv) and engine.VPA_RE.match(pv) is not None and override
+    b1, b2 = st.columns([2, 1])
+    if b1.button(f"🚀 Pay ₹{amount:,.2f}", type="primary", disabled=not can_pay, key="co_pay"):
+        txn = engine.process_payment(MODEL, SCALER, sender=payer, receiver=pv, amount=amount,
+                                     channel=method, city=city, device_id=DEVICE_ID,
+                                     active_call=active_call, ext_link=ext_link, note=note)
+        st.session_state["co_active"] = txn["id"]
+        st.rerun()
+    if b2.button("➕ New payment", key="co_new"):
+        for k in ("co_active", "co_prefill", "co_scan_msg", "co_qr_sig"):
+            st.session_state.pop(k, None)
+        st.session_state["co_nonce"] += 1
+        st.rerun()
+
+    if st.session_state.get("co_active"):
+        st.markdown("---")
+        render_txn_panel(st.session_state["co_active"], "co")
+
+
+# =============================================================================
+# TAB: MANUAL ANALYSIS (what-if, does not move money)
+# =============================================================================
+def tab_manual():
+    md('<div class="muted" style="margin-bottom:10px;">Stress-test the engine with any combination of inputs. '
+       '<strong>This is analysis only</strong>: it writes nothing to the ledger and moves no money.</div>')
+    reset = st.session_state["ma_reset"]
+    preset = st.selectbox("Start from a persona", list(engine.PROFESSIONS), key="ma_preset")
+    base = engine.PROFESSIONS[preset]
+    sfx = f"{preset}_{reset}"
+    c1, c2 = st.columns(2)
+    with c1:
+        amount = st.number_input("Transaction amount (₹)", min_value=0.0, value=0.0, step=500.0, key=f"ma_amt_{sfx}")
+        balance = st.number_input("Available balance (₹)", min_value=0.0, value=float(base["balance"]), step=1000.0, key=f"ma_bal_{sfx}")
+        avg = st.number_input("Usual spend baseline (₹)", min_value=0.0, value=float(base["avg_spend"]), step=100.0, key=f"ma_avg_{sfx}")
+        vpa = st.text_input("Beneficiary UPI ID", value="", placeholder="merchant@upi", key=f"ma_vpa_{sfx}")
+        new_payee = st.selectbox("Beneficiary", ["Known payee", "New payee"], key=f"ma_payee_{sfx}") == "New payee"
+    with c2:
+        dist = st.number_input("Distance from last payment (km)", min_value=0.0, value=0.0, step=5.0, key=f"ma_dist_{sfx}")
+        g1, g2 = st.columns(2)
+        gval = g1.number_input("Time since last payment", min_value=0.0, value=60.0, step=1.0, key=f"ma_gv_{sfx}")
+        gunit = g2.selectbox("Unit", ["Minutes", "Seconds", "Hours"], key=f"ma_gu_{sfx}")
+        txc = st.number_input("Attempts in the last 10 minutes", min_value=0, max_value=50, value=1, key=f"ma_tx_{sfx}")
+        new_dev = st.selectbox("Device", ["Trusted device", "Unrecognised device"], key=f"ma_dev_{sfx}") == "Unrecognised device"
+        t_in = st.time_input("Transaction time", value=dtime(12, 0), key=f"ma_time_{sfx}")
+    gap = gval * {"Minutes": 60, "Seconds": 1, "Hours": 3600}[gunit]
+    r1, r2 = st.columns([2, 1])
+    if r1.button("⚡ Run analysis", type="primary", key="ma_run"):
+        res = engine.investigate(MODEL, SCALER, engine.get_policy(), amount=amount, balance=balance, avg_spend=avg,
+                                 hour_24=t_in.hour, tx_count=txc, is_new_device=new_dev, is_new_payee=new_payee,
+                                 dist_km=dist, gap_sec=gap, receiver_vpa=vpa.strip().lower() or "unknown@upi")
+        st.session_state["ma_res"] = res
+    if r2.button("🔄 Reset inputs", key="ma_clear"):
+        st.session_state["ma_reset"] += 1
+        st.session_state.pop("ma_res", None)
+        st.rerun()
+    if "ma_res" in st.session_state:
+        st.markdown("---")
+        render_decision(st.session_state["ma_res"], simulated=True)
+
+
+# =============================================================================
+# TAB: LEDGER
+# =============================================================================
+def tab_ledger():
+    all_t = engine.list_transactions(500)
+    if not all_t:
+        notice("info", "The ledger is empty", "Payments made in Merchant Checkout are recorded here with their full audit trail.")
+    else:
+        wanted = st.multiselect("Filter by status", list(STATUS_META), default=list(STATUS_META), key="lg_filter")
+        rows_t = [t for t in all_t if t["status"] in wanted]
+        rows = [{"time": t["ts"][5:19].replace("T", " "), "id": t["id"], "payer": t["sender"], "payee": t["receiver"],
+                 "amount": f'₹{t["amount"]:,.2f}', "channel": t["channel"], "status": pill(t["status"]),
+                 "risk": f'{t["score"] * 100:.0f}%', "signals": ", ".join(t["flags"]) or "none"} for t in rows_t]
+        html_table(rows, [("time", "Time"), ("id", "ID"), ("payer", "Payer"), ("payee", "Payee"), ("amount", "Amount"),
+                          ("channel", "Channel"), ("status", "Status"), ("risk", "Risk"), ("signals", "Signals")])
+        csv = pd.DataFrame([{k: (", ".join(v) if k == "flags" else v) for k, v in t.items()
+                             if k in ("ts", "id", "sender", "receiver", "amount", "channel", "status", "tier",
+                                      "score", "rf_risk", "flags", "latency_ms", "city", "utr", "reason")}
+                            for t in rows_t]).to_csv(index=False)
+        st.download_button("📥 Export ledger (CSV)", csv, file_name="upi_shield_ledger.csv", key="lg_csv")
+        pick = st.selectbox("Inspect a transaction", [t["id"] for t in rows_t], key="lg_pick") if rows_t else None
+        if pick:
+            render_txn_panel(pick, "lg")
+
+    st.markdown("---")
+    st.markdown("#### 🔒 Active beneficiary liens")
+    liens = engine.list_liens()
+    if not liens:
+        st.caption("None. Place one from any transaction's report tools.")
+    for l in liens:
+        c1, c2 = st.columns([4, 1])
+        c1.markdown(f"`{l['vpa']}` · {l['reason']} · {l['ts'][:19].replace('T', ' ')}")
+        if c2.button("Remove", key=f"lg_unlien_{l['vpa']}"):
+            engine.remove_lien(l["vpa"])
+            st.rerun()
+
+
+# =============================================================================
+# PAGE: FRAUD DETECTION
+# =============================================================================
+def page_detection():
+    md('<div class="page-h">🛡️ Fraud Detection</div><div class="page-s">Merchant checkout → inline shield → bank debit, backed by a persistent ledger.</div>')
+    if MODEL is None:
+        notice("bad", "Random Forest model not loaded", esc(MODEL_ERR) +
+               "<br>The app is running on rules only. Risk scores are labelled accordingly.")
+    t1, t2, t3 = st.tabs(["🛒 Merchant checkout", "🧪 Manual analysis", "🧾 Ledger & remediation"])
+    with t1:
+        tab_checkout()
+    with t2:
+        tab_manual()
+    with t3:
+        tab_ledger()
+
+
+# =============================================================================
+# PAGE: SETTINGS
+# =============================================================================
+def page_settings():
+    md('<div class="page-h">⚙️ Settings</div><div class="page-s">Policy changes apply to the very next payment.</div>')
+    pol = engine.get_policy()
+    md('<div class="card-title">Decision policy</div>')
+    c1, c2 = st.columns(2)
+    with c1:
+        review = st.slider("Hold for OTP at composite risk ≥", 0.05, 0.95, float(pol["review_threshold"]), 0.01, key="pol_review")
+        block = st.slider("Block at composite risk ≥", 0.50, 1.00, float(pol["block_threshold"]), 0.01, key="pol_block")
+        soft = st.checkbox("Hold even when only a soft signal fires (off-hours or new payee alone)",
+                           value=bool(pol["soft_flags_alone_hold"]), key="pol_soft")
+    with c2:
+        drain = st.slider("High-drain limit (share of balance)", 0.10, 1.00, float(pol["drain_limit"]), 0.05, key="pol_drain")
+        spike = st.slider("Spending-spike limit (x usual spend)", 1.0, 20.0, float(pol["spike_limit"]), 0.5, key="pol_spike")
+        speed = st.slider("Impossible-speed limit (km/h)", 50.0, 1000.0, float(pol["speed_limit_kmh"]), 10.0, key="pol_speed")
+    if review >= block:
+        st.error("The OTP threshold must be lower than the block threshold.")
+    elif st.button("💾 Save policy", type="primary", key="pol_save"):
+        engine.set_policy({"review_threshold": review, "block_threshold": block, "drain_limit": drain,
+                           "spike_limit": spike, "speed_limit_kmh": speed, "soft_flags_alone_hold": soft})
+        st.success("Policy saved.")
+
+    st.markdown("---")
+    md('<div class="card-title">Trusted devices</div>')
+    devs = engine.list_devices()
+    if not devs:
+        st.caption("No devices enrolled yet. The first payment from an account enrols the browser used.")
+    for d in devs:
+        c1, c2 = st.columns([4, 1])
+        c1.markdown(f"`{d['vpa']}` · device `{d['device_id']}` {'(this browser)' if d['device_id'] == DEVICE_ID else ''}")
+        if c2.button("Remove", key=f"dev_rm_{d['vpa']}_{d['device_id']}"):
+            engine.remove_device(d["vpa"], d["device_id"])
+            st.rerun()
+
+    st.markdown("---")
+    md('<div class="card-title">Data</div>')
+    st.caption(f"Database file: {os.path.abspath(engine.DB_PATH)}")
+    st.caption("Resetting deletes every transaction, OTP, lien, dispute and device, and restores the starting balances.")
+    if st.checkbox("I understand this cannot be undone", key="rst_ok") and st.button("🗑️ Reset all demo data", key="rst_btn"):
+        engine.reset_db()
+        for k in ("co_active", "co_prefill", "co_scan_msg", "ma_res"):
+            st.session_state.pop(k, None)
+        st.success("Everything was reset.")
+        st.rerun()
+
+
+# =============================================================================
+# ROUTER
+# =============================================================================
+{"Home": page_home, "Dashboard": page_dashboard, "Fraud Detection": page_detection,
+ "Settings": page_settings}[st.session_state["nav"]]()
